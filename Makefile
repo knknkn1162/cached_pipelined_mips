@@ -5,6 +5,8 @@ DIR=./
 
 cache_decoder: cache_pkg
 	make aer F=cache_decoder DIR=cache/
+mem:
+	make aer F=mem DIR=elem/
 
 cache_pkg:
 	make a F=cache_pkg DIR=cache/
