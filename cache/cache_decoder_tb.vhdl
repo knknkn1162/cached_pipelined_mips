@@ -35,6 +35,8 @@ begin
     addr <= X"12345678"; wait for 10 ns;
     -- X"678"=b"/0110_011/1_10/00"
     assert tag = X"12345"; assert index = "0110011"; assert offset = "110";
+
+    assert false report "end of test" severity note;
     wait;
   end process;
 
