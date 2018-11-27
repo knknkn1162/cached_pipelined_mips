@@ -1,10 +1,12 @@
 F=dummy
 VHDL=vhdl
 MEM=dummy
-DIR=
+DIR=./
 
 alu: type_pkg
 	make aer F=alu DIR=elem/
+flopr_en:
+	make aer F=flopr_en DIR=elem/
 type_pkg:
 	make a F=type_pkg
 aer:
