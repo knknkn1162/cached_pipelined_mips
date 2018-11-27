@@ -21,6 +21,8 @@ slt2:
 	make aer F=slt2 DIR=elem/
 mux2:
 	make aer F=mux2 DIR=elem/
+mux8:
+	make aer F=mux8 DIR=cache/
 tools_pkg:
 	make aer F=tools_pkg
 type_pkg:
