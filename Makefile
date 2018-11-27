@@ -8,9 +8,8 @@ cache_decoder: cache_pkg
 
 cache_pkg:
 	make a F=cache_pkg DIR=cache/
-
-data_cache: tools_pkg
-	make aer F=data_cache DIR=elem/
+data_cache: tools_pkg cache_decoder mux8
+	make aer F=data_cache DIR=cache/
 alu: type_pkg
 	make aer F=alu DIR=elem/
 flopr_en:
