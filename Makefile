@@ -4,10 +4,10 @@ MEM=dummy
 DIR=./
 
 cache_decoder: cache_pkg
-	make aer F=cache_decoder DIR=elem/
+	make aer F=cache_decoder DIR=cache/
 
 cache_pkg:
-	make aer F=cache_pkg DIR=elem/
+	make aer F=cache_pkg DIR=cache/
 
 data_cache: tools_pkg
 	make aer F=data_cache DIR=elem/

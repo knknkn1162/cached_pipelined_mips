@@ -6,6 +6,7 @@ work-obj93.cf
 !*/*
 !elem
 !component
+!cache
 !*.vhdl
 !assets
 !Makefile
