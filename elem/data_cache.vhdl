@@ -4,7 +4,7 @@ use IEEE.NUMERIC_STD.ALL;
 use STD.TEXTIO.ALL;
 use work.tools_pkg.ALL;
 
-entity dcache is
+entity data_cache is
   generic(filename : string);
   port (
     clk, rst, load : in std_logic;
@@ -16,7 +16,7 @@ entity dcache is
   );
 end entity;
 
-architecture behavior of dcache is
+architecture behavior of data_cache is
   -- The size of data cache assumes to be 1K-byte
   constant SIZE : natural := 256; -- 0x0100
   type ramtype is array(natural range<>) of std_logic_vector(31 downto 0);
@@ -53,7 +53,7 @@ begin
     end if;
   end process;
 
-  process(clk, rst, a, we)
+  process(a, we)
   begin
     -- read
     if is_X(a) then

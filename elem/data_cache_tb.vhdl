@@ -3,11 +3,11 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 use work.tools_pkg.ALL;
 
-entity dcache_tb is
+entity data_cache_tb is
 end entity;
 
-architecture testbench of dcache_tb is
-  component dcache
+architecture testbench of data_cache_tb is
+  component data_cache
     generic(filename : string);
     port (
       clk, rst, load : in std_logic;
@@ -27,7 +27,7 @@ architecture testbench of dcache_tb is
   constant filename : string := "./assets/mem/memfile.hex";
 
 begin
-  uut : dcache generic map (filename=>filename)
+  uut : data_cache generic map (filename=>filename)
   port map (
     clk => clk, rst => rst, load => load,
     we => we,
