@@ -3,6 +3,12 @@ VHDL=vhdl
 MEM=dummy
 DIR=./
 
+cache_decoder: cache_pkg
+	make aer F=cache_decoder DIR=elem/
+
+cache_pkg:
+	make aer F=cache_pkg DIR=elem/
+
 data_cache: tools_pkg
 	make aer F=data_cache DIR=elem/
 alu: type_pkg
