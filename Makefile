@@ -3,6 +3,8 @@ VHDL=vhdl
 MEM=dummy
 DIR=./
 
+dcache: tools_pkg
+	make aer F=dcache DIR=elem/
 alu: type_pkg
 	make aer F=alu DIR=elem/
 flopr_en:
