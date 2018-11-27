@@ -7,7 +7,7 @@ cache_decoder: cache_pkg
 	make aer F=cache_decoder DIR=cache/
 
 cache_pkg:
-	make aer F=cache_pkg DIR=cache/
+	make a F=cache_pkg DIR=cache/
 
 data_cache: tools_pkg
 	make aer F=data_cache DIR=elem/
@@ -37,7 +37,7 @@ e:
 r:
 	ghdl -r ${F}_tb --vcd=out.vcd
 a:
-	ghdl -a ${F}.${VHDL}
+	ghdl -a ${DIR}${F}.${VHDL}
 er:
 	make e
 	make r
