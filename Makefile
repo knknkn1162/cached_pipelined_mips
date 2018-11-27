@@ -9,6 +9,8 @@ flopr_en:
 	make aer F=flopr_en DIR=elem/
 sgnext:
 	make aer F=sgnext DIR=elem/
+slt2:
+	make aer F=slt2 DIR=elem/
 mux2:
 	make aer F=mux2 DIR=elem/
 type_pkg:
