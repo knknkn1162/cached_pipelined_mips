@@ -61,8 +61,11 @@ begin
 
     wait until falling_edge(clk);
     -- write in ram
-    we <= '1'; a <= X"000000" & "000"; wd1 <= X"FFFFFFFF"; wd8 <= X"FFFFFFF1"; wait for clk_period/2+ 1 ns;
-    we <= '0'; wait for 1 ns; assert rd1 = X"FFFFFFFF"; assert rd8 = X"FFFFFFF1";
+    we <= '1'; a <= X"000000" & "000";
+    wd1 <= X"FFFFFFFF"; wd2 <= X"FFFFFFFE"; wd3 <= X"FFFFFFFD"; wd4 <= X"FFFFFFFC"; wd5 <= X"FFFFFFFB"; wd6 <= X"FFFFFFFA"; wd7 <= X"FFFFFFF9"; wd8 <= X"FFFFFFF8";
+    wait for clk_period/2+ 1 ns;
+    we <= '0'; wait for 1 ns;
+    assert rd1 <= X"FFFFFFFF"; assert rd2 <= X"FFFFFFFE"; assert rd3 <= X"FFFFFFFD"; assert rd4 <= X"FFFFFFFC"; assert rd5 <= X"FFFFFFFB"; assert rd6 <= X"FFFFFFFA"; assert rd7 <= X"FFFFFFF9"; assert rd8 <= X"FFFFFFF8";
     -- skip
     stop <= TRUE;
     -- success message
