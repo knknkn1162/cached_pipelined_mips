@@ -12,7 +12,11 @@ entity data_cache is
     -- program counter is 4-byte aligned
     a : in std_logic_vector(31 downto 0);
     wd : in std_logic_vector(31 downto 0);
-    rd : out std_logic_vector(31 downto 0)
+    rd : out std_logic_vector(31 downto 0);
+    load_d1, load_d2, load_d3, load_d4, load_d5, load_d6, load_d7, load_d8 : in std_logic_vector(31 downto 0);
+    load_ok : in std_logic;
+    dump_d1, dump_d2, dump_d3, dump_d4, dump_d5, dump_d6, dump_d7, dump_d8 : out std_logic_vector(31 downto 0);
+    dump_ok: out std_logic
   );
 end entity;
 
@@ -52,7 +56,6 @@ architecture behavior of data_cache is
   signal tag_data : tagtype(0 to SIZE-1);
 
   -- TODO: compatible with CONST_CACHE_OFFSET_SIZE
-  signal ram0_data : ramtype(0 to SIZE-1);
   signal ram1_data : ramtype(0 to SIZE-1);
   signal ram2_data : ramtype(0 to SIZE-1);
   signal ram3_data : ramtype(0 to SIZE-1);
@@ -60,6 +63,7 @@ architecture behavior of data_cache is
   signal ram5_data : ramtype(0 to SIZE-1);
   signal ram6_data : ramtype(0 to SIZE-1);
   signal ram7_data : ramtype(0 to SIZE-1);
+  signal ram8_data : ramtype(0 to SIZE-1);
 
   -- decode addr
   signal tag : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
@@ -67,7 +71,7 @@ architecture behavior of data_cache is
   signal offset : std_logic_vector(CONST_CACHE_OFFSET_SIZE-1 downto 0);
 
   -- load from memory in case of cache miss
-  signal load : std_logic;
+  signal dump : std_logic;
   signal s : std_logic_vector(2 downto 0); -- selector for mux8
 
   signal ram0_datum : std_logic_vector(31 downto 0);
@@ -78,6 +82,7 @@ architecture behavior of data_cache is
   signal ram5_datum : std_logic_vector(31 downto 0);
   signal ram6_datum : std_logic_vector(31 downto 0);
   signal ram7_datum : std_logic_vector(31 downto 0);
+  signal ram8_datum : std_logic_vector(31 downto 0);
 
 begin
   cache_decoder0 : cache_decoder port map(
@@ -88,7 +93,7 @@ begin
   );
 
   -- write data or load block from memory
-  process(clk, rst, a)
+  process(clk, rst, load_ok, index, load_d1, load_d2, load_d3, load_d4, load_d5, load_d6, load_d7, load_d8)
     variable idx : natural;
   begin
     -- initialization
@@ -96,16 +101,26 @@ begin
       -- initialize with zeros
       valid_data <= (others => '0');
     elsif rising_edge(clk) then
-      if load = '1' then
+      -- pull the notification from the memory
+      if load_ok = '1' then
+        idx := to_integer(unsigned(index));
+        ram1_data(idx) <= load_d1;
+        ram2_data(idx) <= load_d2;
+        ram3_data(idx) <= load_d3;
+        ram4_data(idx) <= load_d4;
+        ram5_data(idx) <= load_d5;
+        ram6_data(idx) <= load_d6;
+        ram7_data(idx) <= load_d7;
+        ram8_data(idx) <= load_d8;
       end if;
     end if;
   end process;
 
   process(index, offset, we)
     variable s0 : std_logic_vector(2 downto 0);
-    variable load0 : std_logic;
+    variable dump0 : std_logic;
   begin
-    load0 := '0';
+    dump0 := '0';
     if we = '0' then
       if valid_data(to_integer(unsigned(index))) = '1' then
         -- cache hit!
@@ -113,17 +128,15 @@ begin
           s0 := offset;
         else
           -- cache miss
-          load0 := '1';
+          dump0 := '1';
         end if;
-      else
-        load0 := '1';
       end if;
     end if;
     s <= s0;
-    load <= load0;
+    dump <= dump0;
   end process;
 
-  ram0_datum <= ram0_data(to_integer(unsigned(index)));
+  -- output rd signal
   ram1_datum <= ram1_data(to_integer(unsigned(index)));
   ram2_datum <= ram2_data(to_integer(unsigned(index)));
   ram3_datum <= ram3_data(to_integer(unsigned(index)));
@@ -131,17 +144,36 @@ begin
   ram5_datum <= ram5_data(to_integer(unsigned(index)));
   ram6_datum <= ram6_data(to_integer(unsigned(index)));
   ram7_datum <= ram7_data(to_integer(unsigned(index)));
+  ram8_datum <= ram8_data(to_integer(unsigned(index)));
   mux8_0 : mux8 generic map(N=>32)
   port map (
-    d000 => ram0_datum,
-    d001 => ram1_datum,
-    d010 => ram2_datum,
-    d011 => ram3_datum,
-    d100 => ram4_datum,
-    d101 => ram5_datum,
-    d110 => ram6_datum,
-    d111 => ram7_datum,
+    d000 => ram1_datum,
+    d001 => ram2_datum,
+    d010 => ram3_datum,
+    d011 => ram4_datum,
+    d100 => ram5_datum,
+    d101 => ram6_datum,
+    d110 => ram7_datum,
+    d111 => ram8_datum,
     s => s,
     y => rd
   );
+
+  process(index, dump, valid_data)
+    variable idx : natural;
+  begin
+    if (valid_data(to_integer(unsigned(index))) = '1' and dump = '1') then
+      idx := to_integer(unsigned(index));
+      dump_d1 <= ram1_data(idx);
+      dump_d2 <= ram2_data(idx);
+      dump_d3 <= ram3_data(idx);
+      dump_d4 <= ram4_data(idx);
+      dump_d5 <= ram5_data(idx);
+      dump_d6 <= ram6_data(idx);
+      dump_d7 <= ram7_data(idx);
+      dump_d8 <= ram8_data(idx);
+      -- notify the dump completion to the memory
+      dump_ok <= '1';
+    end if;
+  end process;
 end architecture;
