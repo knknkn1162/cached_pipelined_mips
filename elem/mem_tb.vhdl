@@ -57,14 +57,7 @@ begin
     wait until falling_edge(clk);
     -- read test
     a <= X"000000" & "000"; we <= '0'; wait for 1 ns;
-    assert rd1 = X"20020005";
-    assert rd2 = X"2003000c";
-    assert rd3 = X"2067fff7";
-    assert rd4 = X"00e22025";
-    assert rd5 = X"00642824";
-    assert rd6 = X"00a42820";
-    assert rd7 = X"10a7000a";
-    assert rd8 = X"0064202a";
+    assert rd1 = X"20020005"; assert rd2 = X"2003000c"; assert rd3 = X"2067fff7"; assert rd4 = X"00e22025"; assert rd5 = X"00642824"; assert rd6 = X"00a42820"; assert rd7 = X"10a7000a"; assert rd8 = X"0064202a";
 
     wait until falling_edge(clk);
     -- write in ram
