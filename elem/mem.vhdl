@@ -2,46 +2,33 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 use STD.TEXTIO.ALL;
+use IEEE.STD_LOGIC_TEXTIO.ALL;
 use work.tools_pkg.ALL;
 use work.cache_pkg.ALL;
 
 entity mem is
-  generic(filename : string);
+  generic(filename : string; BITS : natural);
   port (
     clk, rst, load : in std_logic;
     we : in std_logic;
     -- program counter is 4-byte aligned
     a : in std_logic_vector(CONST_CACHE_TAG_SIZE+CONST_CACHE_INDEX_SIZE-1 downto 0);
-    wd1 : in std_logic_vector(31 downto 0);
-    wd2 : in std_logic_vector(31 downto 0);
-    wd3 : in std_logic_vector(31 downto 0);
-    wd4 : in std_logic_vector(31 downto 0);
-    wd5 : in std_logic_vector(31 downto 0);
-    wd6 : in std_logic_vector(31 downto 0);
-    wd7 : in std_logic_vector(31 downto 0);
-    wd8 : in std_logic_vector(31 downto 0);
-    rd1 : out std_logic_vector(31 downto 0);
-    rd2 : out std_logic_vector(31 downto 0);
-    rd3 : out std_logic_vector(31 downto 0);
-    rd4 : out std_logic_vector(31 downto 0);
-    rd5 : out std_logic_vector(31 downto 0);
-    rd6 : out std_logic_vector(31 downto 0);
-    rd7 : out std_logic_vector(31 downto 0);
-    rd8 : out std_logic_vector(31 downto 0)
+    wd1, wd2, wd3, wd4, wd5, wd6, wd7, wd8 : in std_logic_vector(31 downto 0);
+    rd1, rd2, rd3, rd4, rd5, rd6, rd7, rd8 : out std_logic_vector(31 downto 0)
   );
 end entity;
 
 architecture behavior of mem is
-  constant DIM : natural := 16;
-  constant SIZE : natural := 2**DIM; -- 20MB
+  constant SIZE : natural := 2**BITS;
   type ram_type is array(natural range<>) of std_logic_vector(31 downto 0);
   type addr30_type is array(natural range<>) of std_logic_vector(29 downto 0);
   signal ram : ram_type(0 to SIZE-1);
-  signal stored_addr : addr30_type(0 to 7);
+  signal stored_addr : addr30_type(0 to 2**CONST_CACHE_OFFSET_SIZE-1);
+  signal test_vec : std_logic_vector(31 downto 0);
 
 begin
-  m : for i in 0 to 7 generate
-    stored_addr(i) <= "00" & a & std_logic_vector(to_unsigned(i, 3));
+  m : for i in 0 to 2**CONST_CACHE_OFFSET_SIZE-1 generate
+    stored_addr(i) <= a & std_logic_vector(to_unsigned(i, 3));
   end generate;
 
   process(clk, rst, a)
@@ -49,6 +36,7 @@ begin
     variable idx : integer;
     variable lin : line;
     variable ch : character;
+    variable res : std_logic_vector(3 downto 0);
    begin
     -- initialization
     if rst = '1' then
@@ -82,9 +70,9 @@ begin
   end process;
 
   -- read block
-  process(clk, rst, a, we)
+  process(clk, rst, stored_addr, we)
   begin
-    if is_X(a) then
+    if is_X(stored_addr(0)) then
       rd1 <= (others => '0');
       rd2 <= (others => '0');
       rd3 <= (others => '0');
@@ -93,7 +81,7 @@ begin
       rd6 <= (others => '0');
       rd7 <= (others => '0');
       rd8 <= (others => '0');
-    else
+    elsif we = '0' then
       rd1 <= ram(to_integer(unsigned(stored_addr(0))));
       rd2 <= ram(to_integer(unsigned(stored_addr(1))));
       rd3 <= ram(to_integer(unsigned(stored_addr(2))));
