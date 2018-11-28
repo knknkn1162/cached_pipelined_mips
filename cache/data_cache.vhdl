@@ -1,7 +1,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
-use STD.TEXTIO.ALL;
 use work.tools_pkg.ALL;
 use work.cache_pkg.ALL;
 
@@ -90,30 +89,14 @@ begin
 
   -- write data or load block from memory
   process(clk, rst, a)
-    file memfile : text open READ_MODE is filename;
-    variable idx : integer;
-    variable lin : line;
-    variable ch : character;
-   begin
+    variable idx : natural;
+  begin
     -- initialization
     if rst = '1' then
       -- initialize with zeros
       valid_data <= (others => '0');
     elsif rising_edge(clk) then
-      -- load data from memory
       if load = '1' then
-        idx := 0;
-        -- while not endfile(memfile) loop
-        --   readline(memfile, lin);
-        --   for i in 0 to 7 loop
-        --     read(lin, ch);
-        --     ram(idx)(31-i*4 downto 28-i*4) <= char2bits(ch);
-        --   end loop;
-        --   idx := idx + 1;
-        -- end loop;
-        -- file_close(memfile);
-      -- TODO: implement when we signal is '1'
-      -- elsif we = '1' then
       end if;
     end if;
   end process;
