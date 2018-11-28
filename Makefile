@@ -2,6 +2,7 @@ F=dummy
 VHDL=vhdl
 MEM=dummy
 DIR=./
+DEBUG=
 
 cache_decoder: cache_pkg
 	make aer F=cache_decoder DIR=cache/
@@ -29,14 +30,16 @@ tools_pkg:
 type_pkg:
 	make a F=type_pkg
 aer:
-	ghdl -a ${DIR}$(F).${VHDL} ${DIR}${F}_tb.$(VHDL)
-	make er F=${F}
+	ghdl -a ${DEBUG} ${DIR}$(F).${VHDL} ${DIR}${F}_tb.$(VHDL)
+	make er F=${F} DEBUG=${DEBUG}
+debug:
+	make aer DEBUG=--ieee=synopsys
 clean:
 	rm -f work-obj93.cf *.o *.vcd
 open:
 	open out.vcd
 e:
-	ghdl -e ${F}_tb
+	ghdl -e ${DEBUG} ${F}_tb
 r:
 	ghdl -r ${F}_tb --vcd=out.vcd
 a:
