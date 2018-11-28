@@ -2,7 +2,6 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 use STD.TEXTIO.ALL;
-use IEEE.STD_LOGIC_TEXTIO.ALL;
 use work.tools_pkg.ALL;
 use work.cache_pkg.ALL;
 
