@@ -34,3 +34,27 @@ around: slt $4,  $7, $2     # $4 = 3 < 5 = 1     28      00e2202a
         addi $2, $0, 1      # shouldn’t happen   40      20020001
 end:    sw   $2, 84($0)     # write adr 84 = 7   44      ac020054
 ```
+
+# About ghdl
+
+## How to get debug information
+
+If you want to debug the value of `std_logic` or `std_logic_vector` type, include `IEEE.STD_LOGIC_TEXTIO.ALL;` to use `hwrite` or `write` function, and append `--ieee=synopsys` option in the ghdl command:
+
+```sample.vhdl
+-- sample.vhdl.
+-- You should also create the testbench, say sample_tb.vhdl.
+
+use IEEE;
+use STD.TEXTIO.ALL;
+use IEEE.STD_LOGIC_TEXTIO.ALL; -- require --ieee=synopsys option!
+-- (skip)
+signal debug_out : line;
+begin
+  -- you want to check the value of `a` signal which type is `std_logic_vector`.
+  hwrite(debug_out, a);
+  report "value of a is " &a.all;
+-- (skip)
+```
+
+The command `make debug F=sample DIR=elem/` make us get the debug information!
