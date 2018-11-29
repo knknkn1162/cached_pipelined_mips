@@ -2,7 +2,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use work.cache_pkg.ALL;
 
-entity mem_dcache is
+entity mem_cache is
   port (
     clk, rst, load : in std_logic;
     mem_we : in std_logic_vector(31 downto 0);
@@ -15,7 +15,7 @@ entity mem_dcache is
   );
 end entity;
 
-architecture behavior of mem_dcache is
+architecture behavior of mem_cache is
   component mem
     generic(filename : string; BITS : natural);
     port (
