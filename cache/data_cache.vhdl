@@ -128,12 +128,14 @@ begin
     variable ram6_data : ramtype(0 to SIZE-1);
     variable ram7_data : ramtype(0 to SIZE-1);
     variable ram8_data : ramtype(0 to SIZE-1);
+    variable cache_miss_en00 : std_logic;
   begin
     -- initialization
     if rst = '1' then
       -- initialize with zeros
       valid_data := (others => '0');
     elsif rising_edge(clk) then
+      cache_miss_en00 := '0';
       -- pull the notification from the memory
       if load_en = '1' then
         idx := to_integer(unsigned(addr_index));
@@ -146,29 +148,41 @@ begin
         ram7_data(idx) := wd_d7;
         ram8_data(idx) := wd_d8;
       elsif we = '1' then
-        idx := to_integer(unsigned(addr_index));
-        case addr_offset is
-          when "000" =>
-            ram1_data(idx) := wd;
-          when "001" =>
-            ram2_data(idx) := wd;
-          when "010" =>
-            ram3_data(idx) := wd;
-          when "011" =>
-            ram4_data(idx) := wd;
-          when "100" =>
-            ram5_data(idx) := wd;
-          when "101" =>
-            ram6_data(idx) := wd;
-          when "110" =>
-            ram7_data(idx) := wd;
-          when "111" =>
-            ram8_data(idx) := wd;
-          when others =>
-            -- do nothing
-        end case;
+        if valid_datum /= '1' then
+          valid_data(to_integer(unsigned(addr_index))) := '1';
+          tag_data(to_integer(unsigned(addr_index))) := addr_tag;
+        end if;
+        -- cache hit!
+        if tag_datum = addr_tag then
+          idx := to_integer(unsigned(addr_index));
+          case addr_offset is
+            when "000" =>
+              ram1_data(idx) := wd;
+            when "001" =>
+              ram2_data(idx) := wd;
+            when "010" =>
+              ram3_data(idx) := wd;
+            when "011" =>
+              ram4_data(idx) := wd;
+            when "100" =>
+              ram5_data(idx) := wd;
+            when "101" =>
+              ram6_data(idx) := wd;
+            when "110" =>
+              ram7_data(idx) := wd;
+            when "111" =>
+              ram8_data(idx) := wd;
+            when others =>
+              -- do nothing
+          end case;
+        else
+          -- cache miss
+          cache_miss_en00 := '1';
+        end if;
       end if;
+      cache_miss_en0 <= cache_miss_en00;
     end if;
+    -- read
     if we = '0' then
       if is_X(addr_index) then
         -- do nothing
