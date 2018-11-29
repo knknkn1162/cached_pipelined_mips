@@ -13,11 +13,12 @@ entity data_cache is
     a : in std_logic_vector(31 downto 0);
     wd : in std_logic_vector(31 downto 0);
     rd : out std_logic_vector(31 downto 0);
-    im_d1, im_d2, im_d3, im_d4, im_d5, im_d6, im_d7, im_d8 : in std_logic_vector(31 downto 0);
-    ex_d1, ex_d2, ex_d3, ex_d4, ex_d5, ex_d6, ex_d7, ex_d8 : out std_logic_vector(31 downto 0);
-    ex_tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-    ex_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
-    ex_ok: out std_logic
+    wd_d1, wd_d2, wd_d3, wd_d4, wd_d5, wd_d6, wd_d7, wd_d8 : in std_logic_vector(31 downto 0);
+    rd_d1, rd_d2, rd_d3, rd_d4, rd_d5, rd_d6, rd_d7, rd_d8 : out std_logic_vector(31 downto 0);
+    rd_tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+    rd_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+    cache_miss_en : out std_logic;
+    load_en : in std_logic
   );
 end entity;
 
@@ -100,7 +101,7 @@ architecture behavior of data_cache is
   signal tag_datum : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
 
   -- is cache miss occurs or not
-  signal cache_miss_en : std_logic;
+  signal cache_miss_en0 : std_logic;
   signal rd_s : std_logic_vector(2 downto 0); -- selector for mux8
 
 begin
@@ -118,7 +119,7 @@ begin
   begin
     case state is
       when NormalS =>
-        if cache_miss_en = '1' then
+        if cache_miss_en0 = '1' then
           nextstate <= DumpS;
         else
           nextstate <= NormalS;
@@ -140,7 +141,7 @@ begin
   );
 
   -- write data or load block from memory
-  process(clk, rst, we, addr_index, im_d1, im_d2, im_d3, im_d4, im_d5, im_d6, im_d7, im_d8)
+  process(clk, rst, we, addr_index, addr_offset, wd_d1, wd_d2, wd_d3, wd_d4, wd_d5, wd_d6, wd_d7, wd_d8)
     variable idx : natural;
   begin
     -- initialization
@@ -149,24 +150,47 @@ begin
       valid_data <= (others => '0');
     elsif rising_edge(clk) then
       -- pull the notification from the memory
-      if we = '1' then
+      if load_en = '1' then
         idx := to_integer(unsigned(addr_index));
-        ram1_data(idx) <= im_d1;
-        ram2_data(idx) <= im_d2;
-        ram3_data(idx) <= im_d3;
-        ram4_data(idx) <= im_d4;
-        ram5_data(idx) <= im_d5;
-        ram6_data(idx) <= im_d6;
-        ram7_data(idx) <= im_d7;
-        ram8_data(idx) <= im_d8;
+        ram1_data(idx) <= wd_d1;
+        ram2_data(idx) <= wd_d2;
+        ram3_data(idx) <= wd_d3;
+        ram4_data(idx) <= wd_d4;
+        ram5_data(idx) <= wd_d5;
+        ram6_data(idx) <= wd_d6;
+        ram7_data(idx) <= wd_d7;
+        ram8_data(idx) <= wd_d8;
+      elsif we = '1' then
+        idx := to_integer(unsigned(addr_index));
+        case addr_offset is
+          when "000" =>
+            ram1_data(idx) <= wd;
+          when "001" =>
+            ram2_data(idx) <= wd;
+          when "010" =>
+            ram3_data(idx) <= wd;
+          when "011" =>
+            ram4_data(idx) <= wd;
+          when "100" =>
+            ram5_data(idx) <= wd;
+          when "101" =>
+            ram6_data(idx) <= wd;
+          when "110" =>
+            ram7_data(idx) <= wd;
+          when "111" =>
+            ram8_data(idx) <= wd;
+          when others =>
+            -- do nothing
+        end case;
       end if;
     end if;
   end process;
 
+  -- chech cache_hit or cache_miss
   process(addr_index, addr_offset, we)
-    variable cache_miss_en0 : std_logic;
+    variable cache_miss_en00 : std_logic;
   begin
-    cache_miss_en0 := '0';
+    cache_miss_en00 := '0';
     if we = '0' then
       if valid_data(to_integer(unsigned(addr_index))) = '1' then
         -- cache hit!
@@ -174,12 +198,13 @@ begin
           rd_s <= addr_offset;
         else
           -- cache miss
-          cache_miss_en0 := '1';
+          cache_miss_en00 := '1';
         end if;
       end if;
     end if;
-    cache_miss_en <= cache_miss_en0;
+    cache_miss_en0 <= cache_miss_en00;
   end process;
+  cache_miss_en <= cache_miss_en0;
 
   -- output rd signal
   ram1_datum <= ram1_data(to_integer(unsigned(addr_index)));
@@ -205,69 +230,70 @@ begin
     y => rd
   );
 
+  -- if cache miss, send data to the memory
   tag_datum <= tag_data(to_integer(unsigned(addr_index)));
   -- save
-  reg_ex_tag : flopr_en generic map (N=>CONST_CACHE_INDEX_SIZE)
+  reg_rd_tag : flopr_en generic map (N=>CONST_CACHE_INDEX_SIZE)
   port map (
-    clk => clk, rst => rst, en => cache_miss_en,
+    clk => clk, rst => rst, en => cache_miss_en0,
     a => tag_datum,
-    y => ex_tag
+    y => rd_tag
   );
-  ex_index <= addr_index;
+  rd_index <= addr_index;
 
-  reg_ex_d1 : flopr_en generic map (N=>32)
+  reg_rd_d1 : flopr_en generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => cache_miss_en,
+    clk => clk, rst => rst, en => cache_miss_en0,
     a => ram1_datum,
-    y => ex_d1
+    y => rd_d1
   );
 
-  reg_ex_d2 : flopr_en generic map (N=>32)
+  reg_rd_d2 : flopr_en generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => cache_miss_en,
+    clk => clk, rst => rst, en => cache_miss_en0,
     a => ram2_datum,
-    y => ex_d2
+    y => rd_d2
   );
 
-  reg_ex_d3 : flopr_en generic map (N=>32)
+  reg_rd_d3 : flopr_en generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => cache_miss_en,
+    clk => clk, rst => rst, en => cache_miss_en0,
     a => ram3_datum,
-    y => ex_d3
+    y => rd_d3
   );
 
-  reg_ex_d4 : flopr_en generic map (N=>32)
+  reg_rd_d4 : flopr_en generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => cache_miss_en,
+    clk => clk, rst => rst, en => cache_miss_en0,
     a => ram4_datum,
-    y => ex_d4
+    y => rd_d4
   );
 
-  reg_ex_d5 : flopr_en generic map (N=>32)
+  reg_rd_d5 : flopr_en generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => cache_miss_en,
+    clk => clk, rst => rst, en => cache_miss_en0,
     a => ram5_datum,
-    y => ex_d5
+    y => rd_d5
   );
 
-  reg_ex_d6 : flopr_en generic map (N=>32)
+  reg_rd_d6 : flopr_en generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => cache_miss_en,
+    clk => clk, rst => rst, en => cache_miss_en0,
     a => ram6_datum,
-    y => ex_d6
+    y => rd_d6
   );
 
-  reg_ex_d7 : flopr_en generic map (N=>32)
+  reg_rd_d7 : flopr_en generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => cache_miss_en,
+    clk => clk, rst => rst, en => cache_miss_en0,
     a => ram7_datum,
-    y => ex_d8
+    y => rd_d8
   );
 
-  reg_ex_d8 : flopr_en generic map (N=>32)
+  reg_rd_d8 : flopr_en generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => cache_miss_en,
+    clk => clk, rst => rst, en => cache_miss_en0,
     a => ram8_datum,
-    y => ex_d8
+    y => rd_d8
   );
 end architecture;
