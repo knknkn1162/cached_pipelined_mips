@@ -118,34 +118,6 @@ architecture behavior of data_cache is
   signal rd_s : std_logic_vector(2 downto 0); -- selector for mux8
 
 begin
-  process(clk, rst, nextstate)
-  begin
-    if rst = '1' then
-      -- initialization
-      state <= NormalS;
-    elsif rising_edge(clk) then
-      state <= nextstate;
-    end if;
-  end process;
-
-  process(state)
-  begin
-    case state is
-      when NormalS =>
-        if cache_miss_en0 = '1' then
-          nextstate <= DumpS;
-        else
-          nextstate <= NormalS;
-        end if;
-      when DumpS =>
-        nextstate <= LoadS;
-      when LoadS =>
-        nextstate <= NormalS;
-      when others =>
-        nextstate <= NormalS;
-    end case;
-  end process;
-
   cache_decoder0 : cache_decoder port map(
     addr => a,
     tag => addr_tag,
