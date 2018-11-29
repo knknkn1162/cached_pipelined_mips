@@ -10,12 +10,19 @@ architecture testbench of data_cache_tb is
   component data_cache
     generic(filename : string);
     port (
-      clk, rst, load : in std_logic;
+      clk, rst : in std_logic;
       we : in std_logic;
       -- program counter is 4-byte aligned
-      a : in std_logic_vector(29 downto 0);
+      a : in std_logic_vector(31 downto 0);
       wd : in std_logic_vector(31 downto 0);
-      rd : out std_logic_vector(31 downto 0)
+      rd : out std_logic_vector(31 downto 0);
+      wd_d1, wd_d2, wd_d3, wd_d4, wd_d5, wd_d6, wd_d7, wd_d8 : in std_logic_vector(31 downto 0);
+      rd_d1, rd_d2, rd_d3, rd_d4, rd_d5, rd_d6, rd_d7, rd_d8 : out std_logic_vector(31 downto 0);
+      tag_s : in std_logic;
+      rd_tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+      rd_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+      cache_miss_en : out std_logic;
+      load_en : in std_logic
     );
   end component;
 

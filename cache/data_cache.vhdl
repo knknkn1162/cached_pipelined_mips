@@ -15,6 +15,7 @@ entity data_cache is
     rd : out std_logic_vector(31 downto 0);
     wd_d1, wd_d2, wd_d3, wd_d4, wd_d5, wd_d6, wd_d7, wd_d8 : in std_logic_vector(31 downto 0);
     rd_d1, rd_d2, rd_d3, rd_d4, rd_d5, rd_d6, rd_d7, rd_d8 : out std_logic_vector(31 downto 0);
+    tag_s : in std_logic;
     rd_tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
     rd_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
     cache_miss_en : out std_logic;
@@ -53,6 +54,16 @@ architecture behavior of data_cache is
     port (
       clk, rst, en: in std_logic;
       a : in std_logic_vector(N-1 downto 0);
+      y : out std_logic_vector(N-1 downto 0)
+    );
+  end component;
+
+  component mux2
+    generic(N : integer);
+    port (
+      d0 : in std_logic_vector(N-1 downto 0);
+      d1 : in std_logic_vector(N-1 downto 0);
+      s : in std_logic;
       y : out std_logic_vector(N-1 downto 0)
     );
   end component;
@@ -98,6 +109,8 @@ architecture behavior of data_cache is
   signal ram6_datum : std_logic_vector(31 downto 0);
   signal ram7_datum : std_logic_vector(31 downto 0);
   signal ram8_datum : std_logic_vector(31 downto 0);
+  signal old_tag_datum : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+  signal new_tag_datum : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
   signal tag_datum : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
 
   -- is cache miss occurs or not
@@ -231,7 +244,17 @@ begin
   );
 
   -- if cache miss, send data to the memory
-  tag_datum <= tag_data(to_integer(unsigned(addr_index)));
+  old_tag_datum <= tag_data(to_integer(unsigned(addr_index))); -- for dump to the memory
+  new_tag_datum <= addr_tag; -- for load from the memory
+
+  mux2_tag : mux2 generic map(N=>CONST_CACHE_TAG_SIZE)
+  port map (
+    d0 => old_tag_datum,
+    d1 => new_tag_datum,
+    s => tag_s,
+    y => tag_datum
+  );
+
   -- save
   reg_rd_tag : flopr_en generic map (N=>CONST_CACHE_INDEX_SIZE)
   port map (
