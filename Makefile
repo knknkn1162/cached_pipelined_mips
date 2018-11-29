@@ -6,7 +6,9 @@ DEBUG=
 
 cache_decoder: cache_pkg
 	make aer F=cache_decoder DIR=cache/
-mem: tools_pkg cache_pkg
+mem_cache: cache_pkg mem data_cache
+	make aer F=mem_cache DIR=toplevel/
+mem: flopr8_en tools_pkg cache_pkg
 	make aer F=mem DIR=component/
 
 cache_pkg:

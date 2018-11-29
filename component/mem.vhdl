@@ -21,19 +21,19 @@ end entity;
 
 architecture behavior of mem is
 
-  component flopr_en
+  component flopr8_en
     generic(N : natural);
     port (
-      clk, rst, en: in std_logic;
-      a : in std_logic_vector(N-1 downto 0);
-      y : out std_logic_vector(N-1 downto 0)
+      clk, rst, en : in std_logic;
+      a1, a2, a3, a4, a5, a6, a7, a8 : in std_logic_vector(N-1 downto 0);
+      y1, y2, y3, y4, y5, y6, y7, y8 : out std_logic_vector(N-1 downto 0)
     );
   end component;
+
   constant SIZE : natural := 2**BITS;
   type ram_type is array(natural range<>) of std_logic_vector(31 downto 0);
   type addr30_type is array(natural range<>) of std_logic_vector(29 downto 0);
   signal ram : ram_type(0 to SIZE-1);
-  signal stored_addr : addr30_type(0 to 2**CONST_CACHE_OFFSET_SIZE-1);
   signal rd_en0 : std_logic;
 
   -- TODO: compatible with CONST_CACHE_OFFSET_SIZE
@@ -47,17 +47,18 @@ architecture behavior of mem is
   signal ram8_datum : std_logic_vector(31 downto 0);
 
 begin
-  m : for i in 0 to 2**CONST_CACHE_OFFSET_SIZE-1 generate
-    stored_addr(i) <= tag & index & std_logic_vector(to_unsigned(i, 3));
-  end generate;
-
-  process(clk, rst, load, stored_addr, wd1, wd2, wd3, wd4, wd5, wd6, wd7, wd8)
+  process(clk, rst, load, tag, index, wd1, wd2, wd3, wd4, wd5, wd6, wd7, wd8)
     file memfile : text open READ_MODE is filename;
     variable idx : integer;
     variable lin : line;
     variable ch : character;
     variable res : std_logic_vector(3 downto 0);
+    variable stored_addr : addr30_type(0 to 2**CONST_CACHE_OFFSET_SIZE-1);
+    variable rd_en00 : std_logic;
   begin
+    for i in 0 to 7 loop
+      stored_addr(i) := tag & index & std_logic_vector(to_unsigned(i, 3));
+    end loop;
     -- initialization
     if rst = '1' then
       -- initialize with zeros
@@ -86,90 +87,42 @@ begin
           ram(to_integer(unsigned(stored_addr(7)))) <= wd8;
         end if;
       end if;
-    end if;
-  end process;
-
-  -- read block
-  process(stored_addr, we)
-  begin
-    if is_X(stored_addr(0)) then
-      ram1_datum <= (others => '0');
-      ram2_datum <= (others => '0');
-      ram3_datum <= (others => '0');
-      ram4_datum <= (others => '0');
-      ram5_datum <= (others => '0');
-      ram6_datum <= (others => '0');
-      ram7_datum <= (others => '0');
-      ram8_datum <= (others => '0');
-    elsif we = '0' then
-      ram1_datum <= ram(to_integer(unsigned(stored_addr(0))));
-      ram2_datum <= ram(to_integer(unsigned(stored_addr(1))));
-      ram3_datum <= ram(to_integer(unsigned(stored_addr(2))));
-      ram4_datum <= ram(to_integer(unsigned(stored_addr(3))));
-      ram5_datum <= ram(to_integer(unsigned(stored_addr(4))));
-      ram6_datum <= ram(to_integer(unsigned(stored_addr(5))));
-      ram7_datum <= ram(to_integer(unsigned(stored_addr(6))));
-      ram8_datum <= ram(to_integer(unsigned(stored_addr(7))));
-      -- notify completion of export to the cache
-      rd_en0 <= '1';
+    else
+      -- read
+      rd_en00 := '0';
+      if is_X(stored_addr(0)) then
+        ram1_datum <= (others => '0');
+        ram2_datum <= (others => '0');
+        ram3_datum <= (others => '0');
+        ram4_datum <= (others => '0');
+        ram5_datum <= (others => '0');
+        ram6_datum <= (others => '0');
+        ram7_datum <= (others => '0');
+        ram8_datum <= (others => '0');
+      elsif we = '0' then
+        ram1_datum <= ram(to_integer(unsigned(stored_addr(0))));
+        ram2_datum <= ram(to_integer(unsigned(stored_addr(1))));
+        ram3_datum <= ram(to_integer(unsigned(stored_addr(2))));
+        ram4_datum <= ram(to_integer(unsigned(stored_addr(3))));
+        ram5_datum <= ram(to_integer(unsigned(stored_addr(4))));
+        ram6_datum <= ram(to_integer(unsigned(stored_addr(5))));
+        ram7_datum <= ram(to_integer(unsigned(stored_addr(6))));
+        ram8_datum <= ram(to_integer(unsigned(stored_addr(7))));
+        -- notify completion of export to the cache
+        rd_en00 := '1';
+      end if;
+      rd_en0 <= rd_en00;
     end if;
   end process;
   rd_en <= rd_en0;
 
   -- transport rds to cache
-  reg_d1 : flopr_en generic map (N=>32)
+  reg_d : flopr8_en generic map (N=>32)
   port map (
     clk => clk, rst => rst, en => rd_en0,
-    a => ram1_datum,
-    y => rd1
-  );
-
-  reg_d2 : flopr_en generic map (N=>32)
-  port map (
-    clk => clk, rst => rst, en => rd_en0,
-    a => ram2_datum,
-    y => rd2
-  );
-
-  reg_d3 : flopr_en generic map (N=>32)
-  port map (
-    clk => clk, rst => rst, en => rd_en0,
-    a => ram3_datum,
-    y => rd3
-  );
-
-  reg_d4 : flopr_en generic map (N=>32)
-  port map (
-    clk => clk, rst => rst, en => rd_en0,
-    a => ram4_datum,
-    y => rd4
-  );
-
-  reg_d5 : flopr_en generic map (N=>32)
-  port map (
-    clk => clk, rst => rst, en => rd_en0,
-    a => ram5_datum,
-    y => rd5
-  );
-
-  reg_d6 : flopr_en generic map (N=>32)
-  port map (
-    clk => clk, rst => rst, en => rd_en0,
-    a => ram6_datum,
-    y => rd6
-  );
-
-  reg_d7 : flopr_en generic map (N=>32)
-  port map (
-    clk => clk, rst => rst, en => rd_en0,
-    a => ram7_datum,
-    y => rd7
-  );
-
-  reg_d8 : flopr_en generic map (N=>32)
-  port map (
-    clk => clk, rst => rst, en => rd_en0,
-    a => ram8_datum,
-    y => rd8
+    a1 => ram1_datum, a2 => ram2_datum, a3 => ram3_datum, a4 => ram4_datum,
+    a5 => ram5_datum, a6 => ram6_datum, a7 => ram7_datum, a8 => ram8_datum,
+    y1 => rd1, y2 => rd2, y3 => rd3, y4 => rd4,
+    y5 => rd5, y6 => rd6, y7 => rd7, y8 => rd8
   );
 end architecture;
