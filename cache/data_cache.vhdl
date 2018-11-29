@@ -49,12 +49,12 @@ architecture behavior of data_cache is
         );
   end component;
 
-  component flopr_en
+  component flopr8_en is
     generic(N : natural);
     port (
-      clk, rst, en: in std_logic;
-      a : in std_logic_vector(N-1 downto 0);
-      y : out std_logic_vector(N-1 downto 0)
+      clk, rst, en : in std_logic;
+      a1, a2, a3, a4, a5, a6, a7, a8 : in std_logic_vector(N-1 downto 0);
+      y1, y2, y3, y4, y5, y6, y7, y8 : out std_logic_vector(N-1 downto 0)
     );
   end component;
 
@@ -215,80 +215,24 @@ begin
     y => rd
   );
 
-  -- if cache miss, send data to the memory
+  -- out rd_tag, rd_index,rd_d*
   old_tag_datum <= tag_data(to_integer(unsigned(addr_index))); -- for dump to the memory
   new_tag_datum <= addr_tag; -- for load from the memory
-
   mux2_tag : mux2 generic map(N=>CONST_CACHE_TAG_SIZE)
   port map (
     d0 => old_tag_datum,
     d1 => new_tag_datum,
     s => tag_s,
-    y => tag_datum
-  );
-
-  -- save
-  reg_rd_tag : flopr_en generic map (N=>CONST_CACHE_INDEX_SIZE)
-  port map (
-    clk => clk, rst => rst, en => cache_miss_en0,
-    a => tag_datum,
     y => rd_tag
   );
   rd_index <= addr_index;
 
-  reg_rd_d1 : flopr_en generic map (N=>32)
+  reg_rd_d : flopr8_en generic map (N=>32)
   port map (
     clk => clk, rst => rst, en => cache_miss_en0,
-    a => ram1_datum,
-    y => rd_d1
-  );
-
-  reg_rd_d2 : flopr_en generic map (N=>32)
-  port map (
-    clk => clk, rst => rst, en => cache_miss_en0,
-    a => ram2_datum,
-    y => rd_d2
-  );
-
-  reg_rd_d3 : flopr_en generic map (N=>32)
-  port map (
-    clk => clk, rst => rst, en => cache_miss_en0,
-    a => ram3_datum,
-    y => rd_d3
-  );
-
-  reg_rd_d4 : flopr_en generic map (N=>32)
-  port map (
-    clk => clk, rst => rst, en => cache_miss_en0,
-    a => ram4_datum,
-    y => rd_d4
-  );
-
-  reg_rd_d5 : flopr_en generic map (N=>32)
-  port map (
-    clk => clk, rst => rst, en => cache_miss_en0,
-    a => ram5_datum,
-    y => rd_d5
-  );
-
-  reg_rd_d6 : flopr_en generic map (N=>32)
-  port map (
-    clk => clk, rst => rst, en => cache_miss_en0,
-    a => ram6_datum,
-    y => rd_d6
-  );
-
-  reg_rd_d7 : flopr_en generic map (N=>32)
-  port map (
-    clk => clk, rst => rst, en => cache_miss_en0,
-    a => ram7_datum,
-    y => rd_d8
-  );
-
-  reg_rd_d8 : flopr_en generic map (N=>32)
-  port map (
-    clk => clk, rst => rst, en => cache_miss_en0,
-    a => ram8_datum,
-    y => rd_d8
+    a1 => ram1_datum, a2 => ram2_datum, a3 => ram3_datum, a4 => ram4_datum,
+    a5 => ram5_datum, a6 => ram6_datum, a7 => ram7_datum, a8 => ram8_datum,
+    y1 => rd_d1, y2 => rd_d2, y3 => rd_d3, y4 => rd_d4,
+    y5 => rd_d5, y6 => rd_d6, y7 => rd_d7, y8 => rd_d8
   );
 end architecture;

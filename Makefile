@@ -13,7 +13,7 @@ mem: flopr8_en tools_pkg cache_pkg
 
 cache_pkg:
 	make a F=cache_pkg DIR=cache/
-data_cache: tools_pkg cache_decoder mux8
+data_cache: cache_pkg tools_pkg cache_decoder mux8 mux2 flopr8_en
 	make aer F=data_cache DIR=cache/
 alu: type_pkg
 	make aer F=alu DIR=elem/
