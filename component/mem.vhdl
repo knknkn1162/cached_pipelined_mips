@@ -38,7 +38,7 @@ architecture behavior of mem is
   signal ram1_datum, ram2_datum, ram3_datum, ram4_datum, ram5_datum, ram6_datum, ram7_datum, ram8_datum : std_logic_vector(31 downto 0);
 
 begin
-  process(clk, rst, load, tag, index, wd1, wd2, wd3, wd4, wd5, wd6, wd7, wd8)
+  process(clk, rst, load, tag, index, we, wd1, wd2, wd3, wd4, wd5, wd6, wd7, wd8)
     file memfile : text open READ_MODE is filename;
     variable idx : integer;
     variable lin : line;
@@ -46,12 +46,10 @@ begin
     variable res : std_logic_vector(3 downto 0);
     variable ram : ram_type(0 to SIZE-1);
     variable stored_addr : addr30_type(0 to 2**CONST_CACHE_OFFSET_SIZE-1);
-    variable rd_en00 : std_logic;
   begin
     for i in 0 to 7 loop
       stored_addr(i) := tag & index & std_logic_vector(to_unsigned(i, 3));
     end loop;
-    rd_en00 := '0';
     -- initialization
     if rst = '1' then
       -- initialize with zeros
@@ -79,9 +77,11 @@ begin
           ram(to_integer(unsigned(stored_addr(5)))) := wd6;
           ram(to_integer(unsigned(stored_addr(6)))) := wd7;
           ram(to_integer(unsigned(stored_addr(7)))) := wd8;
+          rd_en0 <= '0';
         end if;
       end if;
-    else
+    end if;
+    if we = '0' then
       if is_X(stored_addr(0)) then
         ram1_datum <= (others => '0');
         ram2_datum <= (others => '0');
@@ -91,7 +91,8 @@ begin
         ram6_datum <= (others => '0');
         ram7_datum <= (others => '0');
         ram8_datum <= (others => '0');
-      elsif we = '0' then
+        rd_en0 <= '0';
+      else
         ram1_datum <= ram(to_integer(unsigned(stored_addr(0))));
         ram2_datum <= ram(to_integer(unsigned(stored_addr(1))));
         ram3_datum <= ram(to_integer(unsigned(stored_addr(2))));
@@ -100,11 +101,9 @@ begin
         ram6_datum <= ram(to_integer(unsigned(stored_addr(5))));
         ram7_datum <= ram(to_integer(unsigned(stored_addr(6))));
         ram8_datum <= ram(to_integer(unsigned(stored_addr(7))));
-        -- notify completion of export to the cache
-        rd_en00 := '1';
+        rd_en0 <= '1';
       end if;
     end if;
-    rd_en0 <= rd_en00;
   end process;
   rd_en <= rd_en0;
 
