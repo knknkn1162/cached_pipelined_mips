@@ -2,6 +2,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 use work.tools_pkg.ALL;
+use work.cache_pkg.ALL;
 
 entity data_cache_tb is
 end entity;
@@ -26,9 +27,16 @@ architecture testbench of data_cache_tb is
     );
   end component;
 
-  signal clk, rst, load, we : std_logic;
-  signal a : std_logic_vector(29 downto 0);
+  signal clk, rst, we : std_logic;
+  signal a : std_logic_vector(31 downto 0);
   signal wd, rd : std_logic_vector(31 downto 0);
+
+  signal wd_d1, wd_d2, wd_d3, wd_d4, wd_d5, wd_d6, wd_d7, wd_d8 : std_logic_vector(31 downto 0);
+  signal rd_d1, rd_d2, rd_d3, rd_d4, rd_d5, rd_d6, rd_d7, rd_d8 : std_logic_vector(31 downto 0);
+  signal rd_tag : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+  signal rd_index : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+
+  signal tag_s, cache_miss_en, load_en : std_logic;
   constant clk_period : time := 10 ns;
   signal stop : boolean;
   constant filename : string := "./assets/mem/memfile.hex";
@@ -36,11 +44,20 @@ architecture testbench of data_cache_tb is
 begin
   uut : data_cache generic map (filename=>filename)
   port map (
-    clk => clk, rst => rst, load => load,
+    clk => clk, rst => rst,
     we => we,
     a => a,
     wd => wd,
-    rd => rd
+    rd => rd,
+    wd_d1 => wd_d1, wd_d2 => wd_d2, wd_d3 => wd_d3, wd_d4 => wd_d4,
+    wd_d5 => wd_d5, wd_d6 => wd_d6, wd_d7 => wd_d7, wd_d8 => wd_d8,
+    rd_d1 => rd_d1, rd_d2 => rd_d2, rd_d3 => rd_d3, rd_d4 => rd_d4,
+    rd_d5 => rd_d5, rd_d6 => rd_d6, rd_d7 => rd_d7, rd_d8 => rd_d8,
+    tag_s => tag_s,
+    rd_tag => rd_tag,
+    rd_index => rd_index,
+    cache_miss_en => cache_miss_en,
+    load_en => load_en
   );
 
   clk_process: process
@@ -57,20 +74,18 @@ begin
     wait for clk_period;
     rst <= '1'; wait for 1 ns; rst <= '0';
 
-    -- sync
-    load <= '1'; wait for 1 ns;
-    wait for clk_period/2;
-    load <= '0';
-    we <= '0';
-    wait until falling_edge(clk);
-    -- read test
-    a <= b"00" & X"0000000"; wait for 1 ns; assert rd /= X"00000000";
-    a <= b"00" & X"0000001"; wait for 1 ns; assert rd /= X"00000000";
+    -- write
+    we <= '1'; a <= X"00000001"; wd <= X"0000000F"; wait for clk_period/2;
 
-    wait until falling_edge(clk);
-    -- write in ram
-    we <= '1'; a <= b"00" & X"0000002"; wd <= X"FFFFFFFF"; wait for clk_period/2+ 1 ns;
-    we <= '0'; wait for 1 ns; assert rd = X"FFFFFFFF";
+    -- wait until falling_edge(clk);
+    -- -- read test
+    -- a <= b"00" & X"0000000"; wait for 1 ns; assert rd /= X"00000000";
+    -- a <= b"00" & X"0000001"; wait for 1 ns; assert rd /= X"00000000";
+
+    -- wait until falling_edge(clk);
+    -- -- write in ram
+    -- we <= '1'; a <= b"00" & X"0000002"; wd <= X"FFFFFFFF"; wait for clk_period/2+ 1 ns;
+    -- we <= '0'; wait for 1 ns; assert rd = X"FFFFFFFF";
     -- skip
     stop <= TRUE;
     -- success message
