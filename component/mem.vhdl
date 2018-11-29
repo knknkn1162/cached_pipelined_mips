@@ -77,7 +77,6 @@ begin
           ram(to_integer(unsigned(stored_addr(5)))) := wd6;
           ram(to_integer(unsigned(stored_addr(6)))) := wd7;
           ram(to_integer(unsigned(stored_addr(7)))) := wd8;
-          rd_en0 <= '0';
         end if;
       end if;
     end if;
@@ -91,7 +90,6 @@ begin
         ram6_datum <= (others => '0');
         ram7_datum <= (others => '0');
         ram8_datum <= (others => '0');
-        rd_en0 <= '0';
       else
         ram1_datum <= ram(to_integer(unsigned(stored_addr(0))));
         ram2_datum <= ram(to_integer(unsigned(stored_addr(1))));
@@ -101,8 +99,16 @@ begin
         ram6_datum <= ram(to_integer(unsigned(stored_addr(5))));
         ram7_datum <= ram(to_integer(unsigned(stored_addr(6))));
         ram8_datum <= ram(to_integer(unsigned(stored_addr(7))));
-        rd_en0 <= '1';
       end if;
+    end if;
+  end process;
+
+  process(we, index, tag)
+  begin
+    if (not is_X(index)) and (not is_X(tag)) then
+      rd_en0 <= (not we);
+    else
+      rd_en0 <= '0';
     end if;
   end process;
   rd_en <= rd_en0;
