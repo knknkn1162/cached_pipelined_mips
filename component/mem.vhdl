@@ -20,7 +20,6 @@ entity mem is
 end entity;
 
 architecture behavior of mem is
-
   component flopr8_en
     generic(N : natural);
     port (
@@ -33,18 +32,10 @@ architecture behavior of mem is
   constant SIZE : natural := 2**BITS;
   type ram_type is array(natural range<>) of std_logic_vector(31 downto 0);
   type addr30_type is array(natural range<>) of std_logic_vector(29 downto 0);
-  signal ram : ram_type(0 to SIZE-1);
   signal rd_en0 : std_logic;
 
   -- TODO: compatible with CONST_CACHE_OFFSET_SIZE
-  signal ram1_datum : std_logic_vector(31 downto 0);
-  signal ram2_datum : std_logic_vector(31 downto 0);
-  signal ram3_datum : std_logic_vector(31 downto 0);
-  signal ram4_datum : std_logic_vector(31 downto 0);
-  signal ram5_datum : std_logic_vector(31 downto 0);
-  signal ram6_datum : std_logic_vector(31 downto 0);
-  signal ram7_datum : std_logic_vector(31 downto 0);
-  signal ram8_datum : std_logic_vector(31 downto 0);
+  signal ram1_datum, ram2_datum, ram3_datum, ram4_datum, ram5_datum, ram6_datum, ram7_datum, ram8_datum : std_logic_vector(31 downto 0);
 
 begin
   process(clk, rst, load, tag, index, wd1, wd2, wd3, wd4, wd5, wd6, wd7, wd8)
@@ -53,43 +44,44 @@ begin
     variable lin : line;
     variable ch : character;
     variable res : std_logic_vector(3 downto 0);
+    variable ram : ram_type(0 to SIZE-1);
     variable stored_addr : addr30_type(0 to 2**CONST_CACHE_OFFSET_SIZE-1);
     variable rd_en00 : std_logic;
   begin
     for i in 0 to 7 loop
       stored_addr(i) := tag & index & std_logic_vector(to_unsigned(i, 3));
     end loop;
+    rd_en00 := '0';
     -- initialization
     if rst = '1' then
       -- initialize with zeros
-      ram <= (others => (others => '0'));
+      ram := (others => (others => '0'));
     elsif rising_edge(clk) then
       if load = '1' then
+        -- load memory from file
         idx := 0;
         while not endfile(memfile) loop
           readline(memfile, lin);
           for i in 0 to 7 loop
             read(lin, ch);
-            ram(idx)(31-i*4 downto 28-i*4) <= char2bits(ch);
+            ram(idx)(31-i*4 downto 28-i*4) := char2bits(ch);
           end loop;
           idx := idx + 1;
         end loop;
         file_close(memfile);
       elsif we = '1' then
         if not is_X(stored_addr(0)) then
-          ram(to_integer(unsigned(stored_addr(0)))) <= wd1;
-          ram(to_integer(unsigned(stored_addr(1)))) <= wd2;
-          ram(to_integer(unsigned(stored_addr(2)))) <= wd3;
-          ram(to_integer(unsigned(stored_addr(3)))) <= wd4;
-          ram(to_integer(unsigned(stored_addr(4)))) <= wd5;
-          ram(to_integer(unsigned(stored_addr(5)))) <= wd6;
-          ram(to_integer(unsigned(stored_addr(6)))) <= wd7;
-          ram(to_integer(unsigned(stored_addr(7)))) <= wd8;
+          ram(to_integer(unsigned(stored_addr(0)))) := wd1;
+          ram(to_integer(unsigned(stored_addr(1)))) := wd2;
+          ram(to_integer(unsigned(stored_addr(2)))) := wd3;
+          ram(to_integer(unsigned(stored_addr(3)))) := wd4;
+          ram(to_integer(unsigned(stored_addr(4)))) := wd5;
+          ram(to_integer(unsigned(stored_addr(5)))) := wd6;
+          ram(to_integer(unsigned(stored_addr(6)))) := wd7;
+          ram(to_integer(unsigned(stored_addr(7)))) := wd8;
         end if;
       end if;
     else
-      -- read
-      rd_en00 := '0';
       if is_X(stored_addr(0)) then
         ram1_datum <= (others => '0');
         ram2_datum <= (others => '0');
@@ -111,8 +103,8 @@ begin
         -- notify completion of export to the cache
         rd_en00 := '1';
       end if;
-      rd_en0 <= rd_en00;
     end if;
+    rd_en0 <= rd_en00;
   end process;
   rd_en <= rd_en0;
 
