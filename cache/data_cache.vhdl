@@ -17,7 +17,9 @@ entity data_cache is
     tag_s : in std_logic;
     rd_tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
     rd_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+    -- push cache miss to the memory
     cache_miss_en : out std_logic;
+    -- pull load from the memory
     load_en : in std_logic
   );
 end entity;
@@ -136,6 +138,9 @@ begin
       -- pull the notification from the memory
       if load_en = '1' then
         idx := to_integer(unsigned(addr_index));
+        -- when the ram_data is initial state
+        valid_data(idx) := '1';
+        tag_data(idx) := addr_tag;
         ram1_data(idx) := wd_d1;
         ram2_data(idx) := wd_d2;
         ram3_data(idx) := wd_d3;
