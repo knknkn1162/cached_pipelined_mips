@@ -9,7 +9,6 @@ end entity;
 
 architecture testbench of data_cache_tb is
   component data_cache
-    generic(filename : string);
     port (
       clk, rst : in std_logic;
       we : in std_logic;
@@ -42,8 +41,7 @@ architecture testbench of data_cache_tb is
   constant filename : string := "./assets/mem/memfile.hex";
 
 begin
-  uut : data_cache generic map (filename=>filename)
-  port map (
+  uut : data_cach port map (
     clk => clk, rst => rst,
     we => we,
     a => a,
@@ -74,8 +72,15 @@ begin
     wait for clk_period;
     rst <= '1'; wait for 1 ns; rst <= '0';
 
+    -- read
+    a <= X"00000008"; we <= '0'; wait for clk_period*2; assert rd = X"00000000";
     -- write
-    we <= '1'; a <= X"00000001"; wd <= X"0000000F"; wait for clk_period/2;
+    -- we <= '1'; a <= X"00000004"; wd <= X"0000000F"; wait for clk_period/2;
+    -- we <= '1'; a <= X"00000008"; wd <= X"0000000E"; wait for clk_period;
+    wait until falling_edge(clk);
+    -- a <= X"00000008"; we <= '0'; wait for 1 ns; assert rd = X"0000000E";
+    -- a <= X"00000004"; wait for 1 ns; assert rd = X"0000000F";
+
 
     -- wait until falling_edge(clk);
     -- -- read test
