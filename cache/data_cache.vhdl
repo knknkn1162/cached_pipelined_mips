@@ -134,6 +134,7 @@ begin
     if rst = '1' then
       -- initialize with zeros
       valid_data := (others => '0');
+    -- writeback
     elsif rising_edge(clk) then
       -- pull the notification from the memory
       if load_en = '1' then
@@ -177,8 +178,10 @@ begin
           end if;
         end if;
       end if;
+    end if;
+
     -- read
-    elsif not is_X(addr_index) then
+    if not is_X(addr_index) then
       ram1_datum <= ram1_data(to_integer(unsigned(addr_index)));
       ram2_datum <= ram2_data(to_integer(unsigned(addr_index)));
       ram3_datum <= ram3_data(to_integer(unsigned(addr_index)));
@@ -202,7 +205,7 @@ begin
     end if;
   end process;
 
-  process(state)
+  process(state, cache_miss_en0)
   begin
     case state is
       when NormalS =>
@@ -217,7 +220,7 @@ begin
   end process;
 
   -- cache_hit or cache_miss
-  process(state, addr_index, addr_tag, valid_datum, tag_datum, cache_miss_en0)
+  process(state, addr_index, addr_tag, valid_datum, tag_datum)
   begin
     case state is
       when NormalS =>
@@ -243,6 +246,7 @@ begin
   end process;
   cache_miss_en <= cache_miss_en0;
 
+  -- direct mux8 selector
   process(addr_index, addr_tag, addr_offset, valid_datum, tag_datum)
   begin
     if valid_datum = '1' and tag_datum = addr_tag then
