@@ -73,12 +73,12 @@ begin
   stim_proc : process
   begin
     wait for clk_period;
-    rst <= '1'; wait for 1 ns; rst <= '0';
+    rst <= '1'; wait for 1 ns; rst <= '0'; assert cache_miss_en = '0';
 
-    -- read
-    a <= X"00000008"; wait for 1 ns; assert rd = all_x;
-    a <= X"00000008"; we <= '0'; wait for 1 ns; assert rd = all_x;
-    -- write without cache
+    -- read with empty cache
+    a <= X"00000008"; wait for 1 ns; assert rd = all_x; assert cache_miss_en = '1';
+    a <= X"00000008"; we <= '0'; wait for 1 ns; assert rd = all_x; assert cache_miss_en = '1';
+    -- write with empty cache
     a <= X"00000008"; wd <= X"0000000F"; we <= '1'; wait for 1 ns; assert cache_miss_en = '1';
 
     a <= X"00000008";
@@ -86,15 +86,22 @@ begin
     wd_d5 <= X"00000014"; wd_d6 <= X"00000015"; wd_d7 <= X"00000016"; wd_d8 <= X"00000017";
     load_en <= '1';
     -- load from memory
-    wait until rising_edge(clk); wait for 1 ns; load_en <= '0';
+    wait until rising_edge(clk); wait for 1 ns; load_en <= '0'; assert cache_miss_en = '0';
 
     -- cache read
-    a <= X"00000008"; we <= '0'; wait for 1 ns; assert rd = X"00000012";
-    a <= X"0000000C"; wait for 1 ns; assert rd = X"00000013";
+    a <= X"00000008"; we <= '0'; wait for 1 ns; assert rd = X"00000012"; assert cache_miss_en = '0';
+    a <= X"0000000C"; wait for 1 ns; assert rd = X"00000013"; assert cache_miss_en = '0';
 
     -- cache writeback
     a <= X"0000000C"; wd <= X"FFFFFFFF"; we <= '1'; wait until rising_edge(clk); wait for 1 ns;
-    we <= '0'; wait for 1 ns; assert rd = X"FFFFFFFF";
+    we <= '0'; wait for 1 ns; assert rd = X"FFFFFFFF"; assert cache_miss_en = '0';
+
+    -- cache miss
+    a <= X"00001" & X"00C"; we <= '0'; wait for 1 ns; assert rd = all_x; assert cache_miss_en = '1';
+    -- cache hit
+    a <= X"00000008"; we <= '0'; wait for 1 ns; assert rd = X"00000012"; assert cache_miss_en = '0';
+    -- cache miss again
+    a <= X"00001" & X"00C"; we <= '1'; wd <= X"FFFFFFFE"; wait for 1 ns; assert cache_miss_en = '1';
 
 
 
