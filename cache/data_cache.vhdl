@@ -224,7 +224,6 @@ begin
         if valid_datum = '1' then
           -- cache hit!
           if tag_datum = addr_tag then
-            rd_s <= addr_offset;
             cache_miss_en0 <= '0';
           else
             -- cache miss
@@ -244,7 +243,7 @@ begin
   end process;
   cache_miss_en <= cache_miss_en0;
 
-  process(addr_index, addr_tag, valid_datum, tag_datum)
+  process(addr_index, addr_tag, addr_offset, valid_datum, tag_datum)
   begin
     if valid_datum = '1' and tag_datum = addr_tag then
       rd_s <= addr_offset;
