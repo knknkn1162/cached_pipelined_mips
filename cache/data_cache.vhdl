@@ -5,7 +5,6 @@ use work.tools_pkg.ALL;
 use work.cache_pkg.ALL;
 
 entity data_cache is
-  generic(filename : string);
   port (
     clk, rst : in std_logic;
     we : in std_logic;
@@ -135,7 +134,6 @@ begin
       -- initialize with zeros
       valid_data := (others => '0');
     elsif rising_edge(clk) then
-      cache_miss_en00 := '0';
       -- pull the notification from the memory
       if load_en = '1' then
         idx := to_integer(unsigned(addr_index));
@@ -148,59 +146,71 @@ begin
         ram7_data(idx) := wd_d7;
         ram8_data(idx) := wd_d8;
       elsif we = '1' then
-        if valid_datum /= '1' then
-          valid_data(to_integer(unsigned(addr_index))) := '1';
-          tag_data(to_integer(unsigned(addr_index))) := addr_tag;
+        if valid_datum = '1' then
+          -- cache hit!
+          if tag_datum = addr_tag then
+            idx := to_integer(unsigned(addr_index));
+            case addr_offset is
+              when "000" =>
+                ram1_data(idx) := wd;
+              when "001" =>
+                ram2_data(idx) := wd;
+              when "010" =>
+                ram3_data(idx) := wd;
+              when "011" =>
+                ram4_data(idx) := wd;
+              when "100" =>
+                ram5_data(idx) := wd;
+              when "101" =>
+                ram6_data(idx) := wd;
+              when "110" =>
+                ram7_data(idx) := wd;
+              when "111" =>
+                ram8_data(idx) := wd;
+              when others =>
+                -- do nothing
+            end case;
+          end if;
         end if;
+      end if;
+    -- read
+    elsif not is_X(addr_index) then
+      ram1_datum <= ram1_data(to_integer(unsigned(addr_index)));
+      ram2_datum <= ram2_data(to_integer(unsigned(addr_index)));
+      ram3_datum <= ram3_data(to_integer(unsigned(addr_index)));
+      ram4_datum <= ram4_data(to_integer(unsigned(addr_index)));
+      ram5_datum <= ram5_data(to_integer(unsigned(addr_index)));
+      ram6_datum <= ram6_data(to_integer(unsigned(addr_index)));
+      ram7_datum <= ram7_data(to_integer(unsigned(addr_index)));
+      ram8_datum <= ram8_data(to_integer(unsigned(addr_index)));
+      valid_datum <= valid_data(to_integer(unsigned(addr_index)));
+      tag_datum <= tag_data(to_integer(unsigned(addr_index)));
+    end if;
+  end process;
+
+  -- cache_hit or cache_miss
+  process(addr_index, addr_offset, addr_tag, we, valid_datum, tag_datum, cache_miss_en0)
+    variable cache_miss_en00 : std_logic;
+    variable rd_s0 : std_logic_vector(2 downto 0);
+  begin
+    cache_miss_en00 := '0';
+    if we = '0' then
+      if valid_datum = '1' then
         -- cache hit!
         if tag_datum = addr_tag then
-          idx := to_integer(unsigned(addr_index));
-          case addr_offset is
-            when "000" =>
-              ram1_data(idx) := wd;
-            when "001" =>
-              ram2_data(idx) := wd;
-            when "010" =>
-              ram3_data(idx) := wd;
-            when "011" =>
-              ram4_data(idx) := wd;
-            when "100" =>
-              ram5_data(idx) := wd;
-            when "101" =>
-              ram6_data(idx) := wd;
-            when "110" =>
-              ram7_data(idx) := wd;
-            when "111" =>
-              ram8_data(idx) := wd;
-            when others =>
-              -- do nothing
-          end case;
+          rd_s0 := addr_offset;
         else
           -- cache miss
           cache_miss_en00 := '1';
         end if;
       end if;
-      cache_miss_en0 <= cache_miss_en00;
     end if;
-    -- read
-    if we = '0' then
-      if is_X(addr_index) then
-        -- do nothing
-      else
-        ram1_datum <= ram1_data(to_integer(unsigned(addr_index)));
-        ram2_datum <= ram2_data(to_integer(unsigned(addr_index)));
-        ram3_datum <= ram3_data(to_integer(unsigned(addr_index)));
-        ram4_datum <= ram4_data(to_integer(unsigned(addr_index)));
-        ram5_datum <= ram5_data(to_integer(unsigned(addr_index)));
-        ram6_datum <= ram6_data(to_integer(unsigned(addr_index)));
-        ram7_datum <= ram7_data(to_integer(unsigned(addr_index)));
-        ram8_datum <= ram8_data(to_integer(unsigned(addr_index)));
-        valid_datum <= valid_data(to_integer(unsigned(addr_index)));
-        tag_datum <= tag_data(to_integer(unsigned(addr_index)));
-      end if;
-    end if;
+    cache_miss_en0 <= cache_miss_en00;
+    rd_s <= rd_s0;
   end process;
+  cache_miss_en <= cache_miss_en0;
 
+  -- if cache_hit
   mux8_0 : mux8 generic map(N=>32)
   port map (
     d000 => ram1_datum,
@@ -214,26 +224,6 @@ begin
     s => rd_s,
     y => rd
   );
-
-  -- cache_hit or cache_miss
-  process(addr_index, addr_offset, addr_tag, we, valid_datum, tag_datum)
-    variable cache_miss_en00 : std_logic;
-  begin
-    cache_miss_en00 := '0';
-    if we = '0' then
-      if valid_datum = '1' then
-        -- cache hit!
-        if tag_datum = addr_tag then
-          rd_s <= addr_offset;
-        else
-          -- cache miss
-          cache_miss_en00 := '1';
-        end if;
-      end if;
-    end if;
-    cache_miss_en0 <= cache_miss_en00;
-  end process;
-  cache_miss_en <= cache_miss_en0;
 
   -- out rd_tag, rd_index,rd_d*
   old_tag_datum <= tag_datum;
