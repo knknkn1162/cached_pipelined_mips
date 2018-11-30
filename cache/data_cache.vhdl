@@ -69,7 +69,7 @@ architecture behavior of data_cache is
 
   -- state
   type statetype is (
-    NormalS, DumpS, WaitS, LoadS
+    CacheMissEnS, NormalS
   );
   signal state, nextstate : statetype;
 
@@ -127,7 +127,6 @@ begin
     variable ram6_data : ramtype(0 to SIZE-1);
     variable ram7_data : ramtype(0 to SIZE-1);
     variable ram8_data : ramtype(0 to SIZE-1);
-    variable cache_miss_en00 : std_logic;
   begin
     -- initialization
     if rst = '1' then
@@ -188,27 +187,52 @@ begin
     end if;
   end process;
 
-  -- cache_hit or cache_miss
-  process(addr_index, addr_offset, addr_tag, we, valid_datum, tag_datum, cache_miss_en0)
-    variable cache_miss_en00 : std_logic;
-    variable rd_s0 : std_logic_vector(2 downto 0);
+  -- FSM for cache_miss_en signal
+  process(clk, rst, state)
   begin
-    cache_miss_en00 := '0';
-    if we = '0' then
-      if valid_datum = '1' then
-        -- cache hit!
-        if tag_datum = addr_tag then
-          rd_s0 := addr_offset;
-        else
-          -- cache miss
-          cache_miss_en00 := '1';
-        end if;
-      end if;
+    if rst = '1' then
+      state <= NormalS;
+    elsif rising_edge(clk) then
+      state <= nextstate;
     end if;
-    cache_miss_en0 <= cache_miss_en00;
-    rd_s <= rd_s0;
+  end process;
+
+  -- cache_hit or cache_miss
+  process(state, addr_index, addr_tag, valid_datum, tag_datum, cache_miss_en0)
+  begin
+    case state is
+      when NormalS =>
+        if valid_datum = '1' then
+          -- cache hit!
+          if tag_datum = addr_tag then
+            rd_s <= addr_offset;
+            cache_miss_en0 <= '0';
+          else
+            -- cache miss
+            cache_miss_en0 <= '1';
+          end if;
+        else
+          -- if ram is invalid, cache_miss also occurs
+          if not is_X(addr_index) then
+            cache_miss_en0 <= '1';
+          end if;
+        end if;
+      when CacheMissEnS =>
+        cache_miss_en0 <= '0';
+      when others =>
+        -- do nothing
+    end case;
   end process;
   cache_miss_en <= cache_miss_en0;
+
+  process(addr_index, addr_tag, valid_datum, tag_datum)
+  begin
+    if valid_datum = '1' and tag_datum = addr_tag then
+      rd_s <= addr_offset;
+    else
+      rd_s <= (others => 'X');
+    end if;
+  end process;
 
   -- if cache_hit
   mux8_0 : mux8 generic map(N=>32)
