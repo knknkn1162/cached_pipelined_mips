@@ -202,6 +202,20 @@ begin
     end if;
   end process;
 
+  process(state)
+  begin
+    case state is
+      when NormalS =>
+        if cache_miss_en0 = '1' then
+          nextstate <= CacheMissEnS;
+        else
+          nextstate <= NormalS;
+        end if;
+      when CacheMissEnS =>
+        nextstate <= NormalS;
+    end case;
+  end process;
+
   -- cache_hit or cache_miss
   process(state, addr_index, addr_tag, valid_datum, tag_datum, cache_miss_en0)
   begin
