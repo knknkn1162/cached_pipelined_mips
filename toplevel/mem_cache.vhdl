@@ -30,7 +30,6 @@ architecture behavior of mem_cache is
   end component;
 
   component data_cache
-    generic(filename : string);
     port (
       clk, rst : in std_logic;
       we : in std_logic;
@@ -43,7 +42,9 @@ architecture behavior of mem_cache is
       tag_s : in std_logic;
       rd_tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
       rd_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+      -- push cache miss to the memory
       cache_miss_en : out std_logic;
+      -- pull load from the memory
       load_en : in std_logic
     );
   end component;
