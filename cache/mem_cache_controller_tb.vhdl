@@ -44,13 +44,32 @@ begin
   stim_proc : process
   begin
     wait for clk_period;
+    rst <= '1'; wait for 1 ns; rst <= '0';
+    wait for clk_period*3;
+    -- NormalS
+    cache_miss_en <= '1'; wait until rising_edge(clk); wait for 1 ns; cache_miss_en <= '0';
+    -- Cache2MemS
+    assert mem_we = '1'; assert tag_s = '0'; assert load_en = '0';
+    wait until rising_edge(clk); wait for 1 ns;
+    -- Mem2CacheS
+    assert mem_we = '0'; assert tag_s = '1'; assert load_en = '0';
+    rd_en <= '1'; wait until rising_edge(clk); wait for 1 ns; rd_en <= '0';
+    -- CacheWriteBackS
+    assert mem_we = '0'; assert load_en = '1';
+    wait until rising_edge(clk); wait for 1 ns;
+    -- NormalS
+    assert mem_we = '0'; assert load_en = '0';
+    wait for clk_period*2;
+    assert mem_we = '0'; assert load_en = '0';
+    cache_miss_en <= '1'; wait until rising_edge(clk); wait for 1 ns; cache_miss_en <= '0';
+    -- Cache2MemS
+    assert mem_we = '1'; assert tag_s = '0'; assert load_en = '0';
     -- skip
     stop <= TRUE;
     -- success message
     assert false report "end of test" severity note;
     wait;
   end process;
-
 end architecture;
 
 
