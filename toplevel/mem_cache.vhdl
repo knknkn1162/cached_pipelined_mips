@@ -7,8 +7,14 @@ entity mem_cache is
   port (
     clk, rst, load : in std_logic;
     a : in std_logic_vector(31 downto 0);
+    dcache_we : in std_logic;
     wd : in std_logic_vector(31 downto 0);
-    rd : out std_logic_vector(31 downto 0)
+    rd : out std_logic_vector(31 downto 0);
+    -- scan
+    cache_miss_en : out std_logic;
+    mem_we : out std_logic;
+    rd_en : out std_logic;
+    load_en : out std_logic
   );
 end entity;
 
@@ -58,7 +64,7 @@ architecture behavior of mem_cache is
   signal tag0 : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
   signal index0 : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
   signal tag_s0 : std_logic;
-  signal dcache_we, mem_we, cache_miss_en, rd_en, load_en : std_logic;
+  signal mem_we0, cache_miss_en0, rd_en0, load_en0 : std_logic;
 begin
   -- control enable signal
   process(clk, rst, nextstate)
@@ -70,11 +76,11 @@ begin
     end if;
   end process;
 
-  process(state, rd_en, cache_miss_en)
+  process(state, rd_en0, cache_miss_en0)
   begin
     case state is
       when NormalS =>
-        if cache_miss_en = '1' then
+        if cache_miss_en0 = '1' then
           nextstate <= Cache2MemS;
         else
           nextstate <= NormalS;
@@ -82,7 +88,7 @@ begin
       when Cache2MemS =>
         nextstate <= Mem2CacheS;
       when Mem2CacheS =>
-        if rd_en = '1' then
+        if rd_en0 = '1' then
           nextstate <= CacheWriteBackS;
         else
           nextstate <= Mem2CacheS;
@@ -109,33 +115,36 @@ begin
   process(state)
   begin
     if state = Cache2MemS then
-      mem_we <= '1';
+      mem_we0 <= '1';
     else
-      mem_we <= '0';
+      mem_we0 <= '0';
     end if;
   end process;
+  mem_we <= mem_we0; -- for scan
 
   process(state)
   begin
     if state = CacheWriteBackS then
-      load_en <= '1';
+      load_en0 <= '1';
     else
-      load_en <= '0';
+      load_en0 <= '0';
     end if;
   end process;
+  load_en <= load_en0; -- for scan
 
   mem0 : mem generic map(filename=>memfile, BITS=>10)
   port map (
     clk => clk, rst => rst, load => load,
-    we => mem_we,
+    we => mem_we0,
     tag => tag0, index => index0,
     wd1 => dcache2mem_d1, wd2 => dcache2mem_d2, wd3 => dcache2mem_d3, wd4 => dcache2mem_d4,
     wd5 => dcache2mem_d5, wd6 => dcache2mem_d6, wd7 => dcache2mem_d7, wd8 => dcache2mem_d8,
 
     rd1 => mem2dcache_d1, rd2 => mem2dcache_d2, rd3 => mem2dcache_d3, rd4 => mem2dcache_d4,
     rd5 => mem2dcache_d5, rd6 => mem2dcache_d6, rd7 => mem2dcache_d7, rd8 => mem2dcache_d8,
-    rd_en => rd_en
+    rd_en => rd_en0
   );
+  rd_en <= rd_en0; -- for scan
 
   data_cache0 : data_cache port map (
     clk => clk, rst => rst,
@@ -149,9 +158,10 @@ begin
     rd_d5 => dcache2mem_d5, rd_d6 => dcache2mem_d6, rd_d7 => dcache2mem_d7, rd_d8 => dcache2mem_d8,
 
     rd_tag => tag0, rd_index => index0,
-    cache_miss_en => cache_miss_en,
-    load_en => load_en,
+    cache_miss_en => cache_miss_en0,
+    load_en => load_en0,
     tag_s => tag_s0
   );
+  cache_miss_en <= cache_miss_en0;
   
 end architecture;
