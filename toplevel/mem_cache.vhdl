@@ -96,12 +96,17 @@ begin
 
   process(state)
   begin
-    when NormalS =>
-      tag_s0 <= '0';
-    when Mem2CacheS =>
-      tag_s0 <= '1';
-    when others =>
-      -- do nothing
+    if Mem2Cache
+    case state is
+      -- tranform cache to memory with old tag
+      when Mem2CacheS =>
+        tag_s0 <= '0';
+      -- transform mem to cache with new tag
+      when Cache2MemS =>
+        tag_s0 <= '1';
+      when others =>
+        -- do nothing
+    end case;
   end process;
 
   process(state)
