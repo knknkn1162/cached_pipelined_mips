@@ -16,8 +16,7 @@ architecture testbench of mem_tb is
       tag : in std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
       index : in std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
       wd1, wd2, wd3, wd4, wd5, wd6, wd7, wd8 : in std_logic_vector(31 downto 0);
-      rd1, rd2, rd3, rd4, rd5, rd6, rd7, rd8 : out std_logic_vector(31 downto 0);
-      rd_en : out std_logic
+      rd1, rd2, rd3, rd4, rd5, rd6, rd7, rd8 : out std_logic_vector(31 downto 0)
     );
   end component;
 
@@ -29,7 +28,6 @@ architecture testbench of mem_tb is
   signal index : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
   signal wd1, wd2, wd3, wd4, wd5, wd6, wd7, wd8 : std_logic_vector(31 downto 0);
   signal rd1, rd2, rd3, rd4, rd5, rd6, rd7, rd8 : std_logic_vector(31 downto 0);
-  signal rd_en : std_logic;
   constant clk_period : time := 10 ns;
   signal stop : boolean;
 
@@ -40,8 +38,7 @@ begin
     we => we,
     tag => tag, index => index,
     wd1 => wd1, wd2 => wd2, wd3 => wd3, wd4 => wd4, wd5 => wd5, wd6 => wd6, wd7 => wd7, wd8 => wd8,
-    rd1 => rd1, rd2 => rd2, rd3 => rd3, rd4 => rd4, rd5 => rd5, rd6 => rd6, rd7 => rd7, rd8 => rd8,
-    rd_en => rd_en
+    rd1 => rd1, rd2 => rd2, rd3 => rd3, rd4 => rd4, rd5 => rd5, rd6 => rd6, rd7 => rd7, rd8 => rd8
   );
 
   clk_process: process
@@ -64,7 +61,6 @@ begin
     -- read test
     tag <= X"00000"; index <= "0000000"; we <= '0'; wait for clk_period*2 + 1 ns;
     assert rd1 = X"20020005"; assert rd2 = X"2003000c"; assert rd3 = X"2067fff7"; assert rd4 = X"00e22025"; assert rd5 = X"00642824"; assert rd6 = X"00a42820"; assert rd7 = X"10a7000a"; assert rd8 = X"0064202a";
-    assert rd_en = '1';
 
     wait until falling_edge(clk);
     -- write in ram
@@ -72,10 +68,8 @@ begin
     wd1 <= X"FFFFFFFF"; wd2 <= X"FFFFFFFE"; wd3 <= X"FFFFFFFD"; wd4 <= X"FFFFFFFC"; wd5 <= X"FFFFFFFB"; wd6 <= X"FFFFFFFA"; wd7 <= X"FFFFFFF9"; wd8 <= X"FFFFFFF8";
     wait for clk_period/2+ 1 ns;
     -- after writeback
-    assert rd_en = '0';
     we <= '0'; wait for clk_period;
     assert rd1 = X"FFFFFFFF"; assert rd2 = X"FFFFFFFE"; assert rd3 = X"FFFFFFFD"; assert rd4 = X"FFFFFFFC"; assert rd5 = X"FFFFFFFB"; assert rd6 = X"FFFFFFFA"; assert rd7 = X"FFFFFFF9"; assert rd8 = X"FFFFFFF8";
-    assert rd_en = '1';
     -- skip
     stop <= TRUE;
     -- success message

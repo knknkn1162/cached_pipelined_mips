@@ -14,8 +14,7 @@ entity mem is
     tag : in std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
     index : in std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
     wd1, wd2, wd3, wd4, wd5, wd6, wd7, wd8 : in std_logic_vector(31 downto 0);
-    rd1, rd2, rd3, rd4, rd5, rd6, rd7, rd8 : out std_logic_vector(31 downto 0);
-    rd_en : out std_logic
+    rd1, rd2, rd3, rd4, rd5, rd6, rd7, rd8 : out std_logic_vector(31 downto 0)
   );
 end entity;
 
@@ -32,7 +31,6 @@ architecture behavior of mem is
   constant SIZE : natural := 2**BITS;
   type ram_type is array(natural range<>) of std_logic_vector(31 downto 0);
   type addr30_type is array(natural range<>) of std_logic_vector(29 downto 0);
-  signal rd_en0 : std_logic;
 
   -- TODO: compatible with CONST_CACHE_OFFSET_SIZE
   signal ram1_datum, ram2_datum, ram3_datum, ram4_datum, ram5_datum, ram6_datum, ram7_datum, ram8_datum : std_logic_vector(31 downto 0);
@@ -102,20 +100,10 @@ begin
     end if;
   end process;
 
-  process(we, index, tag)
-  begin
-    if (not is_X(index)) and (not is_X(tag)) then
-      rd_en0 <= (not we);
-    else
-      rd_en0 <= '0';
-    end if;
-  end process;
-  rd_en <= rd_en0;
-
   -- transport rds to cache
   reg_d : flopr8_en generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => rd_en0,
+    clk => clk, rst => rst, en => '1',
     a1 => ram1_datum, a2 => ram2_datum, a3 => ram3_datum, a4 => ram4_datum,
     a5 => ram5_datum, a6 => ram6_datum, a7 => ram7_datum, a8 => ram8_datum,
     y1 => rd1, y2 => rd2, y3 => rd3, y4 => rd4,
