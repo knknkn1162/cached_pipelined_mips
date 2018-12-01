@@ -15,12 +15,12 @@ architecture testbench of data_cache_tb is
       -- program counter is 4-byte aligned
       a : in std_logic_vector(31 downto 0);
       wd : in std_logic_vector(31 downto 0);
+      tag_s : in std_logic;
       rd : out std_logic_vector(31 downto 0);
       wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08 : in std_logic_vector(31 downto 0);
-      rd01, rd02, rd03, rd04, rd05, rd06, rd07, rd08 : out std_logic_vector(31 downto 0);
-      tag_s : in std_logic;
       rd_tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
       rd_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+      rd01, rd02, rd03, rd04, rd05, rd06, rd07, rd08 : out std_logic_vector(31 downto 0);
       -- push cache miss to the memory
       cache_miss_en : out std_logic;
       valid_flag : out std_logic;
