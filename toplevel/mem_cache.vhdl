@@ -140,6 +140,7 @@ begin
   data_cache0 : data_cache port map (
     clk => clk, rst => rst,
     we => dcache_we,
+    a => a,
     wd => wd,
     rd => rd,
     wd_d1 => mem2dcache_d1, wd_d2 => mem2dcache_d2, wd_d3 => mem2dcache_d3, wd_d4 => mem2dcache_d4,
