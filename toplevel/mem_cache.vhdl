@@ -13,7 +13,6 @@ entity mem_cache is
     -- scan
     cache_miss_en : out std_logic;
     mem_we : out std_logic;
-    rd_en : out std_logic;
     load_en : out std_logic
   );
 end entity;
@@ -28,8 +27,7 @@ architecture behavior of mem_cache is
       tag : in std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
       index : in std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
       wd1, wd2, wd3, wd4, wd5, wd6, wd7, wd8 : in std_logic_vector(31 downto 0);
-      rd1, rd2, rd3, rd4, rd5, rd6, rd7, rd8 : out std_logic_vector(31 downto 0);
-      rd_en : out std_logic
+      rd1, rd2, rd3, rd4, rd5, rd6, rd7, rd8 : out std_logic_vector(31 downto 0)
     );
   end component;
 
@@ -64,7 +62,7 @@ architecture behavior of mem_cache is
   signal tag0 : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
   signal index0 : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
   signal tag_s0 : std_logic;
-  signal mem_we0, cache_miss_en0, rd_en0, load_en0 : std_logic;
+  signal mem_we0, cache_miss_en0, load_en0 : std_logic;
 begin
   -- control enable signal
   process(clk, rst, nextstate)
@@ -76,7 +74,7 @@ begin
     end if;
   end process;
 
-  process(state, rd_en0, cache_miss_en0)
+  process(state, cache_miss_en0)
   begin
     case state is
       when NormalS =>
@@ -88,11 +86,7 @@ begin
       when Cache2MemS =>
         nextstate <= Mem2CacheS;
       when Mem2CacheS =>
-        if rd_en0 = '1' then
-          nextstate <= CacheWriteBackS;
-        else
-          nextstate <= Mem2CacheS;
-        end if;
+        nextstate <= CacheWriteBackS;
       when CacheWriteBackS =>
         nextstate <= NormalS;
     end case;
@@ -141,10 +135,8 @@ begin
     wd5 => dcache2mem_d5, wd6 => dcache2mem_d6, wd7 => dcache2mem_d7, wd8 => dcache2mem_d8,
 
     rd1 => mem2dcache_d1, rd2 => mem2dcache_d2, rd3 => mem2dcache_d3, rd4 => mem2dcache_d4,
-    rd5 => mem2dcache_d5, rd6 => mem2dcache_d6, rd7 => mem2dcache_d7, rd8 => mem2dcache_d8,
-    rd_en => rd_en0
+    rd5 => mem2dcache_d5, rd6 => mem2dcache_d6, rd7 => mem2dcache_d7, rd8 => mem2dcache_d8
   );
-  rd_en <= rd_en0; -- for scan
 
   data_cache0 : data_cache port map (
     clk => clk, rst => rst,

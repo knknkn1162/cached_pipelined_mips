@@ -16,7 +16,6 @@ architecture testbench of mem_cache_tb is
       -- scan
       cache_miss_en : out std_logic;
       mem_we : out std_logic;
-      rd_en : out std_logic;
       load_en : out std_logic
     );
   end component;
@@ -28,7 +27,7 @@ architecture testbench of mem_cache_tb is
   signal wd : std_logic_vector(31 downto 0);
   signal rd : std_logic_vector(31 downto 0);
 
-  signal cache_miss_en, mem_we, rd_en, load_en : std_logic;
+  signal cache_miss_en, mem_we, load_en : std_logic;
 
   constant clk_period : time := 10 ns;
   signal stop : boolean;
@@ -41,7 +40,7 @@ begin
     dcache_we => dcache_we,
     wd => wd,
     rd => rd,
-    cache_miss_en => cache_miss_en, mem_we => mem_we, rd_en => rd_en, load_en => load_en
+    cache_miss_en => cache_miss_en, mem_we => mem_we, load_en => load_en
   );
 
   clk_process: process
