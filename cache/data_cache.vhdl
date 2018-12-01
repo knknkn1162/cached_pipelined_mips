@@ -11,12 +11,12 @@ entity data_cache is
     -- program counter is 4-byte aligned
     a : in std_logic_vector(31 downto 0);
     wd : in std_logic_vector(31 downto 0);
-    rd : out std_logic_vector(31 downto 0);
-    wd_d1, wd_d2, wd_d3, wd_d4, wd_d5, wd_d6, wd_d7, wd_d8 : in std_logic_vector(31 downto 0);
-    rd_d1, rd_d2, rd_d3, rd_d4, rd_d5, rd_d6, rd_d7, rd_d8 : out std_logic_vector(31 downto 0);
     tag_s : in std_logic;
+    rd : out std_logic_vector(31 downto 0);
+    wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08 : in std_logic_vector(31 downto 0);
     rd_tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
     rd_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+    rd01, rd02, rd03, rd04, rd05, rd06, rd07, rd08 : out std_logic_vector(31 downto 0);
     -- push cache miss to the memory
     cache_miss_en : out std_logic;
     valid_flag : out std_logic;
@@ -116,7 +116,7 @@ begin
   );
 
   -- read & write data or load block from memory
-  process(clk, rst, we, addr_index, addr_offset, wd_d1, wd_d2, wd_d3, wd_d4, wd_d5, wd_d6, wd_d7, wd_d8, wd)
+  process(clk, rst, we, addr_index, addr_offset, wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08, wd)
     variable idx : natural;
     variable valid_data : validtype(0 to SIZE-1);
     variable tag_data : tagtype(0 to SIZE-1);
@@ -143,14 +143,14 @@ begin
         -- when the ram_data is initial state
         valid_data(idx) := '1';
         tag_data(idx) := addr_tag;
-        ram1_data(idx) := wd_d1;
-        ram2_data(idx) := wd_d2;
-        ram3_data(idx) := wd_d3;
-        ram4_data(idx) := wd_d4;
-        ram5_data(idx) := wd_d5;
-        ram6_data(idx) := wd_d6;
-        ram7_data(idx) := wd_d7;
-        ram8_data(idx) := wd_d8;
+        ram1_data(idx) := wd01;
+        ram2_data(idx) := wd02;
+        ram3_data(idx) := wd03;
+        ram4_data(idx) := wd04;
+        ram5_data(idx) := wd05;
+        ram6_data(idx) := wd06;
+        ram7_data(idx) := wd07;
+        ram8_data(idx) := wd08;
       elsif we = '1' then
         if valid_datum = '1' then
           -- cache hit!
@@ -273,7 +273,7 @@ begin
     y => rd
   );
 
-  -- out rd_tag, rd_index,rd_d*
+  -- out rd_tag, rd_index,rd0*
   old_tag_datum <= tag_datum;
   new_tag_datum <= addr_tag; -- for load from the memory
   mux2_tag : mux2 generic map(N=>CONST_CACHE_TAG_SIZE)
@@ -285,12 +285,12 @@ begin
   );
   rd_index <= addr_index;
 
-  reg_rd_d : flopr8_en generic map (N=>32)
+  reg_rd0 : flopr8_en generic map (N=>32)
   port map (
     clk => clk, rst => rst, en => cache_miss_en0,
     a1 => ram1_datum, a2 => ram2_datum, a3 => ram3_datum, a4 => ram4_datum,
     a5 => ram5_datum, a6 => ram6_datum, a7 => ram7_datum, a8 => ram8_datum,
-    y1 => rd_d1, y2 => rd_d2, y3 => rd_d3, y4 => rd_d4,
-    y5 => rd_d5, y6 => rd_d6, y7 => rd_d7, y8 => rd_d8
+    y1 => rd01, y2 => rd02, y3 => rd03, y4 => rd04,
+    y5 => rd05, y6 => rd06, y7 => rd07, y8 => rd08
   );
 end architecture;

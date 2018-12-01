@@ -16,8 +16,8 @@ architecture testbench of data_cache_tb is
       a : in std_logic_vector(31 downto 0);
       wd : in std_logic_vector(31 downto 0);
       rd : out std_logic_vector(31 downto 0);
-      wd_d1, wd_d2, wd_d3, wd_d4, wd_d5, wd_d6, wd_d7, wd_d8 : in std_logic_vector(31 downto 0);
-      rd_d1, rd_d2, rd_d3, rd_d4, rd_d5, rd_d6, rd_d7, rd_d8 : out std_logic_vector(31 downto 0);
+      wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08 : in std_logic_vector(31 downto 0);
+      rd01, rd02, rd03, rd04, rd05, rd06, rd07, rd08 : out std_logic_vector(31 downto 0);
       tag_s : in std_logic;
       rd_tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
       rd_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
@@ -33,8 +33,8 @@ architecture testbench of data_cache_tb is
   signal a : std_logic_vector(31 downto 0);
   signal wd, rd : std_logic_vector(31 downto 0);
 
-  signal wd_d1, wd_d2, wd_d3, wd_d4, wd_d5, wd_d6, wd_d7, wd_d8 : std_logic_vector(31 downto 0);
-  signal rd_d1, rd_d2, rd_d3, rd_d4, rd_d5, rd_d6, rd_d7, rd_d8 : std_logic_vector(31 downto 0);
+  signal wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08 : std_logic_vector(31 downto 0);
+  signal rd01, rd02, rd03, rd04, rd05, rd06, rd07, rd08 : std_logic_vector(31 downto 0);
   signal rd_tag : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
   signal rd_index : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
 
@@ -51,10 +51,10 @@ begin
     a => a,
     wd => wd,
     rd => rd,
-    wd_d1 => wd_d1, wd_d2 => wd_d2, wd_d3 => wd_d3, wd_d4 => wd_d4,
-    wd_d5 => wd_d5, wd_d6 => wd_d6, wd_d7 => wd_d7, wd_d8 => wd_d8,
-    rd_d1 => rd_d1, rd_d2 => rd_d2, rd_d3 => rd_d3, rd_d4 => rd_d4,
-    rd_d5 => rd_d5, rd_d6 => rd_d6, rd_d7 => rd_d7, rd_d8 => rd_d8,
+    wd01 => wd01, wd02 => wd02, wd03 => wd03, wd04 => wd04,
+    wd05 => wd05, wd06 => wd06, wd07 => wd07, wd08 => wd08,
+    rd01 => rd01, rd02 => rd02, rd03 => rd03, rd04 => rd04,
+    rd05 => rd05, rd06 => rd06, rd07 => rd07, rd08 => rd08,
     tag_s => tag_s,
     rd_tag => rd_tag,
     rd_index => rd_index,
@@ -83,8 +83,8 @@ begin
     a <= X"00000008"; wd <= X"0000000F"; we <= '1'; wait for 1 ns; assert cache_miss_en = '1'; assert valid_flag = '0';
 
     a <= X"00000008";
-    wd_d1 <= X"00000010"; wd_d2 <= X"00000011"; wd_d3 <= X"00000012"; wd_d4 <= X"00000013";
-    wd_d5 <= X"00000014"; wd_d6 <= X"00000015"; wd_d7 <= X"00000016"; wd_d8 <= X"00000017";
+    wd01 <= X"00000010"; wd02 <= X"00000011"; wd03 <= X"00000012"; wd04 <= X"00000013";
+    wd05 <= X"00000014"; wd06 <= X"00000015"; wd07 <= X"00000016"; wd08 <= X"00000017";
     load_en <= '1';
     -- load from memory
     wait until rising_edge(clk); wait for 1 ns; load_en <= '0'; assert cache_miss_en = '0';
