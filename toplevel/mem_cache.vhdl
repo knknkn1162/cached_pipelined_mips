@@ -81,7 +81,7 @@ begin
   load_en <= load_en0;
   mem_we <= mem_we0;
 
-  mem0 : mem generic map(filename=>memfile, BITS=>10)
+  mem0 : mem generic map(filename=>memfile, BITS=>14)
   port map (
     clk => clk, rst => rst, load => load,
     we => mem_we0,
