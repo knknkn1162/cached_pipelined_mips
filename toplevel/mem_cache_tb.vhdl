@@ -28,6 +28,8 @@ architecture testbench of mem_cache_tb is
   signal wd : std_logic_vector(31 downto 0);
   signal rd : std_logic_vector(31 downto 0);
 
+  signal cache_miss_en, mem_we, rd_en, load_en : std_logic;
+
   constant clk_period : time := 10 ns;
   signal stop : boolean;
 
@@ -38,7 +40,8 @@ begin
     a => a,
     dcache_we => dcache_we,
     wd => wd,
-    rd => rd
+    rd => rd,
+    cache_miss_en => cache_miss_en, mem_we => mem_we, rd_en => rd_en, load_en => load_en
   );
 
   clk_process: process
@@ -53,6 +56,12 @@ begin
   stim_proc : process
   begin
     wait for clk_period;
+    rst <= '1'; wait for 1 ns; rst <= '0';
+    -- cache miss
+    a <= X"00000001"; dcache_we <= '0'; wait for 1 ns;
+    assert cache_miss_en = '1';
+    wait until rising_edge(clk); wait for 1 ns;
+
     -- skip
     stop <= TRUE;
     -- success message

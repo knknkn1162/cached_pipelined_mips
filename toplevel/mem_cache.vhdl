@@ -163,5 +163,4 @@ begin
     tag_s => tag_s0
   );
   cache_miss_en <= cache_miss_en0;
-  
 end architecture;
