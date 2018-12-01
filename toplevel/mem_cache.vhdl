@@ -3,14 +3,12 @@ use IEEE.STD_LOGIC_1164.ALL;
 use work.cache_pkg.ALL;
 
 entity mem_cache is
+  generic(memfile : string);
   port (
     clk, rst, load : in std_logic;
-    dcache_we : in std_logic_vector(31 downto 0);
     a : in std_logic_vector(31 downto 0);
     wd : in std_logic_vector(31 downto 0);
-    rd : out std_logic_vector(31 downto 0);
-    -- controller
-    dcache_we : in std_logic_vector(31 downto 0)
+    rd : out std_logic_vector(31 downto 0)
   );
 end entity;
 
@@ -96,7 +94,6 @@ begin
 
   process(state)
   begin
-    if Mem2Cache
     case state is
       -- tranform cache to memory with old tag
       when Mem2CacheS =>
@@ -121,13 +118,14 @@ begin
   process(state)
   begin
     if state = CacheWriteBackS then
-      load_en = '1';
+      load_en <= '1';
     else
-      load_en = '0';
+      load_en <= '0';
     end if;
   end process;
 
-  mem0 : mem port map (
+  mem0 : mem generic map(filename=>memfile, BITS=>10)
+  port map (
     clk => clk, rst => rst, load => load,
     we => mem_we,
     tag => tag0, index => index0,
@@ -140,7 +138,7 @@ begin
   );
 
   data_cache0 : data_cache port map (
-    clk => clk, rst => rst
+    clk => clk, rst => rst,
     we => dcache_we,
     wd => wd,
     rd => rd,
@@ -154,6 +152,5 @@ begin
     load_en => load_en,
     tag_s => tag_s0
   );
-  rd <= rd0;
   
 end architecture;
