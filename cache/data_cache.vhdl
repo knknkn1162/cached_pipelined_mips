@@ -51,15 +51,6 @@ architecture behavior of data_cache is
         );
   end component;
 
-  component flopr8_en is
-    generic(N : natural);
-    port (
-      clk, rst, en : in std_logic;
-      a1, a2, a3, a4, a5, a6, a7, a8 : in std_logic_vector(N-1 downto 0);
-      y1, y2, y3, y4, y5, y6, y7, y8 : out std_logic_vector(N-1 downto 0)
-    );
-  end component;
-
   component mux2
     generic(N : integer);
     port (
@@ -274,23 +265,21 @@ begin
   );
 
   -- out rd_tag, rd_index,rd0*
-  old_tag_datum <= tag_datum;
-  new_tag_datum <= addr_tag; -- for load from the memory
   mux2_tag : mux2 generic map(N=>CONST_CACHE_TAG_SIZE)
   port map (
-    d0 => old_tag_datum,
-    d1 => new_tag_datum,
+    d0 => tag_datum,
+    d1 => addr_tag,
     s => tag_s,
     y => rd_tag
   );
   rd_index <= addr_index;
 
-  reg_rd0 : flopr8_en generic map (N=>32)
-  port map (
-    clk => clk, rst => rst, en => cache_miss_en0,
-    a1 => ram1_datum, a2 => ram2_datum, a3 => ram3_datum, a4 => ram4_datum,
-    a5 => ram5_datum, a6 => ram6_datum, a7 => ram7_datum, a8 => ram8_datum,
-    y1 => rd01, y2 => rd02, y3 => rd03, y4 => rd04,
-    y5 => rd05, y6 => rd06, y7 => rd07, y8 => rd08
-  );
+  rd01 <= ram1_datum;
+  rd02 <= ram2_datum;
+  rd03 <= ram3_datum;
+  rd04 <= ram4_datum;
+  rd05 <= ram5_datum;
+  rd06 <= ram6_datum;
+  rd07 <= ram7_datum;
+  rd08 <= ram8_datum;
 end architecture;
