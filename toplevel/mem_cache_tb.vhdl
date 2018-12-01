@@ -56,11 +56,28 @@ begin
   begin
     wait for clk_period;
     rst <= '1'; wait for 1 ns; rst <= '0';
-    -- cache miss
-    a <= X"00000001"; dcache_we <= '0'; wait for 1 ns;
-    assert cache_miss_en = '1';
-    wait until rising_edge(clk); wait for 1 ns;
+    -- memfile load
+    load <= '1'; wait until rising_edge(clk); wait for 1 ns; load <= '0';
+    -- wait for some time..
+    wait for clk_period*4;
 
+    -- cache miss
+    a <= X"00000004"; dcache_we <= '0'; wait for 1 ns;
+    assert cache_miss_en = '1';
+    -- Mem2CacheS
+    wait until rising_edge(clk); wait for 1 ns;
+    assert mem_we = '0';
+    -- CacheWriteBackS
+    wait until rising_edge(clk); wait for 1 ns;
+    assert load_en = '1';
+    -- restore Normal Mode
+    wait until rising_edge(clk); wait for 1 ns;
+    assert load_en = '0'; assert mem_we = '0';
+    assert rd = X"2003000c";
+
+    -- cache hit!
+    a <= X"00000008"; dcache_we <= '0'; wait for 1 ns;
+    assert rd = X"2067fff7";
     -- skip
     stop <= TRUE;
     -- success message
