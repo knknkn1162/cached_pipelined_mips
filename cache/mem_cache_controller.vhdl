@@ -9,7 +9,6 @@ entity mem_cache_controller is
     rd_en : in std_logic;
     tag_s : out std_logic;
     load_en : out std_logic;
-    dcache_we : out std_logic;
     mem_we : out std_logic
   );
 end entity;

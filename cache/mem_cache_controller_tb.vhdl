@@ -13,24 +13,23 @@ architecture testbench of mem_cache_controller_tb is
       rd_en : in std_logic;
       tag_s : out std_logic;
       load_en : out std_logic;
-      dcache_we : out std_logic;
       mem_we : out std_logic
     );
   end component;
 
   signal clk, rst : std_logic;
   signal cache_miss_en, tag_s, load_en : std_logic;
-  signal dcache_we, mem_we , rd_en : std_logic;
+  signal mem_we , rd_en : std_logic;
   constant clk_period : time := 10 ns;
   signal stop : boolean;
 
 begin
   uut : mem_cache_controller port map (
     clk => clk, rst => rst,
-    cache_miss_en => cache_miss_en,
+    cache_miss_en => cache_miss_en, rd_en => rd_en,
     tag_s => tag_s,
     load_en => load_en,
-    dcache_we => dcache_we, mem_we => mem_we, rd_en => rd_en
+    mem_we => mem_we
   );
 
   clk_process: process
