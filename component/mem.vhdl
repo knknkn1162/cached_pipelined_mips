@@ -19,15 +19,6 @@ entity mem is
 end entity;
 
 architecture behavior of mem is
-  component flopr8_en
-    generic(N : natural);
-    port (
-      clk, rst, en : in std_logic;
-      a1, a2, a3, a4, a5, a6, a7, a8 : in std_logic_vector(N-1 downto 0);
-      y1, y2, y3, y4, y5, y6, y7, y8 : out std_logic_vector(N-1 downto 0)
-    );
-  end component;
-
   constant SIZE : natural := 2**BITS;
   type ram_type is array(natural range<>) of std_logic_vector(31 downto 0);
   type addr30_type is array(natural range<>) of std_logic_vector(29 downto 0);
@@ -100,13 +91,12 @@ begin
     end if;
   end process;
 
-  -- transport rds to cache
-  reg_d : flopr8_en generic map (N=>32)
-  port map (
-    clk => clk, rst => rst, en => '1',
-    a1 => ram1_datum, a2 => ram2_datum, a3 => ram3_datum, a4 => ram4_datum,
-    a5 => ram5_datum, a6 => ram6_datum, a7 => ram7_datum, a8 => ram8_datum,
-    y1 => rd1, y2 => rd2, y3 => rd3, y4 => rd4,
-    y5 => rd5, y6 => rd6, y7 => rd7, y8 => rd8
-  );
+  rd1 <= ram1_datum;
+  rd2 <= ram2_datum;
+  rd3 <= ram3_datum;
+  rd4 <= ram4_datum;
+  rd5 <= ram5_datum;
+  rd6 <= ram6_datum;
+  rd7 <= ram7_datum;
+  rd8 <= ram8_datum;
 end architecture;
