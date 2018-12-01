@@ -6,6 +6,7 @@ entity mem_cache_controller is
   port (
     clk, rst : in std_logic;
     cache_miss_en : in std_logic;
+    valid_flag : in std_logic;
     rd_en : in std_logic;
     tag_s : out std_logic;
     load_en : out std_logic;
@@ -35,7 +36,11 @@ begin
     case state is
       when NormalS =>
         if cache_miss_en = '1' then
-          nextstate <= Cache2MemS;
+          if valid_flag = '1' then
+            nextstate <= Cache2MemS;
+          else
+            nextstate <= Mem2CacheS;
+          end if;
         else
           nextstate <= NormalS;
         end if;

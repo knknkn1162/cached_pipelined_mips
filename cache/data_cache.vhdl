@@ -19,6 +19,7 @@ entity data_cache is
     rd_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
     -- push cache miss to the memory
     cache_miss_en : out std_logic;
+    valid_flag : out std_logic;
     -- pull load from the memory
     load_en : in std_logic
   );
@@ -243,6 +244,7 @@ begin
       when others =>
         -- do nothing
     end case;
+    valid_flag <= valid_datum;
   end process;
   cache_miss_en <= cache_miss_en0;
 
