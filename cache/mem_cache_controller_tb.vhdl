@@ -10,12 +10,11 @@ architecture testbench of mem_cache_controller_tb is
     port (
       clk, rst : in std_logic;
       cache_miss_en : in std_logic;
+      rd_en : in std_logic;
       tag_s : out std_logic;
       load_en : out std_logic;
-      -- scan
       dcache_we : out std_logic;
-      mem_we : out std_logic;
-      rd_en : out std_logic
+      mem_we : out std_logic
     );
   end component;
 

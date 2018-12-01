@@ -6,12 +6,11 @@ entity mem_cache_controller is
   port (
     clk, rst : in std_logic;
     cache_miss_en : in std_logic;
+    rd_en : in std_logic;
     tag_s : out std_logic;
     load_en : out std_logic;
-    -- scan
     dcache_we : out std_logic;
-    mem_we : out std_logic;
-    rd_en : out std_logic
+    mem_we : out std_logic
   );
 end entity;
 
@@ -20,7 +19,6 @@ architecture behavior of mem_cache_controller is
     NormalS, Cache2MemS, Mem2CacheS, CacheWriteBackS
   );
   signal state, nextstate : statetype;
-  signal mem_we0, rd_en0, load_en0 : std_logic;
 
 begin
   -- control enable signal
@@ -33,7 +31,7 @@ begin
     end if;
   end process;
 
-  process(state, rd_en0, cache_miss_en)
+  process(state, rd_en, cache_miss_en)
   begin
     case state is
       when NormalS =>
@@ -45,7 +43,7 @@ begin
       when Cache2MemS =>
         nextstate <= Mem2CacheS;
       when Mem2CacheS =>
-        if rd_en0 = '1' then
+        if rd_en = '1' then
           nextstate <= CacheWriteBackS;
         else
           nextstate <= Mem2CacheS;
@@ -72,12 +70,11 @@ begin
   process(state)
   begin
     if state = Cache2MemS then
-      mem_we0 <= '1';
+      mem_we <= '1';
     else
-      mem_we0 <= '0';
+      mem_we <= '0';
     end if;
   end process;
-  mem_we <= mem_we0; -- for scan
 
   process(state)
   begin
@@ -87,6 +84,4 @@ begin
       load_en <= '0';
     end if;
   end process;
-
-  rd_en <= rd_en0; -- for scan
 end architecture;
