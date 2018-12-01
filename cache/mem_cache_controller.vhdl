@@ -56,10 +56,10 @@ begin
   begin
     case state is
       -- tranform cache to memory with old tag
-      when Mem2CacheS =>
+      when Cache2MemS =>
         tag_s <= '0';
       -- transform mem to cache with new tag
-      when Cache2MemS =>
+      when Mem2CacheS =>
         tag_s <= '1';
       when others =>
         -- do nothing
@@ -83,4 +83,5 @@ begin
       load_en <= '0';
     end if;
   end process;
+
 end architecture;
