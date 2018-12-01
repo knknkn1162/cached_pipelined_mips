@@ -11,7 +11,6 @@ architecture testbench of mem_cache_controller_tb is
       clk, rst : in std_logic;
       cache_miss_en : in std_logic;
       valid_flag : in std_logic;
-      rd_en : in std_logic;
       tag_s : out std_logic;
       load_en : out std_logic;
       mem_we : out std_logic
@@ -20,7 +19,7 @@ architecture testbench of mem_cache_controller_tb is
 
   signal clk, rst : std_logic;
   signal cache_miss_en, valid_flag, tag_s, load_en : std_logic;
-  signal mem_we , rd_en : std_logic;
+  signal mem_we: std_logic;
   constant clk_period : time := 10 ns;
   signal stop : boolean;
 
@@ -28,7 +27,6 @@ begin
   uut : mem_cache_controller port map (
     clk => clk, rst => rst,
     cache_miss_en => cache_miss_en, valid_flag => valid_flag,
-    rd_en => rd_en,
     tag_s => tag_s,
     load_en => load_en,
     mem_we => mem_we
@@ -53,7 +51,7 @@ begin
     wait until rising_edge(clk); wait for 1 ns; cache_miss_en <= '0';
     -- Mem2CacheS
     assert mem_we = '0'; assert tag_s = '1'; assert load_en = '0';
-    rd_en <= '1'; wait until rising_edge(clk); wait for 1 ns; rd_en <= '0';
+    wait until rising_edge(clk); wait for 1 ns;
     -- CacheWriteBackS
     assert mem_we = '0'; assert load_en = '1';
     wait until rising_edge(clk); wait for 1 ns;
@@ -67,7 +65,7 @@ begin
     wait until rising_edge(clk); wait for 1 ns; cache_miss_en <= '0';
     -- Mem2CacheS
     assert mem_we = '0'; assert tag_s = '1'; assert load_en = '0';
-    rd_en <= '1'; wait until rising_edge(clk); wait for 1 ns; rd_en <= '0';
+    wait until rising_edge(clk); wait for 1 ns;
     -- skip
     stop <= TRUE;
     -- success message
