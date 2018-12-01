@@ -10,14 +10,21 @@ architecture testbench of mem_cache_tb is
     port (
       clk, rst, load : in std_logic;
       a : in std_logic_vector(31 downto 0);
+      dcache_we : in std_logic;
       wd : in std_logic_vector(31 downto 0);
-      rd : out std_logic_vector(31 downto 0)
+      rd : out std_logic_vector(31 downto 0);
+      -- scan
+      cache_miss_en : out std_logic;
+      mem_we : out std_logic;
+      rd_en : out std_logic;
+      load_en : out std_logic
     );
   end component;
 
   constant memfile : string := "./assets/mem/memfile.hex";
   signal clk, rst, load : std_logic;
   signal a : std_logic_vector(31 downto 0);
+  signal dcache_we : std_logic;
   signal wd : std_logic_vector(31 downto 0);
   signal rd : std_logic_vector(31 downto 0);
 
@@ -29,6 +36,7 @@ begin
   port map (
     clk => clk, rst => rst, load => load,
     a => a,
+    dcache_we => dcache_we,
     wd => wd,
     rd => rd
   );
