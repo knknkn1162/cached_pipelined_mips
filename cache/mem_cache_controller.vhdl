@@ -62,7 +62,7 @@ begin
       when Mem2CacheS =>
         tag_s <= '1';
       when others =>
-        tag_s <= '-';
+        -- do nothing
     end case;
   end process;
 

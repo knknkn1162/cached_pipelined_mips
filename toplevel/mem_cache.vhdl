@@ -18,6 +18,17 @@ entity mem_cache is
 end entity;
 
 architecture behavior of mem_cache is
+  component mem_cache_controller
+    port (
+      clk, rst : in std_logic;
+      cache_miss_en : in std_logic;
+      valid_flag : in std_logic;
+      tag_s : out std_logic;
+      load_en : out std_logic;
+      mem_we : out std_logic
+    );
+  end component;
+
   component mem
     generic(filename : string; BITS : natural);
     port (
@@ -38,93 +49,37 @@ architecture behavior of mem_cache is
       -- program counter is 4-byte aligned
       a : in std_logic_vector(31 downto 0);
       wd : in std_logic_vector(31 downto 0);
-      rd : out std_logic_vector(31 downto 0);
-      wd_d1, wd_d2, wd_d3, wd_d4, wd_d5, wd_d6, wd_d7, wd_d8 : in std_logic_vector(31 downto 0);
-      rd_d1, rd_d2, rd_d3, rd_d4, rd_d5, rd_d6, rd_d7, rd_d8 : out std_logic_vector(31 downto 0);
       tag_s : in std_logic;
+      rd : out std_logic_vector(31 downto 0);
+      wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08 : in std_logic_vector(31 downto 0);
       rd_tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
       rd_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+      rd01, rd02, rd03, rd04, rd05, rd06, rd07, rd08 : out std_logic_vector(31 downto 0);
       -- push cache miss to the memory
       cache_miss_en : out std_logic;
+      valid_flag : out std_logic;
       -- pull load from the memory
       load_en : in std_logic
     );
   end component;
-
-  type statetype is (
-    NormalS, Cache2MemS, Mem2CacheS, CacheWriteBackS
-  );
-
-  signal state, nextstate : statetype;
 
   signal dcache2mem_d1, dcache2mem_d2, dcache2mem_d3, dcache2mem_d4, dcache2mem_d5, dcache2mem_d6, dcache2mem_d7, dcache2mem_d8 : std_logic_vector(31 downto 0);
   signal mem2dcache_d1, mem2dcache_d2, mem2dcache_d3, mem2dcache_d4, mem2dcache_d5, mem2dcache_d6, mem2dcache_d7, mem2dcache_d8 : std_logic_vector(31 downto 0);
   signal tag0 : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
   signal index0 : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
   signal tag_s0 : std_logic;
-  signal mem_we0, cache_miss_en0, load_en0 : std_logic;
+  signal mem_we0, cache_miss_en0, valid_flag0, load_en0 : std_logic;
 begin
-  -- control enable signal
-  process(clk, rst, nextstate)
-  begin
-    if rst = '1' then
-      state <= NormalS;
-    elsif rising_edge(clk) then
-      state <= nextstate;
-    end if;
-  end process;
-
-  process(state, cache_miss_en0)
-  begin
-    case state is
-      when NormalS =>
-        if cache_miss_en0 = '1' then
-          nextstate <= Cache2MemS;
-        else
-          nextstate <= NormalS;
-        end if;
-      when Cache2MemS =>
-        nextstate <= Mem2CacheS;
-      when Mem2CacheS =>
-        nextstate <= CacheWriteBackS;
-      when CacheWriteBackS =>
-        nextstate <= NormalS;
-    end case;
-  end process;
-
-  process(state)
-  begin
-    case state is
-      -- tranform cache to memory with old tag
-      when Mem2CacheS =>
-        tag_s0 <= '0';
-      -- transform mem to cache with new tag
-      when Cache2MemS =>
-        tag_s0 <= '1';
-      when others =>
-        -- do nothing
-    end case;
-  end process;
-
-  process(state)
-  begin
-    if state = Cache2MemS then
-      mem_we0 <= '1';
-    else
-      mem_we0 <= '0';
-    end if;
-  end process;
-  mem_we <= mem_we0; -- for scan
-
-  process(state)
-  begin
-    if state = CacheWriteBackS then
-      load_en0 <= '1';
-    else
-      load_en0 <= '0';
-    end if;
-  end process;
-  load_en <= load_en0; -- for scan
+  mem_cache_controller0 : mem_cache_controller port map (
+    clk => clk, rst => rst,
+    cache_miss_en => cache_miss_en0,
+    valid_flag => valid_flag0,
+    tag_s => tag_s0,
+    load_en => load_en0,
+    mem_we => mem_we0
+  );
+  load_en <= load_en0;
+  mem_we <= mem_we0;
 
   mem0 : mem generic map(filename=>memfile, BITS=>10)
   port map (
@@ -143,16 +98,15 @@ begin
     we => dcache_we,
     a => a,
     wd => wd,
+    tag_s => tag_s0,
     rd => rd,
-    wd_d1 => mem2dcache_d1, wd_d2 => mem2dcache_d2, wd_d3 => mem2dcache_d3, wd_d4 => mem2dcache_d4,
-    wd_d5 => mem2dcache_d5, wd_d6 => mem2dcache_d6, wd_d7 => mem2dcache_d7, wd_d8 => mem2dcache_d8,
-    rd_d1 => dcache2mem_d1, rd_d2 => dcache2mem_d2, rd_d3 => dcache2mem_d3, rd_d4 => dcache2mem_d4,
-    rd_d5 => dcache2mem_d5, rd_d6 => dcache2mem_d6, rd_d7 => dcache2mem_d7, rd_d8 => dcache2mem_d8,
-
+    wd01 => mem2dcache_d1, wd02 => mem2dcache_d2, wd03 => mem2dcache_d3, wd04 => mem2dcache_d4,
+    wd05 => mem2dcache_d5, wd06 => mem2dcache_d6, wd07 => mem2dcache_d7, wd08 => mem2dcache_d8,
     rd_tag => tag0, rd_index => index0,
-    cache_miss_en => cache_miss_en0,
-    load_en => load_en0,
-    tag_s => tag_s0
+    rd01 => dcache2mem_d1, rd02 => dcache2mem_d2, rd03 => dcache2mem_d3, rd04 => dcache2mem_d4,
+    rd05 => dcache2mem_d5, rd06 => dcache2mem_d6, rd07 => dcache2mem_d7, rd08 => dcache2mem_d8,
+    cache_miss_en => cache_miss_en0, valid_flag => valid_flag0,
+    load_en => load_en0
   );
   cache_miss_en <= cache_miss_en0;
 end architecture;
