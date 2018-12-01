@@ -80,26 +80,25 @@ begin
         end if;
       end if;
     end if;
-    if we = '0' then
-      if is_X(stored_addr(0)) then
-        ram1_datum <= (others => '0');
-        ram2_datum <= (others => '0');
-        ram3_datum <= (others => '0');
-        ram4_datum <= (others => '0');
-        ram5_datum <= (others => '0');
-        ram6_datum <= (others => '0');
-        ram7_datum <= (others => '0');
-        ram8_datum <= (others => '0');
-      else
-        ram1_datum <= ram(to_integer(unsigned(stored_addr(0))));
-        ram2_datum <= ram(to_integer(unsigned(stored_addr(1))));
-        ram3_datum <= ram(to_integer(unsigned(stored_addr(2))));
-        ram4_datum <= ram(to_integer(unsigned(stored_addr(3))));
-        ram5_datum <= ram(to_integer(unsigned(stored_addr(4))));
-        ram6_datum <= ram(to_integer(unsigned(stored_addr(5))));
-        ram7_datum <= ram(to_integer(unsigned(stored_addr(6))));
-        ram8_datum <= ram(to_integer(unsigned(stored_addr(7))));
-      end if;
+    -- read
+    if is_X(stored_addr(0)) then
+      ram1_datum <= (others => '0');
+      ram2_datum <= (others => '0');
+      ram3_datum <= (others => '0');
+      ram4_datum <= (others => '0');
+      ram5_datum <= (others => '0');
+      ram6_datum <= (others => '0');
+      ram7_datum <= (others => '0');
+      ram8_datum <= (others => '0');
+    else
+      ram1_datum <= ram(to_integer(unsigned(stored_addr(0))));
+      ram2_datum <= ram(to_integer(unsigned(stored_addr(1))));
+      ram3_datum <= ram(to_integer(unsigned(stored_addr(2))));
+      ram4_datum <= ram(to_integer(unsigned(stored_addr(3))));
+      ram5_datum <= ram(to_integer(unsigned(stored_addr(4))));
+      ram6_datum <= ram(to_integer(unsigned(stored_addr(5))));
+      ram7_datum <= ram(to_integer(unsigned(stored_addr(6))));
+      ram8_datum <= ram(to_integer(unsigned(stored_addr(7))));
     end if;
   end process;
 
