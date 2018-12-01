@@ -78,6 +78,13 @@ begin
     -- cache hit!
     a <= X"00000008"; dcache_we <= '0'; wait for 1 ns;
     assert rd = X"2067fff7";
+
+    -- write (cache hit!)
+    a <= X"00000008"; dcache_we <= '1'; wd <= X"FFFFFFFF";
+    wait until rising_edge(clk); wait for 1 ns; dcache_we <= '0';
+    -- cache hit!
+    a <= X"00000008"; dcache_we <= '0'; wait for 1 ns;
+    assert rd = X"FFFFFFFF";
     -- skip
     stop <= TRUE;
     -- success message
