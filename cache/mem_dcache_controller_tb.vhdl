@@ -1,12 +1,12 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
-entity mem_cache_controller_tb is
+entity mem_dcache_controller_tb is
 end entity;
 
 
-architecture testbench of mem_cache_controller_tb is
-  component mem_cache_controller
+architecture testbench of mem_dcache_controller_tb is
+  component mem_dcache_controller
     port (
       clk, rst : in std_logic;
       cache_miss_en : in std_logic;
@@ -24,7 +24,7 @@ architecture testbench of mem_cache_controller_tb is
   signal stop : boolean;
 
 begin
-  uut : mem_cache_controller port map (
+  uut : mem_dcache_controller port map (
     clk => clk, rst => rst,
     cache_miss_en => cache_miss_en, valid_flag => valid_flag,
     tag_s => tag_s,
