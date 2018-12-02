@@ -7,7 +7,6 @@ entity instr_cache_tb is
 end entity;
 
 architecture testbench of instr_cache_tb is
-
   component instr_cache
     port (
       clk, rst : in std_logic;
@@ -15,19 +14,16 @@ architecture testbench of instr_cache_tb is
       a : in std_logic_vector(31 downto 0);
       rd : out std_logic_vector(31 downto 0);
       -- when cache miss
-      tag_s : in std_logic;
+      -- -- pull load from the memory
+      load_en : in std_logic;
       wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08 : in std_logic_vector(31 downto 0);
       rd_tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
       rd_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
       rd01, rd02, rd03, rd04, rd05, rd06, rd07, rd08 : out std_logic_vector(31 downto 0);
       -- push cache miss to the memory
-      cache_miss_en : out std_logic;
-      valid_flag : out std_logic;
-      -- pull load from the memory
-      load_en : in std_logic
+      cache_miss_en : out std_logic
     );
   end component;
-
 
   signal clk, rst, we : std_logic;
   signal a : std_logic_vector(31 downto 0);
@@ -38,7 +34,7 @@ architecture testbench of instr_cache_tb is
   signal rd_tag : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
   signal rd_index : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
 
-  signal tag_s, cache_miss_en, load_en, valid_flag : std_logic;
+  signal cache_miss_en, load_en : std_logic;
   constant all_x : std_logic_vector(31 downto 0) := (others => 'X');
   constant clk_period : time := 10 ns;
   signal stop : boolean;
@@ -46,16 +42,15 @@ architecture testbench of instr_cache_tb is
 begin
   uut : instr_cache port map (
     clk => clk, rst => rst,
-    a => a, rd => rd,
-    tag_s => tag_s,
+    a => a,
+    rd => rd,
+    load_en => load_en,
     wd01 => wd01, wd02 => wd02, wd03 => wd03, wd04 => wd04,
     wd05 => wd05, wd06 => wd06, wd07 => wd07, wd08 => wd08,
     rd_tag => rd_tag, rd_index => rd_index,
     rd01 => rd01, rd02 => rd02, rd03 => rd03, rd04 => rd04,
     rd05 => rd05, rd06 => rd06, rd07 => rd07, rd08 => rd08,
-    cache_miss_en => cache_miss_en,
-    valid_flag => valid_flag,
-    load_en => load_en
+    cache_miss_en => cache_miss_en
   );
 
   clk_process: process
@@ -73,7 +68,7 @@ begin
     rst <= '1'; wait for 1 ns; rst <= '0';
 
     -- read with empty cache
-    a <= X"00000008"; wait for 1 ns; assert rd = all_x; assert cache_miss_en = '1'; assert valid_flag = '0';
+    a <= X"00000008"; wait for 1 ns; assert rd = all_x; assert cache_miss_en = '1';
 
     a <= X"00000008";
     wd01 <= X"00000010"; wd02 <= X"00000011"; wd03 <= X"00000012"; wd04 <= X"00000013";
@@ -90,7 +85,7 @@ begin
     a <= X"0000000C"; wait for 1 ns; assert rd = X"00000013"; assert cache_miss_en = '0';
 
     -- cache miss
-    a <= X"00001" & X"00C"; wait for 1 ns; assert rd = all_x; assert cache_miss_en = '1'; assert valid_flag = '1';
+    a <= X"00001" & X"00C"; wait for 1 ns; assert rd = all_x; assert cache_miss_en = '1';
     -- cache hit
     a <= X"00000008"; we <= '0'; wait for 1 ns; assert rd = X"00000012"; assert cache_miss_en = '0';
     -- skip

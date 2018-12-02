@@ -10,16 +10,14 @@ entity instr_cache is
     a : in std_logic_vector(31 downto 0);
     rd : out std_logic_vector(31 downto 0);
     -- when cache miss
-    tag_s : in std_logic;
+    -- -- pull load from the memory
+    load_en : in std_logic;
     wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08 : in std_logic_vector(31 downto 0);
     rd_tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
     rd_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
     rd01, rd02, rd03, rd04, rd05, rd06, rd07, rd08 : out std_logic_vector(31 downto 0);
     -- push cache miss to the memory
-    cache_miss_en : out std_logic;
-    valid_flag : out std_logic;
-    -- pull load from the memory
-    load_en : in std_logic
+    cache_miss_en : out std_logic
   );
 end entity;
 
@@ -47,16 +45,6 @@ architecture behavior of instr_cache is
       s : in std_logic_vector(2 downto 0);
       y : out std_logic_vector(N-1 downto 0)
         );
-  end component;
-
-  component mux2
-    generic(N : integer);
-    port (
-      d0 : in std_logic_vector(N-1 downto 0);
-      d1 : in std_logic_vector(N-1 downto 0);
-      s : in std_logic;
-      y : out std_logic_vector(N-1 downto 0)
-    );
   end component;
 
   component cache_controller
@@ -172,7 +160,8 @@ begin
     cache_valid => valid_datum,
     addr_tag => addr_tag, cache_tag => tag_datum,
     addr_index => addr_index, addr_offset => addr_offset,
-    cache_miss_en => cache_miss_en, cache_valid_flag => valid_flag,
+    cache_miss_en => cache_miss_en,
+    -- cache_valid_flag => dummy_cache_valid_flag,
     rd_s => rd_s
   );
   -- if cache_hit
@@ -191,14 +180,7 @@ begin
     y => rd
   );
 
-  -- out rd_tag, rd_index,rd0*
-  mux2_tag : mux2 generic map(N=>CONST_CACHE_TAG_SIZE)
-  port map (
-    d0 => tag_datum,
-    d1 => addr_tag,
-    s => tag_s,
-    y => rd_tag
-  );
+  rd_tag <= addr_tag;
   rd_index <= addr_index;
 
   rd01 <= ram1_datum;

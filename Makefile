@@ -17,7 +17,7 @@ cache_pkg:
 	make a F=cache_pkg DIR=cache/
 data_cache: cache_pkg tools_pkg cache_decoder mux8 mux2 cache_controller
 	make aer F=data_cache DIR=cache/
-instr_cache: cache_pkg tools_pkg cache_decoder mux8 mux2 cache_controller
+instr_cache: cache_pkg tools_pkg cache_decoder mux8 cache_controller
 	make aer F=instr_cache DIR=cache/
 cache_controller: cache_pkg
 	make aer F=cache_controller DIR=cache/
