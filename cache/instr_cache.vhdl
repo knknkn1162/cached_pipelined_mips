@@ -13,9 +13,6 @@ entity instr_cache is
     -- -- pull load from the memory
     load_en : in std_logic;
     wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08 : in std_logic_vector(31 downto 0);
-    rd_tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-    rd_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
-    rd01, rd02, rd03, rd04, rd05, rd06, rd07, rd08 : out std_logic_vector(31 downto 0);
     -- push cache miss to the memory
     cache_miss_en : out std_logic
   );
@@ -179,16 +176,4 @@ begin
     s => rd_s,
     y => rd
   );
-
-  rd_tag <= addr_tag;
-  rd_index <= addr_index;
-
-  rd01 <= ram1_datum;
-  rd02 <= ram2_datum;
-  rd03 <= ram3_datum;
-  rd04 <= ram4_datum;
-  rd05 <= ram5_datum;
-  rd06 <= ram6_datum;
-  rd07 <= ram7_datum;
-  rd08 <= ram8_datum;
 end architecture;

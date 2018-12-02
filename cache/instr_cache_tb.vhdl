@@ -17,9 +17,6 @@ architecture testbench of instr_cache_tb is
       -- -- pull load from the memory
       load_en : in std_logic;
       wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08 : in std_logic_vector(31 downto 0);
-      rd_tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-      rd_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
-      rd01, rd02, rd03, rd04, rd05, rd06, rd07, rd08 : out std_logic_vector(31 downto 0);
       -- push cache miss to the memory
       cache_miss_en : out std_logic
     );
@@ -30,9 +27,6 @@ architecture testbench of instr_cache_tb is
   signal rd : std_logic_vector(31 downto 0);
 
   signal wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08 : std_logic_vector(31 downto 0);
-  signal rd01, rd02, rd03, rd04, rd05, rd06, rd07, rd08 : std_logic_vector(31 downto 0);
-  signal rd_tag : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-  signal rd_index : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
 
   signal cache_miss_en, load_en : std_logic;
   constant all_x : std_logic_vector(31 downto 0) := (others => 'X');
@@ -47,9 +41,6 @@ begin
     load_en => load_en,
     wd01 => wd01, wd02 => wd02, wd03 => wd03, wd04 => wd04,
     wd05 => wd05, wd06 => wd06, wd07 => wd07, wd08 => wd08,
-    rd_tag => rd_tag, rd_index => rd_index,
-    rd01 => rd01, rd02 => rd02, rd03 => rd03, rd04 => rd04,
-    rd05 => rd05, rd06 => rd06, rd07 => rd07, rd08 => rd08,
     cache_miss_en => cache_miss_en
   );
 
