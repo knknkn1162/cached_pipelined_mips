@@ -110,7 +110,7 @@ begin
   );
 
   -- read & write data or load block from memory
-  process(clk, rst, we, addr_index, addr_offset, wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08, wd)
+  process(clk, rst, we, addr_tag, valid_datum, addr_index, addr_offset, wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08, wd)
     variable idx : natural;
     variable valid_data : validtype(0 to SIZE-1);
     variable tag_data : tagtype(0 to SIZE-1);

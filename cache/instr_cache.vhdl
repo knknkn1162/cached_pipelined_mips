@@ -101,12 +101,9 @@ architecture behavior of instr_cache is
   signal ram7_datum : std_logic_vector(31 downto 0);
   signal ram8_datum : std_logic_vector(31 downto 0);
   signal valid_datum : std_logic;
-  signal old_tag_datum : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-  signal new_tag_datum : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
   signal tag_datum : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
 
   -- is cache miss occurs or not
-  signal cache_miss_en0 : std_logic;
   signal rd_s : std_logic_vector(2 downto 0); -- selector for mux8
 
 begin
@@ -118,7 +115,7 @@ begin
   );
 
   -- read & write data or load block from memory
-  process(clk, rst, addr_index, addr_offset, wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08)
+  process(clk, rst, load_en, addr_tag, addr_index, wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08)
     variable idx : natural;
     variable valid_data : validtype(0 to SIZE-1);
     variable tag_data : tagtype(0 to SIZE-1);
