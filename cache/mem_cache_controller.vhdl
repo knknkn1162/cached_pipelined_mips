@@ -2,7 +2,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use work.cache_pkg.ALL;
 
-entity mem_dcache_controller is
+entity mem_cache_controller is
   port (
     clk, rst : in std_logic;
     cache_miss_en : in std_logic;
@@ -13,7 +13,7 @@ entity mem_dcache_controller is
   );
 end entity;
 
-architecture behavior of mem_dcache_controller is
+architecture behavior of mem_cache_controller is
   type statetype is (
     NormalS, Cache2MemS, Mem2CacheS, CacheWriteBackS
   );

@@ -18,7 +18,7 @@ entity mem_cache is
 end entity;
 
 architecture behavior of mem_cache is
-  component mem_dcache_controller
+  component mem_cache_controller
     port (
       clk, rst : in std_logic;
       cache_miss_en : in std_logic;
@@ -70,7 +70,7 @@ architecture behavior of mem_cache is
   signal tag_s0 : std_logic;
   signal mem_we0, cache_miss_en0, valid_flag0, load_en0 : std_logic;
 begin
-  mem_dcache_controller0 : mem_dcache_controller port map (
+  mem_cache_controller0 : mem_cache_controller port map (
     clk => clk, rst => rst,
     cache_miss_en => cache_miss_en0,
     valid_flag => valid_flag0,
