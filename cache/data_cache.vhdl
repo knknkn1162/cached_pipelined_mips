@@ -96,7 +96,7 @@ architecture behavior of data_cache is
 
   -- is cache miss occurs or not
   signal cache_miss_en0 : std_logic;
-  signal rd_s : std_logic_vector(2 downto 0); -- selector for mux8
+  signal rd_s : std_logic_vector(CONST_CACHE_OFFSET_SIZE-1 downto 0); -- selector for mux8
 
 begin
   cache_decoder0 : cache_decoder port map(
