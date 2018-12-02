@@ -61,6 +61,19 @@ architecture behavior of data_cache is
     );
   end component;
 
+  component cache_controller
+    port (
+      clk, rst : in std_logic;
+      cache_valid : in std_logic;
+      addr_tag, cache_tag : in std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+      addr_index : in std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+      addr_offset : in std_logic_vector(CONST_CACHE_OFFSET_SIZE-1 downto 0);
+      cache_miss_en : out std_logic;
+      cache_valid_flag : out std_logic;
+      rd_s : out std_logic_vector(CONST_CACHE_OFFSET_SIZE-1 downto 0)
+    );
+  end component;
+
   -- state
   type statetype is (
     CacheMissEnS, NormalS
@@ -95,7 +108,6 @@ architecture behavior of data_cache is
   signal tag_datum : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
 
   -- is cache miss occurs or not
-  signal cache_miss_en0 : std_logic;
   signal rd_s : std_logic_vector(CONST_CACHE_OFFSET_SIZE-1 downto 0); -- selector for mux8
 
 begin
@@ -187,67 +199,14 @@ begin
     end if;
   end process;
 
-  -- FSM for cache_miss_en signal
-  process(clk, rst, state)
-  begin
-    if rst = '1' then
-      state <= NormalS;
-    elsif rising_edge(clk) then
-      state <= nextstate;
-    end if;
-  end process;
-
-  process(state, cache_miss_en0)
-  begin
-    case state is
-      when NormalS =>
-        if cache_miss_en0 = '1' then
-          nextstate <= CacheMissEnS;
-        else
-          nextstate <= NormalS;
-        end if;
-      when CacheMissEnS =>
-        nextstate <= NormalS;
-    end case;
-  end process;
-
-  -- cache_hit or cache_miss
-  process(state, addr_index, addr_tag, valid_datum, tag_datum)
-  begin
-    case state is
-      when NormalS =>
-        if valid_datum = '1' then
-          -- cache hit!
-          if tag_datum = addr_tag then
-            cache_miss_en0 <= '0';
-          else
-            -- cache miss
-            cache_miss_en0 <= '1';
-          end if;
-        else
-          -- if ram is invalid, cache_miss also occurs
-          if not is_X(addr_index) then
-            cache_miss_en0 <= '1';
-          end if;
-        end if;
-      when CacheMissEnS =>
-        cache_miss_en0 <= '0';
-      when others =>
-        -- do nothing
-    end case;
-    valid_flag <= valid_datum;
-  end process;
-  cache_miss_en <= cache_miss_en0;
-
-  -- direct mux8 selector
-  process(addr_index, addr_tag, addr_offset, valid_datum, tag_datum)
-  begin
-    if valid_datum = '1' and tag_datum = addr_tag then
-      rd_s <= addr_offset;
-    else
-      rd_s <= (others => 'X');
-    end if;
-  end process;
+  cache_controller0 : cache_controller port map (
+    clk => clk, rst => rst,
+    cache_valid => valid_datum,
+    addr_tag => addr_tag, cache_tag => tag_datum,
+    addr_index => addr_index, addr_offset => addr_offset,
+    cache_miss_en => cache_miss_en, cache_valid_flag => valid_flag,
+    rd_s => rd_s
+  );
 
   -- if cache_hit
   mux8_0 : mux8 generic map(N=>32)
