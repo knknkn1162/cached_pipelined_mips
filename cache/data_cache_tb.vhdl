@@ -40,7 +40,6 @@ architecture testbench of data_cache_tb is
   signal tag_s, cache_miss_en, load_en, valid_flag : std_logic;
   constant clk_period : time := 10 ns;
   signal stop : boolean;
-  constant filename : string := "./assets/mem/memfile.hex";
   constant all_x : std_logic_vector(31 downto 0) := (others => 'X');
 
 begin
