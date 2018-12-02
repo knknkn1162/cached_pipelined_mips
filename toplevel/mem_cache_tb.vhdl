@@ -85,6 +85,27 @@ begin
     -- cache hit!
     a <= X"00000008"; dcache_we <= '0'; wait for 1 ns;
     assert rd = X"FFFFFFFF";
+
+    -- write (cache miss!)
+    a <= X"00001" & X"008"; dcache_we <= '1'; wd <= X"FFFFFFFE";
+    wait for 1 ns; assert cache_miss_en = '1';
+    wait until rising_edge(clk); wait for 1 ns;
+    -- Cache2MemS
+    assert mem_we = '1';
+    wait until rising_edge(clk); wait for 1 ns;
+    -- Mem2CacheS
+    assert mem_we = '0';
+    wait until rising_edge(clk); wait for 1 ns;
+    -- CacheWriteBackS
+    assert load_en = '1';
+    wait until rising_edge(clk); wait for 1 ns;
+    -- NormalS(actual writeback)
+    assert load_en = '0'; assert mem_we = '0';
+    wait until rising_edge(clk); wait for 1 ns;
+
+    -- read(cache hit!)
+    a <= X"00001" & X"008"; dcache_we <= '0'; wait for 1 ns;
+    assert rd = X"FFFFFFFE";
     -- skip
     stop <= TRUE;
     -- success message
