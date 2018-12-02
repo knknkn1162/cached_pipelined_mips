@@ -74,12 +74,6 @@ architecture behavior of data_cache is
     );
   end component;
 
-  -- state
-  type statetype is (
-    CacheMissEnS, NormalS
-  );
-  signal state, nextstate : statetype;
-
   -- The size of data cache assumes to be 1K-byte
   constant SIZE : natural := 256; -- 0x0100
   constant DATA_BLOCK_SIZE : natural := 2**CONST_CACHE_OFFSET_SIZE;
@@ -103,8 +97,6 @@ architecture behavior of data_cache is
   signal ram7_datum : std_logic_vector(31 downto 0);
   signal ram8_datum : std_logic_vector(31 downto 0);
   signal valid_datum : std_logic;
-  signal old_tag_datum : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-  signal new_tag_datum : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
   signal tag_datum : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
 
   -- is cache miss occurs or not
