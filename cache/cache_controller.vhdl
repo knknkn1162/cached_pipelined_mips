@@ -72,9 +72,9 @@ begin
       when others =>
         -- do nothing
     end case;
-    cache_valid_flag <= cache_valid;
   end process;
   cache_miss_en <= cache_miss_en0;
+  cache_valid_flag <= cache_valid;
 
   -- direct mux8 selector
   process(addr_tag, addr_offset, cache_valid, cache_tag)
