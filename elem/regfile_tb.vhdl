@@ -22,7 +22,7 @@ architecture testbench of regfile_tb is
   end component;
 
   signal clk, rst, we : std_logic;
-  signal a1, a2, wa : std_logic_vector(4 downto 0);
+  signal a1, a2, wa : reg_vector;
   signal rd1, rd2, wd : std_logic_vector(31 downto 0);
   constant clk_period : time := 10 ns;
   signal stop : boolean;
