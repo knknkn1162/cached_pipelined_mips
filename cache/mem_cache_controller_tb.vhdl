@@ -13,13 +13,15 @@ architecture testbench of mem_cache_controller_tb is
       valid_flag : in std_logic;
       tag_s : out std_logic;
       load_en : out std_logic;
-      mem_we : out std_logic
+      mem_we : out std_logic;
+      suspend_flag : out std_logic
     );
   end component;
 
   signal clk, rst : std_logic;
   signal cache_miss_en, valid_flag, tag_s, load_en : std_logic;
   signal mem_we: std_logic;
+  signal suspend_flag : std_logic;
   constant clk_period : time := 10 ns;
   signal stop : boolean;
 
@@ -29,7 +31,8 @@ begin
     cache_miss_en => cache_miss_en, valid_flag => valid_flag,
     tag_s => tag_s,
     load_en => load_en,
-    mem_we => mem_we
+    mem_we => mem_we,
+    suspend_flag => suspend_flag
   );
 
   clk_process: process
@@ -46,25 +49,28 @@ begin
     wait for clk_period;
     rst <= '1'; wait for 1 ns; rst <= '0';
     wait for clk_period*3;
+    assert suspend_flag /= '1';
     -- NormalS
-    cache_miss_en <= '1'; valid_flag <= '0';
+    cache_miss_en <= '1'; valid_flag <= '0'; wait for 1 ns; assert suspend_flag = '1';
     wait until rising_edge(clk); wait for 1 ns; cache_miss_en <= '0';
     -- Mem2CacheS
-    assert mem_we = '0'; assert tag_s = '1'; assert load_en = '0';
+    assert mem_we = '0'; assert tag_s = '1'; assert load_en = '0'; assert suspend_flag = '1';
     wait until rising_edge(clk); wait for 1 ns;
     -- CacheWriteBackS
-    assert mem_we = '0'; assert load_en = '1';
+    assert mem_we = '0'; assert load_en = '1'; assert suspend_flag = '1';
     wait until rising_edge(clk); wait for 1 ns;
     -- NormalS
-    assert mem_we = '0'; assert load_en = '0';
+    assert mem_we = '0'; assert load_en = '0'; assert suspend_flag = '0';
     wait for clk_period*5;
-    assert mem_we = '0'; assert load_en = '0';
-    cache_miss_en <= '1'; valid_flag <= '1'; wait until rising_edge(clk); wait for 1 ns; cache_miss_en <= '0';
+    assert mem_we = '0'; assert load_en = '0'; assert suspend_flag = '0';
+    cache_miss_en <= '1'; valid_flag <= '1'; wait for 1 ns; assert suspend_flag = '1';
+    wait until rising_edge(clk); wait for 1 ns; cache_miss_en <= '0';
+
     -- Cache2MemS
-    assert mem_we = '1'; assert tag_s = '0'; assert load_en = '0';
+    assert mem_we = '1'; assert tag_s = '0'; assert load_en = '0'; assert suspend_flag = '1';
     wait until rising_edge(clk); wait for 1 ns; cache_miss_en <= '0';
     -- Mem2CacheS
-    assert mem_we = '0'; assert tag_s = '1'; assert load_en = '0';
+    assert mem_we = '0'; assert tag_s = '1'; assert load_en = '0'; assert suspend_flag = '1';
     wait until rising_edge(clk); wait for 1 ns;
     -- skip
     stop <= TRUE;
