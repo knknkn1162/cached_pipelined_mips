@@ -15,7 +15,8 @@ entity mem_cache is
     -- scan
     data_cache_miss_en, instr_cache_miss_en : out std_logic;
     mem_we : out std_logic;
-    instr_load_en, data_load_en : out std_logic
+    instr_load_en, data_load_en : out std_logic;
+    suspend_flag : out std_logic
   );
 end entity;
 
@@ -27,7 +28,8 @@ architecture behavior of mem_cache is
       valid_flag : in std_logic;
       tag_s : out std_logic;
       instr_load_en, data_load_en : out std_logic;
-      mem_we : out std_logic
+      mem_we : out std_logic;
+      suspend_flag : out std_logic
     );
   end component;
 
@@ -89,14 +91,15 @@ architecture behavior of mem_cache is
   signal mem_we0, valid_flag0 : std_logic;
   signal instr_load_en0, data_load_en0 : std_logic;
 begin
+
   mem_idcache_controller0 : mem_idcache_controller port map (
     clk => clk, rst => rst,
-    instr_cache_miss_en => instr_cache_miss_en0,
-    data_cache_miss_en => data_cache_miss_en0,
+    instr_cache_miss_en => instr_cache_miss_en0, data_cache_miss_en => data_cache_miss_en0,
     valid_flag => valid_flag0,
     tag_s => tag_s0,
     instr_load_en => instr_load_en0, data_load_en => data_load_en0,
-    mem_we => mem_we0
+    mem_we => mem_we0,
+    suspend_flag => suspend_flag
   );
 
   mem0 : mem generic map(filename=>memfile, BITS=>14)
