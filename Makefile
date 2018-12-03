@@ -12,7 +12,7 @@ mem_idcache_controller: mem_cache_controller flopr_en
 	make aer F=mem_idcache_controller DIR=cache/
 mem_cache_controller:
 	make aer F=mem_cache_controller DIR=cache/
-mem: flopr8_en tools_pkg cache_pkg
+mem: tools_pkg cache_pkg
 	make aer F=mem DIR=elem/
 regfile: type_pkg
 	make aer F=regfile DIR=elem/

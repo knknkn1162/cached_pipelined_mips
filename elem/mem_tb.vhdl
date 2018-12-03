@@ -21,7 +21,7 @@ architecture testbench of mem_tb is
   end component;
 
   constant BITS : natural := 10;
-  constant filename : string := "./assets/mem/memfile.hex";
+  constant filename : string := "./assets/memfile.hex";
 
   signal clk, rst, load, we : std_logic;
   signal tag : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
