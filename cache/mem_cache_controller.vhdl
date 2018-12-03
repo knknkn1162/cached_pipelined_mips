@@ -1,6 +1,5 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use work.cache_pkg.ALL;
 
 entity mem_cache_controller is
   port (
