@@ -2,7 +2,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use work.cache_pkg.ALL;
 
-entity mem_cache is
+entity mips is
   generic(memfile : string);
   port (
     clk, rst, load : in std_logic;
@@ -19,7 +19,7 @@ entity mem_cache is
   );
 end entity;
 
-architecture behavior of mem_cache is
+architecture behavior of mips is
   component mem_idcache_controller
     port (
       clk, rst : in std_logic;
