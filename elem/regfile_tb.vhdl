@@ -1,5 +1,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use work.type_pkg.ALL;
 
 entity regfile_tb is
 end entity;
@@ -9,12 +10,12 @@ architecture testbench of regfile_tb is
     port (
       clk, rst : in std_logic;
       -- 25:21(read)
-      a1 : in std_logic_vector(4 downto 0);
+      a1 : in reg_vector;
       rd1 : out std_logic_vector(31 downto 0);
       -- 20:16(read)
-      a2 : in std_logic_vector(4 downto 0);
+      a2 : in reg_vector;
       rd2 : out std_logic_vector(31 downto 0);
-      wa : in std_logic_vector(4 downto 0);
+      wa : in reg_vector;
       wd : in std_logic_vector(31 downto 0);
       we : in std_logic
     );
