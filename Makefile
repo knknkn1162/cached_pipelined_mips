@@ -4,6 +4,9 @@ MEM=dummy
 DIR=./
 DEBUG=
 
+instr_decoder: type_pkg slt2 sgnext
+	make a F=instr_decoder DIR=component/
+
 cache_decoder: cache_pkg
 	make aer F=cache_decoder DIR=cache/
 mem_cache: cache_pkg mem data_cache instr_cache mem_idcache_controller
