@@ -14,7 +14,6 @@ entity mem_cache is
     data_cache_rd : out std_logic_vector(31 downto 0);
     -- scan
     data_cache_miss_en, instr_cache_miss_en : out std_logic;
-    mem_we : out std_logic;
     instr_load_en, data_load_en : out std_logic;
     suspend_flag : out std_logic
   );
@@ -101,6 +100,8 @@ begin
     mem_we => mem_we0,
     suspend_flag => suspend_flag
   );
+  instr_load_en <= instr_load_en0;
+  data_load_en <= data_load_en0;
 
   mem0 : mem generic map(filename=>memfile, BITS=>14)
   port map (
@@ -124,6 +125,7 @@ begin
     wd05 => mem2cache_d5, wd06 => mem2cache_d6, wd07 => mem2cache_d7, wd08 => mem2cache_d8,
     cache_miss_en => instr_cache_miss_en0
   );
+  instr_cache_miss_en <= instr_cache_miss_en0;
 
   data_cache0 : data_cache port map (
     clk => clk, rst => rst,
@@ -140,4 +142,5 @@ begin
     rd05 => dcache2mem_d5, rd06 => dcache2mem_d6, rd07 => dcache2mem_d7, rd08 => dcache2mem_d8,
     cache_miss_en => data_cache_miss_en0, valid_flag => valid_flag0
   );
+  data_cache_miss_en <= data_cache_miss_en0;
 end architecture;
