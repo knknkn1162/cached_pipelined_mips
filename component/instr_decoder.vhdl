@@ -8,7 +8,7 @@ entity instr_decoder is
     opcode : out opcode_vector;
     rs, rt, rd : out reg_vector;
     immext : out std_logic_vector(31 downto 0);
-    brnext: out std_logic_vector(31 downto 0);
+    brplus: out std_logic_vector(31 downto 0);
     shamt : out shamt_vector;
     funct : out funct_vector;
     target2 : out target2_vector
@@ -44,5 +44,5 @@ begin
 
   target <= instr(25 downto 0);
   target2 <= target & "00";
-  brnext <= immext0(29 downto 0) & "00";
+  brplus <= immext0(29 downto 0) & "00";
 end architecture;
