@@ -8,19 +8,21 @@ entity mem_idcache_controller is
     valid_flag : in std_logic;
     tag_s : out std_logic;
     instr_load_en, data_load_en : out std_logic;
-    mem_we : out std_logic
+    mem_we : out std_logic;
+    suspend_flag : out std_logic
   );
 end entity;
 
 architecture behavior of mem_idcache_controller is
-  component mem_cache_controller
+  component mem_cache_controller is
     port (
       clk, rst : in std_logic;
       cache_miss_en : in std_logic;
       valid_flag : in std_logic;
       tag_s : out std_logic;
       load_en : out std_logic;
-      mem_we : out std_logic
+      mem_we : out std_logic;
+      suspend_flag : out std_logic
     );
   end component;
 
@@ -38,6 +40,7 @@ architecture behavior of mem_idcache_controller is
   signal valid_flag0, valid_flag1 : std_logic;
   signal cache_vector0, cache_vector1 : std_logic_vector(1 downto 0);
   signal both_cache_miss_en0, both_cache_miss_en1 : std_logic;
+  signal instr_suspend_flag, data_suspend_flag : std_logic;
 
 begin
   both_cache_miss_en0 <= instr_cache_miss_en and data_cache_miss_en;
@@ -70,7 +73,8 @@ begin
     valid_flag => valid_flag0,
     tag_s => tag_s,
     load_en => data_load_en,
-    mem_we => mem_we
+    mem_we => mem_we,
+    suspend_flag => data_suspend_flag
   );
 
   mem_icache_controller : mem_cache_controller port map (
@@ -79,7 +83,9 @@ begin
     -- instrcution cache doesn't have to write back to the memory
     valid_flag => '0',
     -- tag_s => tag_s, -- in fact, always '1'(new)
-    load_en => instr_load_en
+    load_en => instr_load_en,
     -- mem_we => imem_we0 -- always '0'
+    suspend_flag => instr_suspend_flag
   );
+  suspend_flag <= data_suspend_flag or instr_suspend_flag;
 end architecture;
