@@ -27,8 +27,6 @@ cache_controller: cache_pkg
 	make aer F=cache_controller DIR=cache/
 alu: type_pkg
 	make aer F=alu DIR=elem/
-flopr8_en: flopr_en
-	make a F=flopr8_en DIR=component/
 flopr_en:
 	make aer F=flopr_en DIR=elem/
 sgnext:
