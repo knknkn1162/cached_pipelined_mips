@@ -8,7 +8,7 @@ cache_decoder: cache_pkg
 	make aer F=cache_decoder DIR=cache/
 mem_cache: cache_pkg mem data_cache instr_cache mem_idcache_controller
 	make aer F=mem_cache DIR=toplevel/
-mem_idcache_controller: mem_cache_controller
+mem_idcache_controller: mem_cache_controller flopr_en
 	make aer F=mem_idcache_controller DIR=cache/
 mem_cache_controller:
 	make aer F=mem_cache_controller DIR=cache/
