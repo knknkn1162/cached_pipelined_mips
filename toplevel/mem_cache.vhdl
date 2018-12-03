@@ -6,28 +6,27 @@ entity mem_cache is
   generic(memfile : string);
   port (
     clk, rst, load : in std_logic;
-    dcache_a : in std_logic_vector(31 downto 0);
-    icache_a : in std_logic_vector(31 downto 0);
+    data_cache_a : in std_logic_vector(31 downto 0);
+    instr_cache_a : in std_logic_vector(31 downto 0);
     we : in std_logic;
     wd : in std_logic_vector(31 downto 0);
-    icache_rd : out std_logic_vector(31 downto 0);
-    dcache_rd : out std_logic_vector(31 downto 0);
+    instr_cache_rd : out std_logic_vector(31 downto 0);
+    data_cache_rd : out std_logic_vector(31 downto 0);
     -- scan
-    cache_miss_en : out std_logic;
+    data_cache_miss_en, instr_cache_miss_en : out std_logic;
     mem_we : out std_logic;
-    iload_en : out std_logic;
-    dload_en : out std_logic
+    instr_load_en, data_load_en : out std_logic
   );
 end entity;
 
 architecture behavior of mem_cache is
-  component mem_cache_controller
+  component mem_idcache_controller
     port (
       clk, rst : in std_logic;
-      cache_miss_en : in std_logic;
+      instr_cache_miss_en, data_cache_miss_en : in std_logic;
       valid_flag : in std_logic;
       tag_s : out std_logic;
-      load_en : out std_logic;
+      instr_load_en, data_load_en : out std_logic;
       mem_we : out std_logic
     );
   end component;
@@ -86,31 +85,19 @@ architecture behavior of mem_cache is
   signal tag0 : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
   signal index0 : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
   signal tag_s0 : std_logic;
-  signal dcache_miss_en0, icache_miss_en0, cache_miss_en0 : std_logic;
+  signal data_cache_miss_en0, instr_cache_miss_en0: std_logic;
   signal mem_we0, valid_flag0 : std_logic;
-  signal iload_en0, dload_en0 : std_logic;
+  signal instr_load_en0, data_load_en0 : std_logic;
 begin
-  mem_dcache_controller0 : mem_cache_controller port map (
+  mem_idcache_controller0 : mem_idcache_controller port map (
     clk => clk, rst => rst,
-    cache_miss_en => dcache_miss_en0,
+    instr_cache_miss_en => instr_cache_miss_en0,
+    data_cache_miss_en => data_cache_miss_en0,
     valid_flag => valid_flag0,
     tag_s => tag_s0,
-    load_en => dload_en0,
+    instr_load_en => instr_load_en0, data_load_en => data_load_en0,
     mem_we => mem_we0
   );
-  mem_we <= mem_we0;
-  dload_en <= dload_en0;
-
-  mem_icache_controller0 : mem_cache_controller port map (
-    clk => clk, rst => rst,
-    cache_miss_en => icache_miss_en0,
-    -- instrcution cache doesn't have to write back to the memory
-    valid_flag => '0',
-    -- tag_s => tag_s, -- in fact, always '1'(new)
-    load_en => iload_en0
-    -- mem_we => imem_we0 -- always '0'
-  );
-  cache_miss_en0 <= dcache_miss_en0 and icache_miss_en0;
 
   mem0 : mem generic map(filename=>memfile, BITS=>14)
   port map (
@@ -127,28 +114,27 @@ begin
 
   instr_cache0 : instr_cache port map (
     clk => clk, rst => rst,
-    a => icache_a,
-    rd => icache_rd,
-    load_en => iload_en0,
+    a => instr_cache_a,
+    rd => instr_cache_rd,
+    load_en => instr_load_en0,
     wd01 => mem2cache_d1, wd02 => mem2cache_d2, wd03 => mem2cache_d3, wd04 => mem2cache_d4,
     wd05 => mem2cache_d5, wd06 => mem2cache_d6, wd07 => mem2cache_d7, wd08 => mem2cache_d8,
-    cache_miss_en => icache_miss_en0
+    cache_miss_en => instr_cache_miss_en0
   );
 
   data_cache0 : data_cache port map (
     clk => clk, rst => rst,
     we => we,
-    a => dcache_a,
+    a => data_cache_a,
     wd => wd,
     tag_s => tag_s0,
-    rd => dcache_rd,
-    load_en => dload_en0,
+    rd => data_cache_rd,
+    load_en => data_load_en0,
     wd01 => mem2cache_d1, wd02 => mem2cache_d2, wd03 => mem2cache_d3, wd04 => mem2cache_d4,
     wd05 => mem2cache_d5, wd06 => mem2cache_d6, wd07 => mem2cache_d7, wd08 => mem2cache_d8,
     rd_tag => tag0, rd_index => index0,
     rd01 => dcache2mem_d1, rd02 => dcache2mem_d2, rd03 => dcache2mem_d3, rd04 => dcache2mem_d4,
     rd05 => dcache2mem_d5, rd06 => dcache2mem_d6, rd07 => dcache2mem_d7, rd08 => dcache2mem_d8,
-    cache_miss_en => cache_miss_en0, valid_flag => valid_flag0
+    cache_miss_en => data_cache_miss_en0, valid_flag => valid_flag0
   );
-  cache_miss_en <= cache_miss_en0;
 end architecture;
