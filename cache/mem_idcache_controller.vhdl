@@ -48,8 +48,8 @@ begin
     a => cache_vector0,
     y => cache_vector1
   );
-  valid_flag1 <= cache_vector1(1);
-  both_cache_miss_en1 <= cache_vector1(0);
+  valid_flag1 <= cache_vector1(0);
+  both_cache_miss_en1 <= cache_vector1(1);
 
   process(both_cache_miss_en1, both_cache_miss_en0, valid_flag)
   begin
