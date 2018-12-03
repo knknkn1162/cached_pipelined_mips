@@ -13,9 +13,9 @@ mem_idcache_controller: mem_cache_controller flopr_en
 mem_cache_controller:
 	make aer F=mem_cache_controller DIR=cache/
 mem: tools_pkg cache_pkg
-	make aer F=mem DIR=elem/
+	make aer F=mem DIR=general/
 regfile: type_pkg
-	make aer F=regfile DIR=elem/
+	make aer F=regfile DIR=general/
 
 cache_pkg:
 	make a F=cache_pkg DIR=cache/
@@ -26,15 +26,15 @@ instr_cache: cache_pkg tools_pkg cache_decoder mux8 cache_controller
 cache_controller: cache_pkg
 	make aer F=cache_controller DIR=cache/
 alu: type_pkg
-	make aer F=alu DIR=elem/
+	make aer F=alu DIR=general/
 flopr_en:
-	make aer F=flopr_en DIR=elem/
+	make aer F=flopr_en DIR=general/
 sgnext:
-	make aer F=sgnext DIR=elem/
+	make aer F=sgnext DIR=general/
 slt2:
-	make aer F=slt2 DIR=elem/
+	make aer F=slt2 DIR=general/
 mux2:
-	make aer F=mux2 DIR=elem/
+	make aer F=mux2 DIR=general/
 mux8:
 	make aer F=mux8 DIR=cache/
 tools_pkg:

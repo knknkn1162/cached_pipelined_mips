@@ -4,7 +4,7 @@
 *.vcd
 work-obj93.cf
 !*/*
-!elem
+!general
 !component
 !cache
 !toplevel
