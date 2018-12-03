@@ -4,13 +4,13 @@ MEM=dummy
 DIR=./
 DEBUG=
 
+mips: flopr_en instr_decoder mux2 regfile mem_idcache_controller mem data_cache instr_cache
+	make aer F=mips
 instr_decoder: type_pkg slt2 sgnext
 	make a F=instr_decoder DIR=component/
 
 cache_decoder: cache_pkg
 	make aer F=cache_decoder DIR=cache/
-mem_cache: cache_pkg mem data_cache instr_cache mem_idcache_controller
-	make a F=mem_cache DIR=toplevel/
 mem_idcache_controller: mem_cache_controller flopr_en
 	make aer F=mem_idcache_controller DIR=cache/
 mem_cache_controller:
