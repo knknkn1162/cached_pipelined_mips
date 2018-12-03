@@ -14,7 +14,7 @@ entity mem_idcache_controller is
 end entity;
 
 architecture behavior of mem_idcache_controller is
-  component mem_cache_controller is
+  component mem_cache_controller
     port (
       clk, rst : in std_logic;
       cache_miss_en : in std_logic;
@@ -36,7 +36,6 @@ architecture behavior of mem_idcache_controller is
   end component;
 
   signal data_cache_miss_en0:  std_logic;
-  signal instr_cache_miss_en0 : std_logic;
   signal valid_flag0, valid_flag1 : std_logic;
   signal cache_vector0, cache_vector1 : std_logic_vector(1 downto 0);
   signal both_cache_miss_en0, both_cache_miss_en1 : std_logic;
@@ -65,7 +64,6 @@ begin
       valid_flag0 <= valid_flag;
     end if;
   end process;
-  instr_cache_miss_en0 <= instr_cache_miss_en;
 
   mem_dcache_controller : mem_cache_controller port map (
     clk => clk, rst => rst,
@@ -79,7 +77,7 @@ begin
 
   mem_icache_controller : mem_cache_controller port map (
     clk => clk, rst => rst,
-    cache_miss_en => instr_cache_miss_en0,
+    cache_miss_en => instr_cache_miss_en,
     -- instrcution cache doesn't have to write back to the memory
     valid_flag => '0',
     -- tag_s => tag_s, -- in fact, always '1'(new)
