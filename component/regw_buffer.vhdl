@@ -11,7 +11,6 @@ entity regw_buffer is
     wa1 : in reg_vector;
     wd1 : in std_logic_vector(31 downto 0);
     we1 : in std_logic;
-    s1 : in std_logic;
     -- for register WB
     wa2 : out reg_vector;
     wd2 : out std_logic_vector(31 downto 0);
@@ -60,7 +59,7 @@ begin
   port map (
     clk => clk, rst => rst,
     en0 => '1', en1 => '1',
-    s1 => s1,
+    s1 => we1,
     a0 => w0,
     load1 => load1,
     a1 => w1,

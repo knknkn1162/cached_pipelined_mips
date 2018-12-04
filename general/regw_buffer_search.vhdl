@@ -14,7 +14,7 @@ end entity;
 
 architecture behavior of regw_buffer_search is
 begin
-  process(wa0, wa1, wa2, wd0, wd1, wd2, we0, we1, we2)
+  process(ra, wa0, wa1, wa2, wd0, wd1, wd2, we0, we1, we2)
   begin
     if ra = wa0 and we0 = '1' then
       rd <= wd0;
