@@ -4,8 +4,10 @@ MEM=dummy
 DIR=./
 DEBUG=
 
-mips: flopr_en instr_decoder mux2 regfile mem_idcache_controller mem data_cache instr_cache
+mips: datapath mem_idcache_controller
 	make aer F=mips
+datapath: flopr_en instr_decoder mux2 regfile mem_idcache_controller mem data_cache instr_cache
+	make aer F=datapath
 instr_decoder: type_pkg slt2 sgnext
 	make a F=instr_decoder DIR=component/
 
