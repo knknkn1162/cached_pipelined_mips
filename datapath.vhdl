@@ -192,7 +192,6 @@ begin
   );
   instr <= instr0;
 
-
   -- DecodeS
   -- -- (decoder & regfile part)
   reg_instr : flopr_en generic map (N=>32)
@@ -228,7 +227,7 @@ begin
     a => pc1
   );
 
-  br4 <= std_logic_vector(unsigned(pcplus) + unsigned(pc1) + 4);
+  br4 <= std_logic_vector(unsigned(brplus0) + unsigned(pc1) + 4);
   pc4 <= std_logic_vector(unsigned(pc0) + 4);
   ja <= pc1(31 downto 28) & target2;
 
