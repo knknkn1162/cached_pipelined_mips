@@ -12,22 +12,19 @@ entity datapath is
     we : in std_logic;
     wd : in std_logic_vector(31 downto 0);
     -- controller
-    -- -- mem_cache
-    instr_cache_miss_en, data_cache_miss_en : out std_logic;
-    valid_flag : out std_logic;
+    fetch_en, decode_en, calc_en, dcache_en : in std_logic;
+    reg_we1, reg_we2 : in std_logic;
+    dcache_we : in std_logic;
+    decode_instr_rtrd_s, calc_rdt_immext_s, memrw_instr_rtrd_aluout_s : in std_logic;
+    decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
     tag_s : in std_logic;
-    instr_load_en, data_load_en : in std_logic;
-    mem_we : in std_logic;
-    -- calc
-    alucont : in alucont_type;
-    calc_rdt_immext_s : in std_logic;
-    -- RegWritebackS
-    regwb_rt_rd_s : in std_logic;
-    reg_we : in std_logic;
-    -- from memory
+    alu_controller : in alucont_type;
+    -- from cache & memory
+    instr_cache_miss_en, data_cache_miss_en, valid_flag : out std_logic;
+    instr_load_en, dcache_load_en : in std_logic;
     mem2cache_d1, mem2cache_d2, mem2cache_d3, mem2cache_d4, mem2cache_d5, mem2cache_d6, mem2cache_d7, mem2cache_d8 : in std_logic_vector(31 downto 0);
-    mem_tag : out std_logic;
-    mem_index : out std_logic;
+    mem_tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+    mem_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
     dcache2mem_d1, dcache2mem_d2, dcache2mem_d3, dcache2mem_d4, dcache2mem_d5, dcache2mem_d6, dcache2mem_d7, dcache2mem_d8 : out std_logic_vector(31 downto 0);
     -- scan
     -- -- cache & memory
@@ -163,38 +160,28 @@ architecture behavior of datapath is
     );
   end component;
 
-  -- cache & memory
-  signal tag0 : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-  signal index0 : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
-  signal data_cache_miss_en0, instr_cache_miss_en0: std_logic;
-
-  -- enable
-  signal fetch_en, decode_en, calc_en, dmemrw_en, regwb_en : std_logic;
-
-  -- fetchS
-  signal pc0, pcnext0 : std_logic_vector(31 downto 0);
+  signal pc0, pc1, pcnext0 : std_logic_vector(31 downto 0);
   signal instr0, instr1 : std_logic_vector(31 downto 0);
-  -- decodeS
-  -- -- decoder
-  signal opcode0 : opcode_vector;
+  signal rs0, rt0, instr_rd0, reg_wa0, instr_rtrd0, instr_rtrd1, instr_rtrd2 : reg_vector;
+  signal rds0, rds1, rdt0, rdt1, rdt2, reg_wd0 : std_logic_vector(31 downto 0);
+  signal immext0, immext1, brplus0 : std_logic_vector(31 downto 0);
+  signal shamt0 : shamt_vector;
+  signal funct0, funct1 : funct_vector;
+  signal opcode0, opcode1 : opcode_vector;
   signal funct_opcode0, funct_opcode1 : std_logic_vector(CONST_INSTR_FUNCT_SIZE+CONST_INSTR_OPCODE_SIZE-1 downto 0);
-  signal rs0, rt0, rt1, rd0, rd1, rt_rd0 : reg_vector;
-  signal brplus0 : std_logic_vector(31 downto 0);
-  signal funct0 : funct_vector;
   signal target2 : target2_vector;
-
-  signal rds0, rds1, rdt0, rdt1, rdt2, immext0, immext1 : std_logic_vector(31 downto 0);
-  signal rdt_immext0 : std_logic_vector(31 downto 0);
-  signal shamt0, shamt1 : shamt_vector;
-
-  -- CalCS
-  signal aluout0, aluout1 : std_logic_vector(31 downto 0);
-  signal alu_controller : alucont_type;
-
+  signal br4, pc4, ja : std_logic_vector(31 downto 0);
+  -- calc
+  signal rdt_immext0, aluout0, aluout1 : std_logic_vector(31 downto 0);
+  -- DMemRWS
+  signal dcache_wa0, dcache_rd0 : std_logic_vector(31 downto 0);
   -- RegWriteBackS
-  signal wd0 : std_logic_vector(31 downto 0);
+  signal reg_we0 : std_logic;
+  -- forwarding
+  signal buf_rds0, buf_rdt0 : std_logic_vector(31 downto 0);
 
 begin
+
   -- FetchS
   reg_pc : flopr_en generic map (N=>32)
   port map (
@@ -227,7 +214,7 @@ begin
   instr_decoder0 : instr_decoder port map (
     instr => instr1,
     opcode => opcode0,
-    rs => rs0, rt => rt0, rd => rd0,
+    rs => rs0, rt => rt0, rd => instr_rd0,
     immext => immext0,
     brplus => brplus0, -- for bne, beq instruction
     shamt => shamt0,
@@ -239,15 +226,16 @@ begin
     clk => clk, rst => rst,
     a1 => rs0, rd1 => rds0,
     a2 => rt0, rd2 => rdt0,
-    wa => wa0, wd => wd0, we => reg_we
+    wa => reg_wa0, wd => reg_wd0, we => reg_we0
   );
 
-  rt_rd_mux : mux2 generic map (N=>CONST_REG_SIZE)
+  -- for memwritebackS
+  instr_rtrd_mux : mux2 generic map (N=>CONST_REG_SIZE)
   port map (
     d0 => rt0,
-    d1 => rd0,
-    s => decode_rt_rd_s,
-    y => mem_wa0
+    d1 => instr_rd0,
+    s => decode_instr_rtrd_s,
+    y => instr_rtrd0
   );
 
   -- -- (pc part)
@@ -255,7 +243,7 @@ begin
   port map (
     clk => clk, rst => rst, en => decode_en,
     a => pc0,
-    a => pc1
+    y => pc1
   );
 
   br4 <= std_logic_vector(unsigned(brplus0) + unsigned(pc1) + 4);
@@ -268,15 +256,15 @@ begin
     d01 => br4,
     d10 => ja,
     d11 => pc4, -- dummy
-    s => decodes_pc_br_ja_s,
+    s => decode_pc_br_ja_s,
     y => pcnext0
   );
   pcnext <= pcnext0; -- for scan
 
   -- CalcS
-  reg_rt_rd : flopr_en generic map (N=>CONST_REG_SIZE)
+  reg_instr_rtrd0 : flopr_en generic map (N=>CONST_REG_SIZE)
   port map (
-    clk => clk, rst => rst, en => calc_en, a => mem_wa0, y => mem_wa1
+    clk => clk, rst => rst, en => calc_en, a => instr_rtrd0, y => instr_rtrd1
   );
 
   reg_rds : flopr_en generic map (N=>32)
@@ -317,29 +305,45 @@ begin
     y => aluout0
   );
 
-  -- DMemRWS
+  -- DCacheRWS
+  -- for sw instruction
   reg_rdt1 : flopr_en generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => dmemrw_en,
+    clk => clk, rst => rst, en => dcache_en,
     a => rdt1,
     y => rdt2
   );
 
+  reg_instr_rtrd1 : flopr_en generic map (N=>5)
+  port map (
+    clk => clk, rst => rst, en => dcache_en,
+    a => instr_rtrd1,
+    y => instr_rtrd2
+  );
+
   reg_aluout : flopr_en generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => dmemrw_en,
+    clk => clk, rst => rst, en => dcache_en,
     a => aluout0,
     y => aluout1
   );
 
+  mem_wa_mux : mux2 generic map (N=>CONST_REG_SIZE)
+  port map (
+    d0 => instr_rtrd2,
+    d1 => aluout1,
+    s => memrw_instr_rtrd_aluout_s,
+    y => dcache_wa0
+  );
+
   data_cache0 : data_cache port map (
     clk => clk, rst => rst,
-    we => we,
-    a => aluout1,
+    we => dcache_we,
+    a => dcache_wa0,
     wd => rdt2,
     tag_s => tag_s,
-    rd => mem_rd0,
-    load_en => data_load_en,
+    rd => dcache_rd0,
+    load_en => dcache_load_en,
     wd01 => mem2cache_d1, wd02 => mem2cache_d2, wd03 => mem2cache_d3, wd04 => mem2cache_d4,
     wd05 => mem2cache_d5, wd06 => mem2cache_d6, wd07 => mem2cache_d7, wd08 => mem2cache_d8,
     rd_tag => mem_tag, rd_index => mem_index,
@@ -353,15 +357,14 @@ begin
   regw_buffer0 : regw_buffer port map (
     clk => clk, rst => rst,
     -- for add(R-type), addi(part of I-type)
-    wa0 => mem_wa1, wd0 => aluout0, we0 => we1,
-    s => regw_s,
+    wa0 => instr_rtrd1, wd0 => aluout0, we0 => reg_we1,
     -- for lw
-    wa1 => mem_wa2, wd1 => mem_rd0, we1 => we2,
+    wa1 => instr_rtrd2, wd1 => dcache_rd0, we1 => reg_we2,
     -- out
     wa2 => reg_wa0, wd2 => reg_wd0, we2 => reg_we0,
     -- buffer search
     ra1 => rs0, rd1 => buf_rds0,
-    ra1 => rt0, rd2 => buf_rdt0
+    ra2 => rt0, rd2 => buf_rdt0
   );
 
 end architecture;
