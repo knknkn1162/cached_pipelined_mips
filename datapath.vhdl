@@ -70,6 +70,18 @@ architecture behavior of datapath is
         );
   end component;
 
+  component mux4
+    generic (N : natural);
+    port (
+      d00 : in std_logic_vector(N-1 downto 0);
+      d01 : in std_logic_vector(N-1 downto 0);
+      d10 : in std_logic_vector(N-1 downto 0);
+      d11 : in std_logic_vector(N-1 downto 0);
+      s : in std_logic_vector(1 downto 0);
+      y : out std_logic_vector(N-1 downto 0)
+    );
+  end component;
+
   component regfile
     port (
       clk, rst : in std_logic;
@@ -146,7 +158,7 @@ architecture behavior of datapath is
   signal rs0, rt0, rd0, rd1, rt_rd0 : reg_vector;
   signal brplus0 : std_logic_vector(31 downto 0);
   signal funct0 : funct_vector;
-  signal target2_0 : target2_vector;
+  signal target2 : target2_vector;
 
   signal rds0, rds1, rdt0, rdt1, rdt2, immext0, immext1 : std_logic_vector(31 downto 0);
   signal rdt_immext0 : std_logic_vector(31 downto 0);
@@ -160,10 +172,6 @@ architecture behavior of datapath is
   signal wd0 : std_logic_vector(31 downto 0);
 
 begin
-
-  -- DecodeS (pc part)
-  pcnext0 <= std_logic_vector(unsigned(pc0) + 4);
-  pcnext <= pcnext0; -- for scan
   -- FetchS
   reg_pc : flopr_en generic map (N=>32)
   port map (
@@ -185,7 +193,8 @@ begin
   instr <= instr0;
 
 
-  -- DecodeS (decoder & regfile part)
+  -- DecodeS
+  -- -- (decoder & regfile part)
   reg_instr : flopr_en generic map (N=>32)
   port map (
     clk => clk, rst => rst, en => decode_en,
@@ -201,7 +210,7 @@ begin
     brplus => brplus0, -- for bne, beq instruction
     shamt => shamt0,
     funct => funct0,
-    target2 => target2_0 -- for j instruction
+    target2 => target2 -- for j instruction
   );
 
   regfile0 : regfile port map (
@@ -210,6 +219,29 @@ begin
     a2 => rt0, rd2 => rdt0,
     wa => wa0, wd => wd0, we => reg_we
   );
+
+  -- -- (pc part)
+  reg_pc0 : flopr_en generic map (N=>32)
+  port map (
+    clk => clk, rst => rst, en => decode_en,
+    a => pc0,
+    a => pc1
+  );
+
+  br4 <= std_logic_vector(unsigned(pcplus) + unsigned(pc1) + 4);
+  pc4 <= std_logic_vector(unsigned(pc0) + 4);
+  ja <= pc1(31 downto 28) & target2;
+
+  pc_br_ja_mux4 : mux4 generic map (N=>32)
+  port map (
+    d00 => pc4,
+    d01 => br4,
+    d10 => ja,
+    d11 => pc4, -- dummy
+    s => decodes_pc_br_ja_s,
+    y => pcnext0
+  );
+  pcnext <= pcnext0; -- for scan
 
   -- CalcS
   reg_rds : flopr_en generic map (N=>32)
