@@ -22,6 +22,9 @@ mem: tools_pkg cache_pkg
 regfile: type_pkg
 	make aer F=regfile DIR=general/
 
+shift2_register_load: flopr_en mux2
+	make aer F=shift2_register_load DIR=component/
+
 cache_pkg:
 	make a F=cache_pkg DIR=cache/
 data_cache: cache_pkg tools_pkg cache_decoder mux8 mux2 cache_controller
