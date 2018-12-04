@@ -41,6 +41,8 @@ alu: type_pkg
 	make aer F=alu DIR=general/
 flopr_en:
 	make aer F=flopr_en DIR=general/
+flopr:
+	make aer F=flopr DIR=general/
 sgnext:
 	make aer F=sgnext DIR=general/
 slt2:
