@@ -2,7 +2,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use work.type_pkg.ALL;
 
-entity regw_cache is
+entity regw_buffer is
   port (
     clk, rst : in std_logic;
     wa0 : in reg_vector;
@@ -25,7 +25,7 @@ entity regw_cache is
   );
 end entity;
 
-architecture behavior of regw_cache is
+architecture behavior of regw_buffer is
   component shift2_register_load is
     generic(N : natural);
     port (
@@ -38,7 +38,7 @@ architecture behavior of regw_cache is
     );
   end component;
 
-  component regw_cache_search
+  component regw_buffer_search
     port (
       wa0, wa1, wa2 : in reg_vector;
       wd0, wd1, wd2 : in std_logic_vector(31 downto 0);
@@ -76,7 +76,7 @@ begin
 
   we2 <= we2_0; wd2 <= wd2_0; wa2 <= wa2_0;
 
-  ra1_search : regw_cache_search port map (
+  ra1_search : regw_buffer_search port map (
     wa0 => wa0, wa1 => wa1_0, wa2 => wa2_0,
     wd0 => wd0, wd1 => wd1_0, wd2 => wd2_0,
     we0 => we0, we1 => we1_0, we2 => we2_0,
@@ -84,7 +84,7 @@ begin
     rd => rd1
   );
 
-  ra2_search : regw_cache_search port map (
+  ra2_search : regw_buffer_search port map (
     wa0 => wa0, wa1 => wa1_0, wa2 => wa2_0,
     wd0 => wd0, wd1 => wd1_0, wd2 => wd2_0,
     we0 => we0, we1 => we1_0, we2 => we2_0,

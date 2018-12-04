@@ -2,7 +2,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use work.type_pkg.ALL;
 
-entity regw_cache_search is
+entity regw_buffer_search is
   port (
     wa0, wa1, wa2 : in reg_vector;
     wd0, wd1, wd2 : in std_logic_vector(31 downto 0);
@@ -12,7 +12,7 @@ entity regw_cache_search is
   );
 end entity;
 
-architecture behavior of regw_cache_search is
+architecture behavior of regw_buffer_search is
 begin
   process(wa0, wa1, wa2, wd0, wd1, wd2, we0, we1, we2)
   begin

@@ -351,8 +351,7 @@ begin
   rd <= rdt0;
 
   -- -- RegWriteBackS
-
-  regw_cache0 : regw_cache0 port map (
+  regw_buffer0 : regw_buffer port map (
     clk => clk, rst => rst,
     -- for add(R-type), addi(part of I-type)
     wa0 => mem_wa1, wd0 => aluout0, we0 => we1,
@@ -361,9 +360,9 @@ begin
     wa1 => mem_wa2, wd1 => mem_rd0, we1 => we2,
     -- out
     wa2 => reg_wa0, wd2 => reg_wd0, we2 => reg_we0,
-    -- cache search
-    ra1 => rs0, rd1 => pre_rds0,
-    ra1 => rt0, rd2 => pre_rdt0
+    -- buffer search
+    ra1 => rs0, rd1 => buf_rds0,
+    ra1 => rt0, rd2 => buf_rdt0
   );
 
 end architecture;
