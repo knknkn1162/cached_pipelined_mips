@@ -141,6 +141,29 @@ architecture behavior of datapath is
     );
   end component;
 
+  component regw_cache
+    port (
+      clk, rst : in std_logic;
+      wa0 : in reg_vector;
+      wd0 : in std_logic_vector(31 downto 0);
+      we0 : in std_logic;
+      wa1 : in reg_vector;
+      wd1 : in std_logic_vector(31 downto 0);
+      we1 : in std_logic;
+      s1 : in std_logic;
+      -- for register WB
+      wa2 : out reg_vector;
+      wd2 : out std_logic_vector(31 downto 0);
+      we2 : out std_logic;
+
+      -- search for forwarding
+      ra1 : in reg_vector;
+      ra2 : in reg_vector;
+      rd1 : out std_logic_vector(31 downto 0);
+      rd2 : out std_logic_vector(31 downto 0)
+    );
+  end component;
+
   -- cache & memory
   signal tag0 : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
   signal index0 : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
@@ -155,7 +178,8 @@ architecture behavior of datapath is
   -- decodeS
   -- -- decoder
   signal opcode0 : opcode_vector;
-  signal rs0, rt0, rd0, rd1, rt_rd0 : reg_vector;
+  signal funct_opcode0, funct_opcode1 : std_logic_vector(CONST_INSTR_FUNCT_SIZE+CONST_INSTR_OPCODE_SIZE-1 downto 0);
+  signal rs0, rt0, rt1, rd0, rd1, rt_rd0 : reg_vector;
   signal brplus0 : std_logic_vector(31 downto 0);
   signal funct0 : funct_vector;
   signal target2 : target2_vector;
@@ -219,6 +243,14 @@ begin
     wa => wa0, wd => wd0, we => reg_we
   );
 
+  rt_rd_mux : mux2 generic map (N=>CONST_REG_SIZE)
+  port map (
+    d0 => rt0,
+    d1 => rd0,
+    s => decode_rt_rd_s,
+    y => mem_wa0
+  );
+
   -- -- (pc part)
   reg_pc0 : flopr_en generic map (N=>32)
   port map (
@@ -243,26 +275,33 @@ begin
   pcnext <= pcnext0; -- for scan
 
   -- CalcS
+  reg_rt_rd : flopr_en generic map (N=>CONST_REG_SIZE)
+  port map (
+    clk => clk, rst => rst, en => calc_en, a => mem_wa0, y => mem_wa1
+  );
+
   reg_rds : flopr_en generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => calc_en,
-    a => rds0,
-    y => rds1
+    clk => clk, rst => rst, en => calc_en, a => rds0, y => rds1
   );
 
   reg_rdt0 : flopr_en generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => calc_en,
-    a => rdt0,
-    y => rdt1
+    clk => clk, rst => rst, en => calc_en, a => rdt0, y => rdt1
   );
 
   reg_immext : flopr_en generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => calc_en,
-    a => immext0,
-    y => immext1
+    clk => clk, rst => rst, en => calc_en, a => immext0, y => immext1
   );
+
+  funct_opcode0 <= funct0 & opcode0;
+  reg_funct : flopr_en generic map (N=>CONST_INSTR_FUNCT_SIZE+CONST_INSTR_OPCODE_SIZE)
+  port map (
+    clk => clk, rst => rst, en => calc_en, a => funct_opcode0, y => funct_opcode1
+  );
+  funct1 <= funct_opcode1(11 downto 6);
+  opcode1 <= funct_opcode1(5 downto 0);
 
   mux2_rdt_immext : mux2 generic map (N=>32)
   port map (
@@ -312,13 +351,19 @@ begin
   rd <= rdt0;
 
   -- -- RegWriteBackS
-  wd0 <= aluout1;
 
-  mux2_rt_rd : mux2 generic map (N=>CONST_REG_SIZE)
-  port map (
-    d0 => aluout1,
-    d1 => mem_rd0,
-    s => regwb_rt_rd_s,
-    y => wa0
+  regw_cache0 : regw_cache0 port map (
+    clk => clk, rst => rst,
+    -- for add(R-type), addi(part of I-type)
+    wa0 => mem_wa1, wd0 => aluout0, we0 => we1,
+    s => regw_s,
+    -- for lw
+    wa1 => mem_wa2, wd1 => mem_rd0, we1 => we2,
+    -- out
+    wa2 => reg_wa0, wd2 => reg_wd0, we2 => reg_we0,
+    -- cache search
+    ra1 => rs0, rd1 => pre_rds0,
+    ra1 => rt0, rd2 => pre_rdt0
   );
+
 end architecture;
