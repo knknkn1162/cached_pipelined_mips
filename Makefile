@@ -4,8 +4,10 @@ MEM=dummy
 DIR=./
 DEBUG=
 
-mips: flopr_en instr_decoder mux2 regfile mem_idcache_controller mem data_cache instr_cache
+mips: datapath mem_idcache_controller
 	make aer F=mips
+datapath: flopr_en instr_decoder mux2 regfile mem_idcache_controller mem data_cache instr_cache regw_buffer
+	make aer F=datapath
 instr_decoder: type_pkg slt2 sgnext
 	make a F=instr_decoder DIR=component/
 
@@ -20,6 +22,13 @@ mem: tools_pkg cache_pkg
 regfile: type_pkg
 	make aer F=regfile DIR=general/
 
+regw_buffer: type_pkg shift2_register_load regw_buffer_search
+	make aer F=regw_buffer DIR=component/
+regw_buffer_search: type_pkg
+	make a F=regw_buffer_search DIR=general/
+shift2_register_load: flopr_en mux2
+	make aer F=shift2_register_load DIR=component/
+
 cache_pkg:
 	make a F=cache_pkg DIR=cache/
 data_cache: cache_pkg tools_pkg cache_decoder mux8 mux2 cache_controller
@@ -32,12 +41,16 @@ alu: type_pkg
 	make aer F=alu DIR=general/
 flopr_en:
 	make aer F=flopr_en DIR=general/
+flopr:
+	make aer F=flopr DIR=general/
 sgnext:
 	make aer F=sgnext DIR=general/
 slt2:
 	make aer F=slt2 DIR=general/
 mux2:
 	make aer F=mux2 DIR=general/
+mux4:
+	make aer F=mux4 DIR=general/
 mux8:
 	make aer F=mux8 DIR=cache/
 tools_pkg:
