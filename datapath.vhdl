@@ -141,7 +141,7 @@ architecture behavior of datapath is
     );
   end component;
 
-  component regw_cache
+  component regw_buffer
     port (
       clk, rst : in std_logic;
       wa0 : in reg_vector;
@@ -150,7 +150,6 @@ architecture behavior of datapath is
       wa1 : in reg_vector;
       wd1 : in std_logic_vector(31 downto 0);
       we1 : in std_logic;
-      s1 : in std_logic;
       -- for register WB
       wa2 : out reg_vector;
       wd2 : out std_logic_vector(31 downto 0);
