@@ -40,6 +40,8 @@ slt2:
 	make aer F=slt2 DIR=general/
 mux2:
 	make aer F=mux2 DIR=general/
+mux4:
+	make aer F=mux4 DIR=general/
 mux8:
 	make aer F=mux8 DIR=cache/
 tools_pkg:
