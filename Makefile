@@ -52,7 +52,7 @@ mux2:
 mux4:
 	make aer F=mux4 DIR=general/
 mux8:
-	make aer F=mux8 DIR=cache/
+	make aer F=mux8 DIR=general/
 tools_pkg:
 	make aer F=tools_pkg
 type_pkg:
