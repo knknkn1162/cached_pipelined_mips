@@ -15,8 +15,8 @@ entity datapath is
     decode_instr_rtrd_s, calc_rdt_immext_s, memrw_instr_rtrd_aluout_s : in std_logic;
     decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
     tag_s : in std_logic;
-    opcode1 : out opcode_vector;
-    funct1 : out funct_vector;
+    opcode0 : out opcode_vector;
+    funct0 : out funct_vector;
     alu_s : in alucont_type;
     -- from cache & memory
     instr_cache_miss_en, data_cache_miss_en, valid_flag : out std_logic;
@@ -164,9 +164,6 @@ architecture behavior of datapath is
   signal rds0, rds1, rdt0, rdt1, rdt2, reg_wd0 : std_logic_vector(31 downto 0);
   signal immext0, immext1, brplus0 : std_logic_vector(31 downto 0);
   signal shamt0 : shamt_vector;
-  signal funct0 : funct_vector;
-  signal opcode0 : opcode_vector;
-  signal funct_opcode0, funct_opcode1 : std_logic_vector(CONST_INSTR_FUNCT_SIZE+CONST_INSTR_OPCODE_SIZE-1 downto 0);
   signal target2 : target2_vector;
   signal br4, pc4, ja : std_logic_vector(31 downto 0);
   -- calc
@@ -279,14 +276,6 @@ begin
   port map (
     clk => clk, rst => rst, en => calc_en, a => immext0, y => immext1
   );
-
-  funct_opcode0 <= funct0 & opcode0;
-  reg_funct : flopr_en generic map (N=>CONST_INSTR_FUNCT_SIZE+CONST_INSTR_OPCODE_SIZE)
-  port map (
-    clk => clk, rst => rst, en => calc_en, a => funct_opcode0, y => funct_opcode1
-  );
-  funct1 <= funct_opcode1(11 downto 6);
-  opcode1 <= funct_opcode1(5 downto 0);
 
   mux2_rdt_immext : mux2 generic map (N=>32)
   port map (
