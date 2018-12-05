@@ -2,7 +2,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
 entity mips is
-  generic(memfile : string ; MEM_BITS_SIZE : natural)
+  generic(memfile : string ; MEM_BITS_SIZE : natural);
   port (
     -- for scan
     pc, pcnext, instr : std_logic_vector(31 downto 0)
@@ -51,6 +51,14 @@ architecture behavior of mips is
     );
   end component;
 
+  component regwe_controller
+    port (
+      opcode : in opcode_vector;
+      funct : in funct_vector;
+      reg_we1, reg_we2 : out std_logic
+    );
+  end component;
+
   component datapath
     port (
       clk, rst : in std_logic;
@@ -80,7 +88,8 @@ architecture behavior of mips is
     );
   end component;
 
-  signal alu_s0 : std_logic;
+  signal alu_s0, alu_s1 : std_logic;
+  signal reg_we1, reg_we2 : std_logic;
   signal load0 : std_logic;
   signal opcode0 : opcode_vector;
   signal funct0 : funct_vector;
@@ -100,7 +109,8 @@ begin
 
   datapath0 : datapath port map (
     clk => clk, rst => rst, load => load0,
-    opcode1 => opcode1_0, funct => funct1_0, alu_s => alu_s0,
+    -- regwe_controller
+    reg_we1 => reg_we1, reg_we2 => reg_we2,
     -- alu_controller
     opcode0 => opcode0, funct0 => funct0, alu_s => alu_s1,
     -- form cache & memory
@@ -145,5 +155,29 @@ begin
     funct => funct0,
     alu_s => alu_s0
   );
-  alu_s <= alu_s0;
+
+  regwecont0 : regwe_controller port map (
+    opcode => opcode0,
+    funct => funct0,
+    regwe1 => regwe1_0, regwe2 => regwe2_0
+  );
+
+  conts0 <= regwe2_0 & regwe1_0 & alu_s0;
+  -- delay
+  flopr_cont1 : flopr_en port map (N=>N)
+  port map (
+    clk => clk, rst => rst, en => calc_en,
+    a => conts0,
+    y => conts1
+  );
+  flopr_cont2 : flopr_en port map (N=>N)
+  port map (
+    clk => clk, rst => rst, en => dcache_en,
+    a => conts1,
+    y => conts2
+  );
+
+  alu_s1 <= conts1(0);
+  reg_we1 <= conts1(1);
+  reg_we2 <= conts2(2);
 end architecture;

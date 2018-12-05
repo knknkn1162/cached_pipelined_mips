@@ -12,6 +12,8 @@ instr_decoder: type_pkg slt2 sgnext
 	make a F=instr_decoder DIR=component/
 load_controller: bflopr
 	make aer F=load_controller DIR=controller/
+regwe_controller: type_pkg
+	make a F=regwe_controller DIR=controller/
 
 cache_decoder: cache_pkg
 	make aer F=cache_decoder DIR=cache/
