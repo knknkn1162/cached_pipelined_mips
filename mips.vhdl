@@ -65,16 +65,17 @@ architecture behavior of mips is
       -- controller
       load : in std_logic;
       fetch_en, decode_en, calc_en, dcache_en : in std_logic;
+      -- regwe_controller
       reg_we1, reg_we2 : in std_logic;
       dcache_we : in std_logic;
       decode_instr_rtrd_s, calc_rdt_immext_s, memrw_instr_rtrd_aluout_s : in std_logic;
       decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
-      tag_s : in std_logic;
       -- alu_controller
       opcode0 : out opcode_vector;
       funct0 : out funct_vector;
       alu_s : in alucont_type;
       -- from cache & memory
+      tag_s : in std_logic;
       instr_cache_miss_en, data_cache_miss_en, valid_flag : out std_logic;
       instr_load_en, dcache_load_en : in std_logic;
       mem2cache_d1, mem2cache_d2, mem2cache_d3, mem2cache_d4, mem2cache_d5, mem2cache_d6, mem2cache_d7, mem2cache_d8 : in std_logic_vector(31 downto 0);
@@ -88,6 +89,7 @@ architecture behavior of mips is
     );
   end component;
 
+  signal tag_s0 : std_logic;
   signal alu_s0, alu_s1 : std_logic;
   signal reg_we1, reg_we2 : std_logic;
   signal load0 : std_logic;
@@ -114,6 +116,7 @@ begin
     -- alu_controller
     opcode0 => opcode0, funct0 => funct0, alu_s => alu_s1,
     -- form cache & memory
+    tag_s => tag_s0,
     instr_cache_miss_en => instr_cache_miss_en0, data_cache_miss_en => data_cache_miss_en0, valid_flag => valid_flag0,
     instr_load_en => instr_load_en0, dcache_load_en => dcache_load_en0,
     mem2cache_d1 => mem2cache_d1, mem2cache_d2 => mem2cache_d2, mem2cache_d3 => mem2cache_d3, mem2cache_d4 => mem2cache_d4,
