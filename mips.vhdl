@@ -73,4 +73,5 @@ begin
     funct => funct1,
     alu_s => alu_s0
   );
+  alu_s <= alu_s0;
 end architecture;

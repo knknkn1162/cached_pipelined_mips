@@ -5,7 +5,6 @@ use work.cache_pkg.ALL;
 use work.type_pkg.ALL;
 
 entity datapath is
-  generic(memfile : string);
   port (
     clk, rst : in std_logic;
     -- controller
