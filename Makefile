@@ -10,6 +10,8 @@ datapath: flopr_en instr_decoder mux2 regfile mem_idcache_controller mem data_ca
 	make aer F=datapath
 instr_decoder: type_pkg slt2 sgnext
 	make a F=instr_decoder DIR=component/
+load_controller: bflopr
+	make aer F=load_controller DIR=controller/
 
 cache_decoder: cache_pkg
 	make aer F=cache_decoder DIR=cache/
