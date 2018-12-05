@@ -4,7 +4,7 @@ MEM=dummy
 DIR=./
 DEBUG=
 
-mips: datapath mem_idcache_controller alu_controller
+mips: datapath mem_idcache_controller alu_controller mem load_controller
 	make aer F=mips
 datapath: flopr_en instr_decoder mux2 regfile mem_idcache_controller mem data_cache instr_cache regw_buffer
 	make aer F=datapath
@@ -47,6 +47,8 @@ flopr_en:
 	make aer F=flopr_en DIR=general/
 flopr:
 	make aer F=flopr DIR=general/
+bflopr:
+	make aer F=bflopr DIR=general/
 sgnext:
 	make aer F=sgnext DIR=general/
 slt2:
