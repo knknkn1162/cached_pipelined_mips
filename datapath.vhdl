@@ -224,7 +224,7 @@ begin
     wa => reg_wa0, wd => reg_wd0, we => reg_we0
   );
 
-  -- for memwritebackS
+  -- for regwritebackS
   instr_rtrd_mux : mux2 generic map (N=>CONST_REG_SIZE)
   port map (
     d0 => rt0,

@@ -59,17 +59,32 @@ architecture behavior of mips is
     );
   end component;
 
+  component decode_controller
+    port (
+      opcode : in opcode_vector;
+      funct : in funct_vector;
+      decode_pc_br_ja_s : out std_logic_vector(1 downto 0);
+      dcache_we, decode_instr_rtrd_s : out std_logic
+    );
+  end component;
+
   component datapath
     port (
       clk, rst : in std_logic;
       -- controller
+      -- load_controller
       load : in std_logic;
+      -- flopren_controller
       fetch_en, decode_en, calc_en, dcache_en : in std_logic;
       -- regwe_controller
       reg_we1, reg_we2 : in std_logic;
-      dcache_we : in std_logic;
-      decode_instr_rtrd_s, calc_rdt_immext_s, memrw_instr_rtrd_aluout_s : in std_logic;
+      -- decode_controller
       decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
+      dcache_we, decode_instr_rtrd_s : in std_logic;
+      -- calc_controller
+      calc_rdt_immext_s : in std_logic;
+      -- memrw_controller
+      memrw_instr_rtrd_aluout_s : in std_logic;
       -- alu_controller
       opcode0 : out opcode_vector;
       funct0 : out funct_vector;
@@ -152,6 +167,13 @@ begin
   );
   instr_load_en <= instr_load_en0;
   data_load_en <= data_load_en0;
+
+  decode_controller0 : decode_controller port map (
+    opcode => opcode0, funct0 => funct0,
+    decode_pc_br_ja_s => decode_pc_br_ja_s0,
+    dcache_we => dcache_we,
+    decode_instr_rtrd_s => decode_instr_rtrd_s
+  );
 
   alucont0 : alu_controller port map (
     opcode => opcode0,
