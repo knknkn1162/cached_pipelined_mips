@@ -7,11 +7,9 @@ use work.type_pkg.ALL;
 entity datapath is
   generic(memfile : string);
   port (
-    clk, rst, load : in std_logic;
-    data_cache_a : in std_logic_vector(31 downto 0);
-    we : in std_logic;
-    wd : in std_logic_vector(31 downto 0);
+    clk, rst : in std_logic;
     -- controller
+    load : in std_logic;
     fetch_en, decode_en, calc_en, dcache_en : in std_logic;
     reg_we1, reg_we2 : in std_logic;
     dcache_we : in std_logic;
@@ -29,8 +27,7 @@ entity datapath is
     -- scan
     -- -- cache & memory
     pc, pcnext : out std_logic_vector(31 downto 0);
-    instr : out std_logic_vector(31 downto 0);
-    rd : out std_logic_vector(31 downto 0)
+    instr : out std_logic_vector(31 downto 0)
   );
 end entity;
 
@@ -351,7 +348,6 @@ begin
     rd05 => dcache2mem_d5, rd06 => dcache2mem_d6, rd07 => dcache2mem_d7, rd08 => dcache2mem_d8,
     cache_miss_en => data_cache_miss_en, valid_flag => valid_flag
   );
-  rd <= rdt0;
 
   -- -- RegWriteBackS
   regw_buffer0 : regw_buffer port map (
