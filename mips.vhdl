@@ -78,7 +78,7 @@ architecture behavior of mips is
   signal load0 : std_logic;
 
 begin
-  load_controller0 : port map (
+  load_controller0 : load_controller port map (
     clk => clk, rst => rst, load => load0
   );
   -- memory
