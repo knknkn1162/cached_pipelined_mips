@@ -37,6 +37,8 @@ instr_cache: cache_pkg tools_pkg cache_decoder mux8 cache_controller
 	make aer F=instr_cache DIR=cache/
 cache_controller: cache_pkg
 	make aer F=cache_controller DIR=cache/
+alu_controller: type_pkg
+	make a F=alu_controller DIR=controller/
 alu: type_pkg
 	make aer F=alu DIR=general/
 flopr_en:

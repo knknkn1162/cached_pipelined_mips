@@ -7,7 +7,7 @@ work-obj93.cf
 !general
 !component
 !cache
-!toplevel
+!controller
 !*.vhdl
 !assets
 !Makefile
