@@ -14,9 +14,9 @@ instr_decoder: type_pkg slt2 sgnext
 cache_decoder: cache_pkg
 	make aer F=cache_decoder DIR=cache/
 mem_idcache_controller: mem_cache_controller flopr_en
-	make aer F=mem_idcache_controller DIR=cache/
+	make aer F=mem_idcache_controller DIR=controller/
 mem_cache_controller:
-	make aer F=mem_cache_controller DIR=cache/
+	make aer F=mem_cache_controller DIR=controller/
 mem: tools_pkg cache_pkg
 	make aer F=mem DIR=general/
 regfile: type_pkg
@@ -36,7 +36,7 @@ data_cache: cache_pkg tools_pkg cache_decoder mux8 mux2 cache_controller
 instr_cache: cache_pkg tools_pkg cache_decoder mux8 cache_controller
 	make aer F=instr_cache DIR=cache/
 cache_controller: cache_pkg
-	make aer F=cache_controller DIR=cache/
+	make aer F=cache_controller DIR=controller/
 alu_controller: type_pkg
 	make a F=alu_controller DIR=controller/
 alu: type_pkg
