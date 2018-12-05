@@ -4,7 +4,7 @@ MEM=dummy
 DIR=./
 DEBUG=
 
-mips: datapath mem_idcache_controller
+mips: datapath mem_idcache_controller alu_controller
 	make aer F=mips
 datapath: flopr_en instr_decoder mux2 regfile mem_idcache_controller mem data_cache instr_cache regw_buffer
 	make aer F=datapath

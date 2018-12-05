@@ -31,6 +31,16 @@ architecture behavior of mips is
     );
   end component;
 
+  component alu_controller
+    port (
+      opcode : in opcode_vector;
+      funct : in funct_vector;
+      alu_s : out alucont_type
+    );
+  end component;
+
+  signal alu_s0 : std_logic;
+
 begin
   -- memory
   mem0 : mem generic map(filename=>memfile, BITS=>MEM_BITS_SIZE)
@@ -57,4 +67,10 @@ begin
   );
   instr_load_en <= instr_load_en0;
   data_load_en <= data_load_en0;
+
+  alucont0 : alu_controller port map (
+    opcode => opcode1,
+    funct => funct1,
+    alu_s => alu_s0
+  );
 end architecture;
