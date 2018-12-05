@@ -16,7 +16,7 @@ entity datapath is
     decode_instr_rtrd_s, calc_rdt_immext_s, memrw_instr_rtrd_aluout_s : in std_logic;
     decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
     tag_s : in std_logic;
-    alu_controller : in alucont_type;
+    alu_s : in alucont_type;
     -- from cache & memory
     instr_cache_miss_en, data_cache_miss_en, valid_flag : out std_logic;
     instr_load_en, dcache_load_en : in std_logic;
@@ -298,7 +298,7 @@ begin
   alu0 : alu port map (
     a => rds1,
     b => rdt_immext0,
-    f => alu_controller,
+    f => alu_s,
     y => aluout0
   );
 
