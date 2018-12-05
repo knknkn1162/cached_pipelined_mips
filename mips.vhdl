@@ -81,6 +81,8 @@ architecture behavior of mips is
 
   signal alu_s0 : std_logic;
   signal load0 : std_logic;
+  signal opcode1_0 : opcode_vector;
+  signal funct1_0 : funct_vector;
 
   -- from cache & memory
   signal instr_cache_miss_en0, data_cache_miss_en0, valid_flag0 : std_logic;
@@ -97,8 +99,9 @@ begin
 
   datapath0 : datapath port map (
     clk => clk, rst => rst, load => load0,
+    opcode1 => opcode1_0, funct => funct1_0, alu_s => alu_s0,
     -- form cache & memory
-    instr_cache_miss_en => instr_cache_miss_en0, data_cache_miss_en => data_cache_miss_en0, valid_flag => valid_flag0
+    instr_cache_miss_en => instr_cache_miss_en0, data_cache_miss_en => data_cache_miss_en0, valid_flag => valid_flag0,
     instr_load_en => instr_load_en0, dcache_load_en => dcache_load_en0,
     mem2cache_d1 => mem2cache_d1, mem2cache_d2 => mem2cache_d2, mem2cache_d3 => mem2cache_d3, mem2cache_d4 => mem2cache_d4,
     mem2cache_d5 => mem2cache_d5, mem2cache_d6 => mem2cache_d6, mem2cache_d7 => mem2cache_d7, mem2cache_d8 => mem2cache_d8,
@@ -135,8 +138,8 @@ begin
   data_load_en <= data_load_en0;
 
   alucont0 : alu_controller port map (
-    opcode => opcode1,
-    funct => funct1,
+    opcode => opcode1_0,
+    funct => funct1_0,
     alu_s => alu_s0
   );
   alu_s <= alu_s0;
