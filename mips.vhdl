@@ -2,6 +2,11 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
 entity mips is
+  generic(memfile : string ; MEM_BITS_SIZE : natural)
+  port (
+    -- for scan
+    pc, pcnext, instr : std_logic_vector(31 downto 0)
+  );
 end entity;
 
 -- memory, controller and datapath
@@ -77,16 +82,38 @@ architecture behavior of mips is
   signal alu_s0 : std_logic;
   signal load0 : std_logic;
 
+  -- from cache & memory
+  signal instr_cache_miss_en0, data_cache_miss_en0, valid_flag0 : std_logic;
+  signal instr_load_en0, dcache_load_en0 : std_logic;
+  signal mem2cache_d1, mem2cache_d2, mem2cache_d3, mem2cache_d4, mem2cache_d5, mem2cache_d6, mem2cache_d7, mem2cache_d8 : std_logic_vector(31 downto 0);
+  signal dcache2mem_d1, dcache2mem_d2, dcache2mem_d3, dcache2mem_d4, dcache2mem_d5, dcache2mem_d6, dcache2mem_d7, dcache2mem_d8 : std_logic_vector(31 downto 0);
+  signal mem_tag0 : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+  signal mem_index0 : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+
 begin
   load_controller0 : load_controller port map (
     clk => clk, rst => rst, load => load0
   );
+
+  datapath0 : datapath port map (
+    clk => clk, rst => rst, load => load0,
+    -- form cache & memory
+    instr_cache_miss_en => instr_cache_miss_en0, data_cache_miss_en => data_cache_miss_en0, valid_flag => valid_flag0
+    instr_load_en => instr_load_en0, dcache_load_en => dcache_load_en0,
+    mem2cache_d1 => mem2cache_d1, mem2cache_d2 => mem2cache_d2, mem2cache_d3 => mem2cache_d3, mem2cache_d4 => mem2cache_d4,
+    mem2cache_d5 => mem2cache_d5, mem2cache_d6 => mem2cache_d6, mem2cache_d7 => mem2cache_d7, mem2cache_d8 => mem2cache_d8,
+    mem_tag => mem_tag0, mem_index => mem_index0,
+    dcache2mem_d1 => dcache2mem_d1, dcache2mem_d2 => dcache2mem_d2, dcache2mem_d3 => dcache2mem_d3, dcache2mem_d4 => dcache2mem_d4,
+    dcache2mem_d5 => dcache2mem_d5, dcache2mem_d6 => dcache2mem_d6, dcache2mem_d7 => dcache2mem_d7, dcache2mem_d8 => dcache2mem_d8,
+    pc => pc, pcnext => pcnext, instr => instr
+  );
+
   -- memory
   mem0 : mem generic map(filename=>memfile, BITS=>MEM_BITS_SIZE)
   port map (
     clk => clk, rst => rst, load => load0,
     we => mem_we,
-    tag => tag0, index => index0,
+    tag => mem_tag0, index => mem_index0,
     -- data cache only
     wd1 => dcache2mem_d1, wd2 => dcache2mem_d2, wd3 => dcache2mem_d3, wd4 => dcache2mem_d4,
     wd5 => dcache2mem_d5, wd6 => dcache2mem_d6, wd7 => dcache2mem_d7, wd8 => dcache2mem_d8,
