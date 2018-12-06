@@ -68,6 +68,18 @@ architecture behavior of mips is
     );
   end component;
 
+  component shift_controller
+    port (
+      clk, rst : in std_logic;
+      calc_en, dcache_en : in std_logic;
+      calc_rdt_immext_s0, dcache_we0, reg_we2_0, reg_we1_0 : in std_logic;
+      alu_s0 : in alucont_type;
+      calc_rdt_immext_s1, reg_we1 : out std_logic;
+      dcache_we2, reg_we2 : out std_logic;
+      alu_s1 : out alucont_type
+    );
+  end component;
+
   component datapath
     port (
       clk, rst : in std_logic;
@@ -102,8 +114,8 @@ architecture behavior of mips is
   end component;
 
   signal tag_s0 : std_logic;
-  signal alu_s0, alu_s1 : std_logic;
-  signal reg_we1, reg_we2 : std_logic;
+  signal alu_s0, alu_s1 : alucont_type;
+  signal reg_we1, reg_we1_0, reg_we2, reg_we2_0 : std_logic;
   signal load0 : std_logic;
   signal opcode0 : opcode_vector;
   signal funct0 : funct_vector;
@@ -113,8 +125,10 @@ architecture behavior of mips is
   signal calc_rdt_immext_s0, calc_rdt_immext_s1 : std_logic;
 
   -- from cache & memory
+  signal mem_we0 : std_logic;
+  signal suspend_flag0 : std_logic;
   signal instr_cache_miss_en0, data_cache_miss_en0, valid_flag0 : std_logic;
-  signal instr_load_en0, dcache_load_en0 : std_logic;
+  signal icache_load_en0, dcache_load_en0 : std_logic;
   signal mem2cache_d1, mem2cache_d2, mem2cache_d3, mem2cache_d4, mem2cache_d5, mem2cache_d6, mem2cache_d7, mem2cache_d8 : std_logic_vector(31 downto 0);
   signal dcache2mem_d1, dcache2mem_d2, dcache2mem_d3, dcache2mem_d4, dcache2mem_d5, dcache2mem_d6, dcache2mem_d7, dcache2mem_d8 : std_logic_vector(31 downto 0);
   signal mem_tag0 : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
@@ -196,24 +210,12 @@ begin
     alu_s => alu_s0
   );
 
-  conts0 <= calc_rdt_immext_s0 & dcache_we0 & regwe2_0 & regwe1_0 & alu_s0;
-  -- delay
-  flopr_cont1 : flopr_en port map (N=>N)
-  port map (
-    clk => clk, rst => rst, en => calc_en,
-    a => conts0,
-    y => conts1
+  shift_controller0 : shift_controller port map (
+    clk => clk, rst => rst,
+    calc_en => calc_en0, dcache_en => dcache_en0,
+    calc_rdt_immext_s0 => calc_rdt_immext_s0, dcache_we0 => dcache_we0,
+    reg_we2_0 => reg_we2_0, reg_we1_0 => reg_we1_0, alu_s0 => alu_s0,
+    calc_rdt_immext_s1 => calc_rdt_immext_s1, reg_we1 => reg_we1,
+    dcache_we2 => dcache_we2, reg_we2 => reg_we2, alu_s1 => alu_s1
   );
-  flopr_cont2 : flopr_en port map (N=>N)
-  port map (
-    clk => clk, rst => rst, en => dcache_en,
-    a => conts1,
-    y => conts2
-  );
-
-  alu_s1 <= conts1(0);
-  reg_we1 <= conts1(1);
-  calc_rdt_immext_s1 <= conts1(4);
-  reg_we2 <= conts2(2);
-  dcache_we2 <= conts2(3);
 end architecture;
