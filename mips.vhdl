@@ -81,10 +81,7 @@ architecture behavior of mips is
       -- decode_controller
       decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
       dcache_we, decode_rt_rd_s : in std_logic;
-      -- calc_controller
       calc_rdt_immext_s : in std_logic;
-      -- memrw_controller
-      memrw_rtrd_aluout_s : in std_logic;
       -- alu_controller
       opcode0 : out opcode_vector;
       funct0 : out funct_vector;
@@ -113,6 +110,7 @@ architecture behavior of mips is
 
   signal decode_pc_br_ja_s0 : std_logic_vector(1 downto 0);
   signal dcache_we0, dcache_we2, decode_rt_rd_s0 : std_logic;
+  signal calc_rdt_immext_s0, calc_rdt_immext_s1 : std_logic;
 
   -- from cache & memory
   signal instr_cache_miss_en0, data_cache_miss_en0, valid_flag0 : std_logic;
@@ -129,11 +127,14 @@ begin
 
   datapath0 : datapath port map (
     clk => clk, rst => rst, load => load0,
+    -- flopren_controller
+    -- fetch_en, decode_en, calc_en, dcache_en : in std_logic;
     -- regwe_controller
     reg_we1 => reg_we1, reg_we2 => reg_we2,
     -- decode_controller
     decode_pc_br_ja_s => decode_pc_br_ja_s0,
     dcache_we => dcache_we2, decode_rt_rd_s => decode_rt_rd_s0,
+    calc_rdt_immext_s => calc_rdt_immext_s1,
     -- alu_controller
     opcode0 => opcode0, funct0 => funct0, alu_s => alu_s1,
     -- form cache & memory
@@ -193,7 +194,7 @@ begin
     regwe1 => regwe1_0, regwe2 => regwe2_0
   );
 
-  conts0 <= dcache_we0 & regwe2_0 & regwe1_0 & alu_s0;
+  conts0 <= calc_rdt_immext_s0 & dcache_we0 & regwe2_0 & regwe1_0 & alu_s0;
   -- delay
   flopr_cont1 : flopr_en port map (N=>N)
   port map (
@@ -210,6 +211,7 @@ begin
 
   alu_s1 <= conts1(0);
   reg_we1 <= conts1(1);
+  calc_rdt_immext_s1 <= conts1(4);
   reg_we2 <= conts2(2);
   dcache_we2 <= conts2(3);
 end architecture;

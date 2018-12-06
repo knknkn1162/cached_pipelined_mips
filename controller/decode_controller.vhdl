@@ -7,7 +7,8 @@ entity decode_controller is
     opcode : in opcode_vector;
     funct : in funct_vector;
     decode_pc_br_ja_s : out std_logic_vector(1 downto 0);
-    dcache_we, decode_rt_rd_s : out std_logic
+    dcache_we, decode_rt_rd_s : out std_logic;
+    calc_rdt_immext_s : out std_logic
   );
 end entity;
 
@@ -43,5 +44,14 @@ begin
       when others =>
         decode_rt_rd_s <= '0';
     end case;
+  end process;
+
+  process(opcode)
+  begin
+    if opcode = OP_RTYPE then
+      calc_rdt_immext_s <= '0';
+    else
+      calc_rdt_immext_s <= '1';
+    end if;
   end process;
 end architecture;

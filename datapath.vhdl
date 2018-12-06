@@ -12,7 +12,7 @@ entity datapath is
     fetch_en, decode_en, calc_en, dcache_en : in std_logic;
     reg_we1, reg_we2 : in std_logic;
     dcache_we : in std_logic;
-    decode_rt_rd_s, calc_rdt_immext_s, memrw_rtrd_aluout_s : in std_logic;
+    decode_rt_rd_s, calc_rdt_immext_s : in std_logic;
     decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
     tag_s : in std_logic;
     opcode0 : out opcode_vector;
@@ -169,7 +169,7 @@ architecture behavior of datapath is
   -- calc
   signal rdt_immext0, aluout0, aluout1 : std_logic_vector(31 downto 0);
   -- DMemRWS
-  signal dcache_wa0, dcache_rd0 : std_logic_vector(31 downto 0);
+  signal dcache_a0, dcache_rd0 : std_logic_vector(31 downto 0);
   -- RegWriteBackS
   signal reg_we0 : std_logic;
   -- forwarding
@@ -315,18 +315,10 @@ begin
     y => aluout1
   );
 
-  mem_wa_mux : mux2 generic map (N=>CONST_REG_SIZE)
-  port map (
-    d0 => instr_rtrd2,
-    d1 => aluout1,
-    s => memrw_rtrd_aluout_s,
-    y => dcache_wa0
-  );
-
   data_cache0 : data_cache port map (
     clk => clk, rst => rst,
     we => dcache_we,
-    a => dcache_wa0,
+    a => aluout1,
     wd => rdt2,
     tag_s => tag_s,
     rd => dcache_rd0,
