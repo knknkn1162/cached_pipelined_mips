@@ -111,6 +111,9 @@ architecture behavior of mips is
   signal opcode0 : opcode_vector;
   signal funct0 : funct_vector;
 
+  signal decode_pc_br_ja_s0 : std_logic_vector(1 downto 0);
+  signal dcache_we0, dcache_we2, dcache_rtrd_s0 : std_logic;
+
   -- from cache & memory
   signal instr_cache_miss_en0, data_cache_miss_en0, valid_flag0 : std_logic;
   signal instr_load_en0, dcache_load_en0 : std_logic;
@@ -128,6 +131,9 @@ begin
     clk => clk, rst => rst, load => load0,
     -- regwe_controller
     reg_we1 => reg_we1, reg_we2 => reg_we2,
+    -- decode_controller
+    decode_pc_br_ja_s => decode_pc_br_ja_s0,
+    dcache_we => dcache_we2, dcache_rtrd_s => dcache_rtrd_s0,
     -- alu_controller
     opcode0 => opcode0, funct0 => funct0, alu_s => alu_s1,
     -- form cache & memory
@@ -171,8 +177,8 @@ begin
   decode_controller0 : decode_controller port map (
     opcode => opcode0, funct0 => funct0,
     decode_pc_br_ja_s => decode_pc_br_ja_s0,
-    dcache_we => dcache_we,
-    dcache_rtrd_s => dcache_rtrd_s
+    dcache_we => dcache_we0,
+    dcache_rtrd_s => dcache_rtrd_s0
   );
 
   alucont0 : alu_controller port map (
@@ -187,7 +193,7 @@ begin
     regwe1 => regwe1_0, regwe2 => regwe2_0
   );
 
-  conts0 <= regwe2_0 & regwe1_0 & alu_s0;
+  conts0 <= dcache_we0 & regwe2_0 & regwe1_0 & alu_s0;
   -- delay
   flopr_cont1 : flopr_en port map (N=>N)
   port map (
@@ -205,4 +211,5 @@ begin
   alu_s1 <= conts1(0);
   reg_we1 <= conts1(1);
   reg_we2 <= conts2(2);
+  dcache_we2 <= conts2(3);
 end architecture;
