@@ -6,7 +6,7 @@ entity forwarding_addi_add_tb is
 end entity;
 
 architecture testbench of forwarding_addi_add_tb is
-  component mips is
+  component mips
     generic(memfile : string);
     port (
       clk, rst : in std_logic;
@@ -26,6 +26,7 @@ architecture testbench of forwarding_addi_add_tb is
       icache_load_en, dcache_load_en : out std_logic
     );
   end component;
+
   constant memfile : string := "./assets/forwarding_addi_add.hex";
   signal clk, rst : std_logic;
   signal pc, pcnext : std_logic_vector(31 downto 0);
@@ -47,6 +48,7 @@ begin
   mips0 : mips generic map(memfile=>memfile)
   port map (
     clk => clk, rst => rst,
+    -- -- datapath
     pc => pc, pcnext => pcnext,
     instr => instr,
     addr => addr, dcache_rd => dcache_rd, dcache_wd => dcache_wd,
@@ -68,7 +70,52 @@ begin
 
   stim_proc : process
   begin
+    -- addi $s0, $0, 5
+    -- add $s1, $s0, $s0
     wait for clk_period;
+    rst <= '1'; wait for 1 ns; rst <= '0';
+    assert pc = X"00000000"; assert pcnext = X"00000004";
+    wait until rising_edge(clk);
+    -- Load
+    wait for clk_period;
+
+    -- (FetchS, InitS)
+    -- -- FetchS : addi $t0, $0, 5
+    assert pc = X"00000000"; assert pcnext = X"00000004";
+    assert instr = X"20100005";
+    -- (not yet)
+    assert rds = X"00000000"; assert immext = X"00000000";
+    wait for clk_period;
+
+    -- (DecodeS, FetchS)
+    -- -- DecodeS : addi $s0, $0, 5
+    assert rds = X"00000000"; assert immext = X"00000005";
+    -- -- FetchS : add $s1, $s0, $s0
+    assert pc = X"00000004"; assert pcnext = X"00000008";
+    assert instr = X"02108800";
+    wait for clk_period;
+
+    -- (CalcS, DecodeS)
+    assert pc = X"00000008"; assert pcnext = X"0000000C";
+    -- CalcS(AddiCalcS) : addi $t0, $s0, 5
+    assert aluout = X"0000000A";
+    -- DecodeS : add $s1, $s0, $s0
+    assert rds = X"00000005"; assert rdt = X"00000005"; -- forwarding for pipeline
+    assert dcache_we = '0'; assert reg_we = '0';
+    wait for clk_period;
+
+    -- (- , CalcS(RtypeCalcS))
+    -- CalcS : add $s1, $s0, $s0
+    assert aluout = X"0000000A";
+    assert dcache_we = '0'; assert reg_we = '0';
+    wait for clk_period;
+
+    assert reg_wa = "10000"; assert reg_wd = X"00000005";
+    assert reg_we = '1'; assert dcache_we = '0';
+    wait for clk_period;
+
+    assert reg_wa = "10001"; assert reg_wd = X"0000000A";
+    assert reg_we = '1'; assert dcache_we = '0';
     -- skip
     stop <= TRUE;
     -- success message
