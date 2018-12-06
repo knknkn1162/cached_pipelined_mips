@@ -112,7 +112,7 @@ architecture behavior of datapath is
 
   component instr_cache
     port (
-      clk, rst : in std_logic;
+      clk, rst, init : in std_logic;
       -- program counter is 4-byte aligned
       a : in std_logic_vector(31 downto 0);
       rd : out std_logic_vector(31 downto 0);
@@ -208,7 +208,7 @@ begin
   );
 
   instr_cache0 : instr_cache port map (
-    clk => clk, rst => rst,
+    clk => clk, rst => rst, init => load,
     a => pc0,
     rd => instr0,
     load_en => instr_load_en,

@@ -5,7 +5,7 @@ use work.cache_pkg.ALL;
 
 entity instr_cache is
   port (
-    clk, rst : in std_logic;
+    clk, rst, init : in std_logic;
     -- program counter is 4-byte aligned
     a : in std_logic_vector(31 downto 0);
     rd : out std_logic_vector(31 downto 0);
@@ -117,12 +117,14 @@ begin
   begin
     -- initialization
     if rst = '1' then
-      -- initialize with zeros
-      valid_data := (others => '0');
+      -- do nothing
     -- writeback
     elsif rising_edge(clk) then
+      if init = '1' then
+        -- initialize with zeros
+        valid_data := (others => '0');
       -- pull the notification from the memory
-      if load_en = '1' then
+      elsif load_en = '1' then
         idx := to_integer(unsigned(addr_index));
         -- when the ram_data is initial state
         valid_data(idx) := '1';
