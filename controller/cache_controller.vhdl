@@ -4,8 +4,7 @@ use work.cache_pkg.ALL;
 
 entity cache_controller is
   port (
-    clk, rst : in std_logic;
-    is_init : in std_logic;
+    clk, rst, load : in std_logic;
     cache_valid : in std_logic;
     addr_tag, cache_tag : in std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
     addr_index : in std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
@@ -50,9 +49,9 @@ begin
   end process;
 
   -- cache_hit or cache_miss
-  process(state, addr_index, addr_tag, cache_valid, cache_tag)
+  process(state, addr_index, addr_tag, cache_valid, cache_tag, load)
   begin
-    if is_init = '1' then
+    if load = '1' then
       cache_miss_en0 <= '0';
     else
       case state is

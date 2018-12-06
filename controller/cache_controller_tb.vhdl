@@ -9,7 +9,7 @@ architecture testbench of cache_controller_tb is
   component cache_controller
     port (
       clk, rst : in std_logic;
-      is_init : in std_logic;
+      load : in std_logic;
       cache_valid : in std_logic;
       addr_tag, cache_tag : in std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
       addr_index : in std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
@@ -20,7 +20,7 @@ architecture testbench of cache_controller_tb is
     );
   end component;
 
-  signal clk, rst, is_init : std_logic;
+  signal clk, rst, load : std_logic;
   signal cache_valid : std_logic;
   signal addr_tag, cache_tag : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
   signal addr_index : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
@@ -32,7 +32,7 @@ architecture testbench of cache_controller_tb is
 
 begin
   uut : cache_controller port map (
-    clk => clk, rst => rst, is_init => is_init,
+    clk => clk, rst => rst, load => load,
     cache_valid => cache_valid,
     addr_tag => addr_tag, cache_tag => cache_tag,
     addr_index => addr_index, addr_offset => addr_offset,
@@ -53,7 +53,7 @@ begin
   stim_proc : process
   begin
     wait for clk_period;
-    rst <= '1'; is_init <= '1';
+    rst <= '1'; load <= '1';
     wait for 1 ns; rst <= '0';
     addr_index <= "0000001";
     wait until rising_edge(clk);
@@ -61,7 +61,7 @@ begin
     addr_tag <= X"00000"; cache_tag <= X"00001"; cache_valid <= '1';
     wait for 1 ns;
     assert cache_miss_en = '0';
-    wait until rising_edge(clk); is_init <= '0'; wait for 1 ns;
+    wait until rising_edge(clk); load <= '0'; wait for 1 ns;
 
     -- if addr_tag = cache_tag
     addr_tag <= X"00000"; cache_tag <= X"00000";
