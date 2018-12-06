@@ -20,6 +20,8 @@ entity datapath is
     alu_s : in alucont_type;
     -- forwarding, regw buffer
     forwarding_rds0_s, forwarding_rdt0_s : in std_logic;
+    rs0, rs1, rt0, rt1 : out reg_vector;
+    opcode1 : out opcode_vector;
     -- from cache & memory
     instr_cache_miss_en, data_cache_miss_en, valid_flag : out std_logic;
     instr_load_en, dcache_load_en : in std_logic;
@@ -168,7 +170,8 @@ architecture behavior of datapath is
 
   signal pc0, pc1, pcnext0 : std_logic_vector(31 downto 0);
   signal instr0, instr1 : std_logic_vector(31 downto 0);
-  signal rs0, rt0, instr_rd0, reg_wa0, instr_rtrd0, instr_rtrd1, instr_rtrd2 : reg_vector;
+  signal rs0_0, rt0_0, instr_rd0, reg_wa0, instr_rtrd0, instr_rtrd1, instr_rtrd2 : reg_vector;
+  signal opcode0_0 : opcode_vector;
   signal rds0, rds1, rdt0, rdt1, rdt2, reg_wd0 : std_logic_vector(31 downto 0);
   signal immext0, immext1, brplus0 : std_logic_vector(31 downto 0);
   signal shamt0 : shamt_vector;
@@ -225,19 +228,21 @@ begin
 
   instr_decoder0 : instr_decoder port map (
     instr => instr1,
-    opcode => opcode0,
-    rs => rs0, rt => rt0, rd => instr_rd0,
+    opcode => opcode0_0,
+    rs => rs0_0, rt => rt0_0, rd => instr_rd0,
     immext => immext0,
     brplus => brplus0, -- for bne, beq instruction
     shamt => shamt0,
     funct => funct0,
     target2 => target2 -- for j instruction
   );
+  rs0 <= rs0_0; rt0 <= rt0_0;
+  opcode0 <= opcode0_0;
 
   regfile0 : regfile port map (
     clk => clk, rst => rst,
-    a1 => rs0, rd1 => rds0,
-    a2 => rt0, rd2 => rdt0,
+    a1 => rs0_0, rd1 => rds0,
+    a2 => rt0_0, rd2 => rdt0,
     wa => reg_wa0, wd => reg_wd0, we => reg_we0
   );
 
@@ -263,7 +268,7 @@ begin
   -- for regwritebackS
   instr_rtrd_mux : mux2 generic map (N=>CONST_REG_SIZE)
   port map (
-    d0 => rt0,
+    d0 => rt0_0,
     d1 => instr_rd0,
     s => decode_rt_rd_s,
     y => instr_rtrd0
@@ -310,6 +315,22 @@ begin
   reg_immext : flopr_en generic map (N=>32)
   port map (
     clk => clk, rst => rst, en => calc_en, a => immext0, y => immext1
+  );
+
+  -- forwarding
+  reg_rs0 : flopr_en generic map (N=>CONST_REG_SIZE)
+  port map (
+    clk => clk, rst => rst, en => calc_en, a => rs0_0, y => rs1
+  );
+
+  reg_rt0 : flopr_en generic map (N=>CONST_REG_SIZE)
+  port map (
+    clk => clk, rst => rst, en => calc_en, a => rt0_0, y => rt1
+  );
+
+  reg_opcode1 : flopr_en generic map (N=>CONST_INSTR_OPCODE_SIZE)
+  port map (
+    clk => clk, rst => rst, en => calc_en, a => opcode0_0, y => opcode1
   );
 
   mux2_rdt_immext : mux2 generic map (N=>32)
@@ -379,7 +400,7 @@ begin
     -- out
     wa2 => reg_wa0, wd2 => reg_wd0, we2 => reg_we0,
     -- buffer search
-    ra1 => rs0, rd1 => buf_rds0,
-    ra2 => rt0, rd2 => buf_rdt0
+    ra1 => rs0_0, rd1 => buf_rds0,
+    ra2 => rt0_0, rd2 => buf_rdt0
   );
 end architecture;
