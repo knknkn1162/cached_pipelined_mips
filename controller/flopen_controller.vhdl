@@ -27,7 +27,7 @@ begin
   end process;
 
   -- nextstate
-  process(state)
+  process(state, load, suspend_flag, stall_flag)
   begin
     case state is
       when ResetS =>
@@ -68,7 +68,7 @@ begin
     calc_en0 := '1';
     dcache_en0 := '1';
     case state is
-      when SuspendS =>
+      when SuspendS | ResetS | LoadS =>
         fetch_en0 := '0';
         decode_en0 := '0';
         calc_en0 := '0';
