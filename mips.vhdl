@@ -63,7 +63,7 @@ architecture behavior of mips is
 
   component flopen_controller
     port (
-      clk, rst : in std_logic;
+      suspend_flag : in std_logic;
       fetch_en, decode_en, calc_en, dcache_en : out std_logic
     );
   end component;
