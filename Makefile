@@ -3,7 +3,7 @@ VHDL=vhdl
 MEM=dummy
 DIR=./
 DEBUG=
-CONTROLLER_LIST=mem_idcache alu load flopen decode shift
+CONTROLLER_LIST=mem_idcache alu load flopen decode shift forwarding
 CONTROLLERS=$(addsuffix _controller, ${CONTROLLER_LIST})
 
 forwarding_addi_add: mips
