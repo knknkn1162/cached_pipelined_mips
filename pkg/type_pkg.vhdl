@@ -9,7 +9,9 @@ package type_pkg is
   constant CONST_INSTR_SHAMT_SIZE : natural := 5;
   constant CONST_INSTR_FUNCT_SIZE : natural := 6;
 
-  subtype alucont_type is std_logic_vector(2 downto 0);
+  constant CONST_ALUCONT_SIZE : natural := 3;
+
+  subtype alucont_type is std_logic_vector(CONST_ALUCONT_SIZE-1 downto 0);
   subtype reg_vector is std_logic_vector(CONST_REG_SIZE-1 downto 0);
   subtype opcode_vector is std_logic_vector(CONST_INSTR_OPCODE_SIZE-1 downto 0);
   subtype imm_vector is std_logic_vector(CONST_INSTR_IMM_SIZE-1 downto 0);
