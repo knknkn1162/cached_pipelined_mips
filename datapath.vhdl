@@ -112,7 +112,7 @@ architecture behavior of datapath is
 
   component instr_cache
     port (
-      clk, rst, init : in std_logic;
+      clk, rst, load : in std_logic;
       -- program counter is 4-byte aligned
       a : in std_logic_vector(31 downto 0);
       rd : out std_logic_vector(31 downto 0);
@@ -127,7 +127,7 @@ architecture behavior of datapath is
 
   component data_cache
     port (
-      clk, rst : in std_logic;
+      clk, rst, load : in std_logic;
       we : in std_logic;
       -- program counter is 4-byte aligned
       a : in std_logic_vector(31 downto 0);
@@ -208,7 +208,7 @@ begin
   );
 
   instr_cache0 : instr_cache port map (
-    clk => clk, rst => rst, init => load,
+    clk => clk, rst => rst, load => load,
     a => pc0,
     rd => instr0,
     load_en => instr_load_en,
@@ -375,7 +375,7 @@ begin
 
 
   data_cache0 : data_cache port map (
-    clk => clk, rst => rst,
+    clk => clk, rst => rst, load => load,
     we => dcache_we,
     a => dcache_a0,
     wd => dcache_wd0,
