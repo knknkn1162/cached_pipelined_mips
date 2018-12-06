@@ -1,11 +1,15 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use work.type_pkg.ALL;
+use work.cache_pkg.ALL;
 
 entity mips is
   generic(memfile : string ; MEM_BITS_SIZE : natural);
   port (
+    clk, rst : in std_logic;
     -- for scan
-    pc, pcnext, instr : std_logic_vector(31 downto 0)
+    pc, pcnext, instr : out std_logic_vector(31 downto 0);
+    dcache_load_en, icache_load_en : out std_logic
   );
 end entity;
 
@@ -113,6 +117,7 @@ architecture behavior of mips is
     );
   end component;
 
+  signal fetch_en0, decode_en0, calc_en0, dcache_en0 : std_logic;
   signal tag_s0 : std_logic;
   signal alu_s0, alu_s1 : alucont_type;
   signal reg_we1, reg_we1_0, reg_we2, reg_we2_0 : std_logic;
@@ -148,7 +153,7 @@ begin
   datapath0 : datapath port map (
     clk => clk, rst => rst, load => load0,
     -- flopren_controller
-    fetch_en => fetch_en, decode_en => decode_en, calc_en => calc_en, dcache_en => dcache_en,
+    fetch_en => fetch_en0, decode_en => decode_en0, calc_en => calc_en0, dcache_en => dcache_en0,
     -- regwe_controller
     reg_we1 => reg_we1, reg_we2 => reg_we2,
     -- decode_controller
@@ -160,7 +165,7 @@ begin
     -- form cache & memory
     tag_s => tag_s0,
     instr_cache_miss_en => instr_cache_miss_en0, data_cache_miss_en => data_cache_miss_en0, valid_flag => valid_flag0,
-    instr_load_en => instr_load_en0, dcache_load_en => dcache_load_en0,
+    instr_load_en => icache_load_en0, dcache_load_en => dcache_load_en0,
     mem2cache_d1 => mem2cache_d1, mem2cache_d2 => mem2cache_d2, mem2cache_d3 => mem2cache_d3, mem2cache_d4 => mem2cache_d4,
     mem2cache_d5 => mem2cache_d5, mem2cache_d6 => mem2cache_d6, mem2cache_d7 => mem2cache_d7, mem2cache_d8 => mem2cache_d8,
     mem_tag => mem_tag0, mem_index => mem_index0,
@@ -173,7 +178,7 @@ begin
   mem0 : mem generic map(filename=>memfile, BITS=>MEM_BITS_SIZE)
   port map (
     clk => clk, rst => rst, load => load0,
-    we => mem_we,
+    we => mem_we0,
     tag => mem_tag0, index => mem_index0,
     -- data cache only
     wd1 => dcache2mem_d1, wd2 => dcache2mem_d2, wd3 => dcache2mem_d3, wd4 => dcache2mem_d4,
@@ -188,18 +193,18 @@ begin
     instr_cache_miss_en => instr_cache_miss_en0, data_cache_miss_en => data_cache_miss_en0,
     valid_flag => valid_flag0,
     tag_s => tag_s0,
-    instr_load_en => instr_load_en0, data_load_en => data_load_en0,
+    instr_load_en => icache_load_en0, data_load_en => dcache_load_en0,
     mem_we => mem_we0,
-    suspend_flag => suspend_flag
+    suspend_flag => suspend_flag0
   );
-  instr_load_en <= instr_load_en0;
-  data_load_en <= data_load_en0;
+  icache_load_en <= icache_load_en0;
+  dcache_load_en <= dcache_load_en0;
 
   decode_controller0 : decode_controller port map (
-    opcode => opcode0
+    opcode => opcode0,
     decode_pc_br_ja_s => decode_pc_br_ja_s0,
     dcache_we => dcache_we0,
-    decode_rt_rd_s => decode_rt_rd_s0
+    decode_rt_rd_s => decode_rt_rd_s0,
     calc_rdt_immext_s => calc_rdt_immext_s0,
     reg_we1 => reg_we1_0, reg_we2 => reg_we2_0
   );
