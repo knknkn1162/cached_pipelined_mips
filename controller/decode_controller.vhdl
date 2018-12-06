@@ -7,7 +7,7 @@ entity decode_controller is
     opcode : in opcode_vector;
     funct : in funct_vector;
     decode_pc_br_ja_s : out std_logic_vector(1 downto 0);
-    dcache_we, decode_instr_rtrd_s : out std_logic
+    dcache_we, dcache_rtrd_s : out std_logic
   );
 end entity;
 
@@ -39,9 +39,9 @@ begin
   begin
     case opcode is
       when OP_RTYPE =>
-        decode_instr_rtrd_s <= '1';
+        dcache_rtrd_s <= '1';
       when others =>
-        decode_instr_rtrd_s <= '0';
+        dcache_rtrd_s <= '0';
     end case;
   end process;
 end architecture;

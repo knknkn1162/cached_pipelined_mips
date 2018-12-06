@@ -64,7 +64,7 @@ architecture behavior of mips is
       opcode : in opcode_vector;
       funct : in funct_vector;
       decode_pc_br_ja_s : out std_logic_vector(1 downto 0);
-      dcache_we, decode_instr_rtrd_s : out std_logic
+      dcache_we, dcache_rtrd_s : out std_logic
     );
   end component;
 
@@ -80,7 +80,7 @@ architecture behavior of mips is
       reg_we1, reg_we2 : in std_logic;
       -- decode_controller
       decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
-      dcache_we, decode_instr_rtrd_s : in std_logic;
+      dcache_we, dcache_rtrd_s : in std_logic;
       -- calc_controller
       calc_rdt_immext_s : in std_logic;
       -- memrw_controller
@@ -172,7 +172,7 @@ begin
     opcode => opcode0, funct0 => funct0,
     decode_pc_br_ja_s => decode_pc_br_ja_s0,
     dcache_we => dcache_we,
-    decode_instr_rtrd_s => decode_instr_rtrd_s
+    dcache_rtrd_s => dcache_rtrd_s
   );
 
   alucont0 : alu_controller port map (
