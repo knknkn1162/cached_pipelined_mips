@@ -55,7 +55,7 @@ begin
     end if;
   end process;
 
-  process(opcode, funct)
+  process(opcode)
   begin
     case opcode is
       when OP_RTYPE | OP_ADDI | OP_SLTI | OP_ORI | OP_ANDI =>
