@@ -182,6 +182,7 @@ architecture behavior of datapath is
   signal reg_we0 : std_logic;
   -- forwarding
   signal buf_rds0, buf_rdt0 : std_logic_vector(31 downto 0);
+  signal regw_cached_rds0, regw_cached_rdt0 : std_logic_vector(31 downto 0);
   signal forwarding_rds0, forwarding_rdt0 : std_logic_vector(31 downto 0);
 
 begin
@@ -239,6 +240,9 @@ begin
     a2 => rt0, rd2 => rdt0,
     wa => reg_wa0, wd => reg_wd0, we => reg_we0
   );
+
+  regw_cached_rds0 <= rds0 when is_X(buf_rds0) else buf_rds0;
+  regw_cached_rdt0 <= rdt0 when is_X(buf_rdt0) else buf_rdt0;
 
   forwarding_rds_mux : mux2 generic map(N=>32)
   port map (
