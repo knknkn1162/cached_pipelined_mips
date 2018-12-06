@@ -5,7 +5,7 @@ use work.cache_pkg.ALL;
 
 entity instr_cache is
   port (
-    clk, rst, init : in std_logic;
+    clk, rst, load : in std_logic;
     -- program counter is 4-byte aligned
     a : in std_logic_vector(31 downto 0);
     rd : out std_logic_vector(31 downto 0);
@@ -46,7 +46,7 @@ architecture behavior of instr_cache is
 
   component cache_controller
     port (
-      clk, rst : in std_logic;
+      clk, rst, load : in std_logic;
       cache_valid : in std_logic;
       addr_tag, cache_tag : in std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
       addr_index : in std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
@@ -120,7 +120,7 @@ begin
       -- do nothing
     -- writeback
     elsif rising_edge(clk) then
-      if init = '1' then
+      if load = '1' then
         -- initialize with zeros
         valid_data := (others => '0');
       -- pull the notification from the memory
@@ -155,7 +155,7 @@ begin
   end process;
 
   cache_controller0 : cache_controller port map (
-    clk => clk, rst => rst,
+                                                  clk => clk, rst => rst, load => load,
     cache_valid => valid_datum,
     addr_tag => addr_tag, cache_tag => tag_datum,
     addr_index => addr_index, addr_offset => addr_offset,
