@@ -18,6 +18,8 @@ decode_controller: type_pkg
 	make a F=decode_controller DIR=controller/
 flopen_controller:
 	make a F=flopen_controller DIR=controller/
+shift_controller: type_pkg flopr_en
+	make a F=shift_controller DIR=controller/
 
 cache_decoder: cache_pkg
 	make aer F=cache_decoder DIR=cache/
