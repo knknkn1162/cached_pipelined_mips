@@ -38,7 +38,7 @@ shift2_register_load: flopr_en mux2
 	make aer F=shift2_register_load DIR=component/
 
 cache_pkg:
-	make a F=cache_pkg DIR=cache/
+	make a F=cache_pkg DIR=pkg/
 data_cache: cache_pkg tools_pkg cache_decoder mux8 mux2 cache_controller
 	make aer F=data_cache DIR=cache/
 instr_cache: cache_pkg tools_pkg cache_decoder mux8 cache_controller
@@ -66,9 +66,9 @@ mux4:
 mux8:
 	make aer F=mux8 DIR=general/
 tools_pkg:
-	make aer F=tools_pkg
+	make aer F=tools_pkg DIR=pkg/
 type_pkg:
-	make a F=type_pkg
+	make a F=type_pkg DIR=pkg/
 aer:
 	ghdl -a ${DEBUG} ${DIR}$(F).${VHDL} ${DIR}${F}_tb.$(VHDL)
 	make er F=${F} DEBUG=${DEBUG}
