@@ -26,10 +26,12 @@ entity datapath is
     mem_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
     dcache2mem_d1, dcache2mem_d2, dcache2mem_d3, dcache2mem_d4, dcache2mem_d5, dcache2mem_d6, dcache2mem_d7, dcache2mem_d8 : out std_logic_vector(31 downto 0);
     -- scan
-    -- -- cache & memory
     pc, pcnext : out std_logic_vector(31 downto 0);
     instr : out std_logic_vector(31 downto 0);
     addr, dcache_rd, dcache_wd : out std_logic_vector(31 downto 0);
+    reg_wa : out reg_vector;
+    reg_wd : out std_logic_vector(31 downto 0);
+    reg_we : out std_logic;
     rds, rdt, immext : out std_logic_vector(31 downto 0);
     ja : out std_logic_vector(31 downto 0);
     aluout : out std_logic_vector(31 downto 0)
@@ -185,6 +187,7 @@ begin
   pcnext <= pcnext0;
   instr <= instr0;
   addr <= dcache_a0; dcache_rd <= dcache_rd0; dcache_wd <= dcache_wd0;
+  reg_wa <= reg_wa0; reg_wd <= reg_wd0; reg_we <= reg_we0;
   rds <= rds0; rdt <= rdt0; immext <= immext0;
   ja <= ja0;
   aluout <= aluout0;
