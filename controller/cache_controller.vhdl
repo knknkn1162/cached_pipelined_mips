@@ -5,6 +5,7 @@ use work.cache_pkg.ALL;
 entity cache_controller is
   port (
     clk, rst : in std_logic;
+    is_init : in std_logic;
     cache_valid : in std_logic;
     addr_tag, cache_tag : in std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
     addr_index : in std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
@@ -51,27 +52,31 @@ begin
   -- cache_hit or cache_miss
   process(state, addr_index, addr_tag, cache_valid, cache_tag)
   begin
-    case state is
-      when NormalS =>
-        if cache_valid = '1' then
-          -- cache hit!
-          if cache_tag = addr_tag then
-            cache_miss_en0 <= '0';
+    if is_init = '1' then
+      cache_miss_en0 <= '0';
+    else
+      case state is
+        when NormalS =>
+          if cache_valid = '1' then
+            -- cache hit!
+            if cache_tag = addr_tag then
+              cache_miss_en0 <= '0';
+            else
+              -- cache miss
+              cache_miss_en0 <= '1';
+            end if;
           else
-            -- cache miss
-            cache_miss_en0 <= '1';
+            -- if ram is invalid, cache_miss also occurs
+            if not is_X(addr_index) then
+              cache_miss_en0 <= '1';
+            end if;
           end if;
-        else
-          -- if ram is invalid, cache_miss also occurs
-          if not is_X(addr_index) then
-            cache_miss_en0 <= '1';
-          end if;
-        end if;
-      when CacheMissEnS =>
-        cache_miss_en0 <= '0';
-      when others =>
-        -- do nothing
-    end case;
+        when CacheMissEnS =>
+          cache_miss_en0 <= '0';
+        when others =>
+          -- do nothing
+      end case;
+    end if;
   end process;
   cache_miss_en <= cache_miss_en0;
   cache_valid_flag <= cache_valid;
