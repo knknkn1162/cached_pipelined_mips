@@ -78,7 +78,9 @@ architecture behavior of mips is
 
   component flopen_controller
     port (
+      clk, rst, load : in std_logic;
       suspend_flag : in std_logic;
+      stall_flag : in std_logic;
       fetch_en, decode_en, calc_en, dcache_en : out std_logic
     );
   end component;
@@ -143,7 +145,7 @@ architecture behavior of mips is
 
   -- from cache & memory
   signal mem_we0 : std_logic;
-  signal suspend_flag0 : std_logic;
+  signal suspend_flag0, stall_flag0 : std_logic;
   signal instr_cache_miss_en0, data_cache_miss_en0, valid_flag0 : std_logic;
   signal icache_load_en0, dcache_load_en0 : std_logic;
   signal mem2cache_d1, mem2cache_d2, mem2cache_d3, mem2cache_d4, mem2cache_d5, mem2cache_d6, mem2cache_d7, mem2cache_d8 : std_logic_vector(31 downto 0);
@@ -157,8 +159,12 @@ begin
     clk => clk, rst => rst, load => load0
   );
 
+  -- TODO: stall_controller
+
   flopen_controller0 : flopen_controller port map (
+    clk => clk, rst => rst, load => load0,
     suspend_flag => suspend_flag0,
+    stall_flag => stall_flag0,
     fetch_en => fetch_en0, decode_en => decode_en0,
     calc_en => calc_en0, dcache_en => dcache_en0
   );
