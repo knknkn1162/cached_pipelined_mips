@@ -61,12 +61,10 @@ architecture behavior of mips is
     );
   end component;
 
-  component decode_controller
+  component flopen_controller
     port (
-      opcode : in opcode_vector;
-      funct : in funct_vector;
-      decode_pc_br_ja_s : out std_logic_vector(1 downto 0);
-      dcache_we, decode_rt_rd_s : out std_logic
+      clk, rst : in std_logic;
+      fetch_en, decode_en, calc_en, dcache_en : out std_logic
     );
   end component;
 
@@ -130,7 +128,7 @@ begin
   datapath0 : datapath port map (
     clk => clk, rst => rst, load => load0,
     -- flopren_controller
-    -- fetch_en, decode_en, calc_en, dcache_en : in std_logic;
+    fetch_en => fetch_en, decode_en => decode_en, calc_en => calc_en, dcache_en => dcache_en,
     -- regwe_controller
     reg_we1 => reg_we1, reg_we2 => reg_we2,
     -- decode_controller

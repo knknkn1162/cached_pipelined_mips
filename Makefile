@@ -16,6 +16,8 @@ regwe_controller: type_pkg
 	make a F=regwe_controller DIR=controller/
 decode_controller: type_pkg
 	make a F=decode_controller DIR=controller/
+flopen_controller:
+	make a F=flopen_controller DIR=controller/
 
 cache_decoder: cache_pkg
 	make aer F=cache_decoder DIR=cache/
