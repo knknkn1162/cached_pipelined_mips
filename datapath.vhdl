@@ -28,7 +28,11 @@ entity datapath is
     -- scan
     -- -- cache & memory
     pc, pcnext : out std_logic_vector(31 downto 0);
-    instr : out std_logic_vector(31 downto 0)
+    instr : out std_logic_vector(31 downto 0);
+    addr, dcache_rd, dcache_wd : out std_logic_vector(31 downto 0);
+    rds, rdt, immext : out std_logic_vector(31 downto 0);
+    ja : out std_logic_vector(31 downto 0);
+    aluout : out std_logic_vector(31 downto 0)
   );
 end entity;
 
@@ -165,17 +169,25 @@ architecture behavior of datapath is
   signal immext0, immext1, brplus0 : std_logic_vector(31 downto 0);
   signal shamt0 : shamt_vector;
   signal target2 : target2_vector;
-  signal br4, pc4, ja : std_logic_vector(31 downto 0);
+  signal br4, pc4, ja0 : std_logic_vector(31 downto 0);
   -- calc
   signal rdt_immext0, aluout0, aluout1 : std_logic_vector(31 downto 0);
   -- DMemRWS
-  signal dcache_a0, dcache_rd0 : std_logic_vector(31 downto 0);
+  signal dcache_a0, dcache_rd0, dcache_wd0 : std_logic_vector(31 downto 0);
   -- RegWriteBackS
   signal reg_we0 : std_logic;
   -- forwarding
   signal buf_rds0, buf_rdt0 : std_logic_vector(31 downto 0);
 
 begin
+  -- scan
+  pc <= pc0;
+  pcnext <= pcnext0;
+  instr <= instr0;
+  addr <= dcache_a0; dcache_rd <= dcache_rd0; dcache_wd <= dcache_wd0;
+  rds <= rds0; rdt <= rdt0; immext <= immext0;
+  ja <= ja0;
+  aluout <= aluout0;
 
   -- FetchS
   reg_pc : flopr_en generic map (N=>32)
@@ -184,7 +196,6 @@ begin
     a => pcnext0,
     y => pc0
   );
-  pc <= pc0; -- for scan
 
   instr_cache0 : instr_cache port map (
     clk => clk, rst => rst,
@@ -195,7 +206,6 @@ begin
     wd05 => mem2cache_d5, wd06 => mem2cache_d6, wd07 => mem2cache_d7, wd08 => mem2cache_d8,
     cache_miss_en => instr_cache_miss_en
   );
-  instr <= instr0;
 
   -- DecodeS
   -- -- (decoder & regfile part)
@@ -243,18 +253,17 @@ begin
 
   br4 <= std_logic_vector(unsigned(brplus0) + unsigned(pc1) + 4);
   pc4 <= std_logic_vector(unsigned(pc0) + 4);
-  ja <= pc1(31 downto 28) & target2;
+  ja0 <= pc1(31 downto 28) & target2;
 
   pc_br_ja_mux4 : mux4 generic map (N=>32)
   port map (
     d00 => pc4,
     d01 => br4,
-    d10 => ja,
+    d10 => ja0,
     d11 => pc4, -- dummy
     s => decode_pc_br_ja_s,
     y => pcnext0
   );
-  pcnext <= pcnext0; -- for scan
 
   -- CalcS
   reg_instr_rtrd0 : flopr_en generic map (N=>CONST_REG_SIZE)
@@ -314,12 +323,15 @@ begin
     a => aluout0,
     y => aluout1
   );
+  dcache_a0 <= aluout1;
+  dcache_wd0 <= rdt2;
+
 
   data_cache0 : data_cache port map (
     clk => clk, rst => rst,
     we => dcache_we,
-    a => aluout1,
-    wd => rdt2,
+    a => dcache_a0,
+    wd => dcache_wd0,
     tag_s => tag_s,
     rd => dcache_rd0,
     load_en => dcache_load_en,
@@ -344,5 +356,4 @@ begin
     ra1 => rs0, rd1 => buf_rds0,
     ra2 => rt0, rd2 => buf_rdt0
   );
-
 end architecture;
