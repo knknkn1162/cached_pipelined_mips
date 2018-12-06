@@ -4,7 +4,7 @@ use work.type_pkg.ALL;
 use work.cache_pkg.ALL;
 
 entity mips is
-  generic(memfile : string ; MEM_BITS_SIZE : natural);
+  generic(memfile : string);
   port (
     clk, rst : in std_logic;
     -- for scan
