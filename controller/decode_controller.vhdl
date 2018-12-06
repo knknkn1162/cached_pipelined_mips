@@ -5,10 +5,10 @@ use work.type_pkg.ALL;
 entity decode_controller is
   port (
     opcode : in opcode_vector;
-    funct : in funct_vector;
     decode_pc_br_ja_s : out std_logic_vector(1 downto 0);
     dcache_we, decode_rt_rd_s : out std_logic;
-    calc_rdt_immext_s : out std_logic
+    calc_rdt_immext_s : out std_logic;
+    reg_we1, reg_we2 : out std_logic
   );
 end entity;
 
@@ -53,5 +53,17 @@ begin
     else
       calc_rdt_immext_s <= '1';
     end if;
+  end process;
+
+  process(opcode, funct)
+  begin
+    case opcode is
+      when OP_RTYPE | OP_ADDI | OP_SLTI | OP_ORI | OP_ANDI =>
+        reg_we1 <= '1'; reg_we2 <= '0';
+      when OP_LW =>
+        reg_we1 <= '0'; reg_we2 <= '1';
+      -- OP_SW
+      when others => reg_we1 <= '0'; reg_we2 <= '0';
+    end case;
   end process;
 end architecture;

@@ -51,10 +51,12 @@ architecture behavior of mips is
     );
   end component;
 
-  component regwe_controller
+  component decode_controller
     port (
       opcode : in opcode_vector;
-      funct : in funct_vector;
+      decode_pc_br_ja_s : out std_logic_vector(1 downto 0);
+      dcache_we, decode_rt_rd_s : out std_logic;
+      calc_rdt_immext_s : out std_logic;
       reg_we1, reg_we2 : out std_logic
     );
   end component;
@@ -176,22 +178,18 @@ begin
   data_load_en <= data_load_en0;
 
   decode_controller0 : decode_controller port map (
-    opcode => opcode0, funct0 => funct0,
+    opcode => opcode0
     decode_pc_br_ja_s => decode_pc_br_ja_s0,
     dcache_we => dcache_we0,
     decode_rt_rd_s => decode_rt_rd_s0
+    calc_rdt_immext_s => calc_rdt_immext_s0,
+    reg_we1 => reg_we1_0, reg_we2 => reg_we2_0
   );
 
   alucont0 : alu_controller port map (
     opcode => opcode0,
     funct => funct0,
     alu_s => alu_s0
-  );
-
-  regwecont0 : regwe_controller port map (
-    opcode => opcode0,
-    funct => funct0,
-    regwe1 => regwe1_0, regwe2 => regwe2_0
   );
 
   conts0 <= calc_rdt_immext_s0 & dcache_we0 & regwe2_0 & regwe1_0 & alu_s0;
