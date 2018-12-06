@@ -20,7 +20,8 @@ entity mips is
     ja : out std_logic_vector(31 downto 0);
     aluout : out std_logic_vector(31 downto 0);
     -- for controller
-    icache_load_en, dcache_load_en : out std_logic
+    icache_load_en, dcache_load_en : out std_logic;
+    suspend_flag : out std_logic
   );
 end entity;
 
@@ -198,6 +199,7 @@ begin
   );
   icache_load_en <= icache_load_en0;
   dcache_load_en <= dcache_load_en0;
+  suspend_flag <= suspend_flag0;
 
   decode_controller0 : decode_controller port map (
     opcode => opcode0,

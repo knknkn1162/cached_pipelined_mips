@@ -23,7 +23,8 @@ architecture testbench of forwarding_addi_add_tb is
       ja : out std_logic_vector(31 downto 0);
       aluout : out std_logic_vector(31 downto 0);
       -- for controller
-      icache_load_en, dcache_load_en : out std_logic
+      icache_load_en, dcache_load_en : out std_logic;
+      suspend_flag : out std_logic
     );
   end component;
 
@@ -41,6 +42,7 @@ architecture testbench of forwarding_addi_add_tb is
   signal aluout : std_logic_vector(31 downto 0);
   -- for controller
   signal icache_load_en, dcache_load_en : std_logic;
+  signal suspend_flag : std_logic;
   constant clk_period : time := 10 ns;
   signal stop : boolean;
 
@@ -56,7 +58,8 @@ begin
     reg_wa => reg_wa, reg_wd => reg_wd, reg_we => reg_we,
     rds => rds, rdt => rdt, immext => immext,
     ja => ja, aluout => aluout,
-    icache_load_en => icache_load_en
+    icache_load_en => icache_load_en, dcache_load_en => dcache_load_en,
+    suspend_flag => suspend_flag
   );
 
   clk_process: process
