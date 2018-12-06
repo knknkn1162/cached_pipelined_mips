@@ -152,7 +152,7 @@ architecture behavior of mips is
   signal mem_index0 : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
 
 begin
-
+  -- controller
   load_controller0 : load_controller port map (
     clk => clk, rst => rst, load => load0
   );
@@ -162,6 +162,43 @@ begin
     fetch_en => fetch_en0, decode_en => decode_en0,
     calc_en => calc_en0, dcache_en => dcache_en0
   );
+
+  mem_idcache_controller0 : mem_idcache_controller port map (
+    clk => clk, rst => rst,
+    instr_cache_miss_en => instr_cache_miss_en0, data_cache_miss_en => data_cache_miss_en0,
+    valid_flag => valid_flag0,
+    tag_s => tag_s0,
+    instr_load_en => icache_load_en0, data_load_en => dcache_load_en0,
+    mem_we => mem_we0,
+    suspend_flag => suspend_flag0
+  );
+  icache_load_en <= icache_load_en0;
+  dcache_load_en <= dcache_load_en0;
+
+  decode_controller0 : decode_controller port map (
+    opcode => opcode0,
+    decode_pc_br_ja_s => decode_pc_br_ja_s0,
+    dcache_we => dcache_we0,
+    decode_rt_rd_s => decode_rt_rd_s0,
+    calc_rdt_immext_s => calc_rdt_immext_s0,
+    reg_we1 => reg_we1_0, reg_we2 => reg_we2_0
+  );
+
+  alucont0 : alu_controller port map (
+    opcode => opcode0,
+    funct => funct0,
+    alu_s => alu_s0
+  );
+
+  shift_controller0 : shift_controller port map (
+    clk => clk, rst => rst,
+    calc_en => calc_en0, dcache_en => dcache_en0,
+    calc_rdt_immext_s0 => calc_rdt_immext_s0, dcache_we0 => dcache_we0,
+    reg_we2_0 => reg_we2_0, reg_we1_0 => reg_we1_0, alu_s0 => alu_s0,
+    calc_rdt_immext_s1 => calc_rdt_immext_s1, reg_we1 => reg_we1,
+    dcache_we2 => dcache_we2, reg_we2 => reg_we2, alu_s1 => alu_s1
+  );
+  dcache_we <= dcache_we2;
 
   datapath0 : datapath port map (
     clk => clk, rst => rst, load => load0,
@@ -206,41 +243,4 @@ begin
     rd1 => mem2cache_d1, rd2 => mem2cache_d2, rd3 => mem2cache_d3, rd4 => mem2cache_d4,
     rd5 => mem2cache_d5, rd6 => mem2cache_d6, rd7 => mem2cache_d7, rd8 => mem2cache_d8
   );
-  -- controller
-  mem_idcache_controller0 : mem_idcache_controller port map (
-    clk => clk, rst => rst,
-    instr_cache_miss_en => instr_cache_miss_en0, data_cache_miss_en => data_cache_miss_en0,
-    valid_flag => valid_flag0,
-    tag_s => tag_s0,
-    instr_load_en => icache_load_en0, data_load_en => dcache_load_en0,
-    mem_we => mem_we0,
-    suspend_flag => suspend_flag0
-  );
-  icache_load_en <= icache_load_en0;
-  dcache_load_en <= dcache_load_en0;
-
-  decode_controller0 : decode_controller port map (
-    opcode => opcode0,
-    decode_pc_br_ja_s => decode_pc_br_ja_s0,
-    dcache_we => dcache_we0,
-    decode_rt_rd_s => decode_rt_rd_s0,
-    calc_rdt_immext_s => calc_rdt_immext_s0,
-    reg_we1 => reg_we1_0, reg_we2 => reg_we2_0
-  );
-
-  alucont0 : alu_controller port map (
-    opcode => opcode0,
-    funct => funct0,
-    alu_s => alu_s0
-  );
-
-  shift_controller0 : shift_controller port map (
-    clk => clk, rst => rst,
-    calc_en => calc_en0, dcache_en => dcache_en0,
-    calc_rdt_immext_s0 => calc_rdt_immext_s0, dcache_we0 => dcache_we0,
-    reg_we2_0 => reg_we2_0, reg_we1_0 => reg_we1_0, alu_s0 => alu_s0,
-    calc_rdt_immext_s1 => calc_rdt_immext_s1, reg_we1 => reg_we1,
-    dcache_we2 => dcache_we2, reg_we2 => reg_we2, alu_s1 => alu_s1
-  );
-  dcache_we <= dcache_we2;
 end architecture;
