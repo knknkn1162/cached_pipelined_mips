@@ -111,6 +111,10 @@ architecture behavior of mips is
       opcode0 : out opcode_vector;
       funct0 : out funct_vector;
       alu_s : in alucont_type;
+      -- forwarding, regw buffer
+      forwarding_rds0_s, forwarding_rdt0_s : in std_logic;
+      rs0, rs1, rt0, rt1 : out reg_vector;
+      opcode1 : out opcode_vector;
       -- from cache & memory
       instr_cache_miss_en, data_cache_miss_en, valid_flag : out std_logic;
       instr_load_en, dcache_load_en : in std_logic;
@@ -131,6 +135,15 @@ architecture behavior of mips is
     );
   end component;
 
+  component forwarding_controller
+    port (
+      opcode1 : in opcode_vector;
+      rs0, rs1 : in reg_vector;
+      rt0, rt1 : in reg_vector;
+      forwarding_rds0_s, forwarding_rdt0_s : out std_logic
+    );
+  end component;
+
   signal fetch_en0, decode_en0, calc_en0, dcache_en0 : std_logic;
   signal tag_s0 : std_logic;
   signal alu_s0, alu_s1 : alucont_type;
@@ -142,6 +155,11 @@ architecture behavior of mips is
   signal decode_pc_br_ja_s0 : std_logic_vector(1 downto 0);
   signal dcache_we0, dcache_we2, decode_rt_rd_s0 : std_logic;
   signal calc_rdt_immext_s0, calc_rdt_immext_s1 : std_logic;
+
+  -- forwarding
+  signal forwarding_rds0_s0, forwarding_rdt0_s0 : std_logic;
+  signal rs0, rs1, rt0, rt1 : reg_vector;
+  signal opcode1 : opcode_vector;
 
   -- from cache & memory
   signal mem_we0 : std_logic;
@@ -218,6 +236,9 @@ begin
     calc_rdt_immext_s => calc_rdt_immext_s1,
     -- alu_controller
     opcode0 => opcode0, funct0 => funct0, alu_s => alu_s1,
+    -- forwarding, regw buffer
+    forwarding_rds0_s => forwarding_rds0_s0, forwarding_rdt0_s => forwarding_rdt0_s0,
+    rs0 => rs0, rs1 => rs1, rt0 => rt0, rt1 => rt1, opcode1 => opcode1,
     -- form cache & memory
     tag_s => tag_s0,
     instr_cache_miss_en => instr_cache_miss_en0, data_cache_miss_en => data_cache_miss_en0, valid_flag => valid_flag0,
@@ -234,6 +255,14 @@ begin
     reg_wa => reg_wa, reg_wd => reg_wd, reg_we => reg_we,
     rds => rds, rdt => rdt, immext => immext,
     ja => ja, aluout => aluout
+  );
+
+  forwarding_controller0 : forwarding_controller port map (
+    opcode1 => opcode1,
+    rs0 => rs0, rs1 => rs1,
+    rt0 => rt0, rt1 => rt1,
+    forwarding_rds0_s => forwarding_rds0_s0,
+    forwarding_rdt0_s => forwarding_rdt0_s0
   );
 
   -- memory
