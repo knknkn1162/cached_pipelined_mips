@@ -64,7 +64,7 @@ architecture behavior of mips is
       opcode : in opcode_vector;
       funct : in funct_vector;
       decode_pc_br_ja_s : out std_logic_vector(1 downto 0);
-      dcache_we, dcache_rtrd_s : out std_logic
+      dcache_we, decode_rt_rd_s : out std_logic
     );
   end component;
 
@@ -80,7 +80,7 @@ architecture behavior of mips is
       reg_we1, reg_we2 : in std_logic;
       -- decode_controller
       decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
-      dcache_we, dcache_rtrd_s : in std_logic;
+      dcache_we, decode_rt_rd_s : in std_logic;
       -- calc_controller
       calc_rdt_immext_s : in std_logic;
       -- memrw_controller
@@ -112,7 +112,7 @@ architecture behavior of mips is
   signal funct0 : funct_vector;
 
   signal decode_pc_br_ja_s0 : std_logic_vector(1 downto 0);
-  signal dcache_we0, dcache_we2, dcache_rtrd_s0 : std_logic;
+  signal dcache_we0, dcache_we2, decode_rt_rd_s0 : std_logic;
 
   -- from cache & memory
   signal instr_cache_miss_en0, data_cache_miss_en0, valid_flag0 : std_logic;
@@ -133,7 +133,7 @@ begin
     reg_we1 => reg_we1, reg_we2 => reg_we2,
     -- decode_controller
     decode_pc_br_ja_s => decode_pc_br_ja_s0,
-    dcache_we => dcache_we2, dcache_rtrd_s => dcache_rtrd_s0,
+    dcache_we => dcache_we2, decode_rt_rd_s => decode_rt_rd_s0,
     -- alu_controller
     opcode0 => opcode0, funct0 => funct0, alu_s => alu_s1,
     -- form cache & memory
@@ -178,7 +178,7 @@ begin
     opcode => opcode0, funct0 => funct0,
     decode_pc_br_ja_s => decode_pc_br_ja_s0,
     dcache_we => dcache_we0,
-    dcache_rtrd_s => dcache_rtrd_s0
+    decode_rt_rd_s => decode_rt_rd_s0
   );
 
   alucont0 : alu_controller port map (
