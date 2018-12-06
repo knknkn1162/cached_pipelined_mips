@@ -125,6 +125,12 @@ begin
     clk => clk, rst => rst, load => load0
   );
 
+  flopen_controller0 : flopen_controller port map (
+    suspend_flag => suspend_flag0,
+    fetch_en => fetch_en0, decode_en => decode_en0,
+    calc_en => calc_en0, dcache_en => dcache_en0
+  );
+
   datapath0 : datapath port map (
     clk => clk, rst => rst, load => load0,
     -- flopren_controller
