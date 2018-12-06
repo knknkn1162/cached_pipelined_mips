@@ -8,8 +8,19 @@ entity mips is
   port (
     clk, rst : in std_logic;
     -- for scan
-    pc, pcnext, instr : out std_logic_vector(31 downto 0);
-    dcache_load_en, icache_load_en : out std_logic
+    -- -- datapath
+    pc, pcnext : out std_logic_vector(31 downto 0);
+    instr : out std_logic_vector(31 downto 0);
+    addr, dcache_rd, dcache_wd : out std_logic_vector(31 downto 0);
+    dcache_we : out std_logic;
+    reg_wa : out reg_vector;
+    reg_wd : out std_logic_vector(31 downto 0);
+    reg_we : out std_logic;
+    rds, rdt, immext : out std_logic_vector(31 downto 0);
+    ja : out std_logic_vector(31 downto 0);
+    aluout : out std_logic_vector(31 downto 0);
+    -- for controller
+    icache_load_en, dcache_load_en : out std_logic
   );
 end entity;
 
@@ -88,22 +99,17 @@ architecture behavior of mips is
     port (
       clk, rst : in std_logic;
       -- controller
-      -- load_controller
       load : in std_logic;
-      -- flopren_controller
       fetch_en, decode_en, calc_en, dcache_en : in std_logic;
-      -- regwe_controller
       reg_we1, reg_we2 : in std_logic;
-      -- decode_controller
+      dcache_we : in std_logic;
+      decode_rt_rd_s, calc_rdt_immext_s : in std_logic;
       decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
-      dcache_we, decode_rt_rd_s : in std_logic;
-      calc_rdt_immext_s : in std_logic;
-      -- alu_controller
+      tag_s : in std_logic;
       opcode0 : out opcode_vector;
       funct0 : out funct_vector;
       alu_s : in alucont_type;
       -- from cache & memory
-      tag_s : in std_logic;
       instr_cache_miss_en, data_cache_miss_en, valid_flag : out std_logic;
       instr_load_en, dcache_load_en : in std_logic;
       mem2cache_d1, mem2cache_d2, mem2cache_d3, mem2cache_d4, mem2cache_d5, mem2cache_d6, mem2cache_d7, mem2cache_d8 : in std_logic_vector(31 downto 0);
@@ -111,9 +117,15 @@ architecture behavior of mips is
       mem_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
       dcache2mem_d1, dcache2mem_d2, dcache2mem_d3, dcache2mem_d4, dcache2mem_d5, dcache2mem_d6, dcache2mem_d7, dcache2mem_d8 : out std_logic_vector(31 downto 0);
       -- scan
-      -- -- cache & memory
       pc, pcnext : out std_logic_vector(31 downto 0);
-      instr : out std_logic_vector(31 downto 0)
+      instr : out std_logic_vector(31 downto 0);
+      addr, dcache_rd, dcache_wd : out std_logic_vector(31 downto 0);
+      reg_wa : out reg_vector;
+      reg_wd : out std_logic_vector(31 downto 0);
+      reg_we : out std_logic;
+      rds, rdt, immext : out std_logic_vector(31 downto 0);
+      ja : out std_logic_vector(31 downto 0);
+      aluout : out std_logic_vector(31 downto 0)
     );
   end component;
 
@@ -140,6 +152,7 @@ architecture behavior of mips is
   signal mem_index0 : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
 
 begin
+
   load_controller0 : load_controller port map (
     clk => clk, rst => rst, load => load0
   );
@@ -171,7 +184,13 @@ begin
     mem_tag => mem_tag0, mem_index => mem_index0,
     dcache2mem_d1 => dcache2mem_d1, dcache2mem_d2 => dcache2mem_d2, dcache2mem_d3 => dcache2mem_d3, dcache2mem_d4 => dcache2mem_d4,
     dcache2mem_d5 => dcache2mem_d5, dcache2mem_d6 => dcache2mem_d6, dcache2mem_d7 => dcache2mem_d7, dcache2mem_d8 => dcache2mem_d8,
-    pc => pc, pcnext => pcnext, instr => instr
+    -- for scan
+    pc => pc, pcnext => pcnext,
+    instr => instr,
+    addr => addr, dcache_rd => dcache_rd, dcache_wd => dcache_wd,
+    reg_wa => reg_wa, reg_wd => reg_wd, reg_we => reg_we,
+    rds => rds, rdt => rdt, immext => immext,
+    ja => ja, aluout => aluout
   );
 
   -- memory
@@ -223,4 +242,5 @@ begin
     calc_rdt_immext_s1 => calc_rdt_immext_s1, reg_we1 => reg_we1,
     dcache_we2 => dcache_we2, reg_we2 => reg_we2, alu_s1 => alu_s1
   );
+  dcache_we <= dcache_we2;
 end architecture;
