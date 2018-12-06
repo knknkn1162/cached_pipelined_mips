@@ -12,7 +12,7 @@ entity datapath is
     fetch_en, decode_en, calc_en, dcache_en : in std_logic;
     reg_we1, reg_we2 : in std_logic;
     dcache_we : in std_logic;
-    decode_rt_rd_s, calc_rdt_immext_s, memrw_instr_rtrd_aluout_s : in std_logic;
+    decode_rt_rd_s, calc_rdt_immext_s, memrw_rtrd_aluout_s : in std_logic;
     decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
     tag_s : in std_logic;
     opcode0 : out opcode_vector;
@@ -319,7 +319,7 @@ begin
   port map (
     d0 => instr_rtrd2,
     d1 => aluout1,
-    s => memrw_instr_rtrd_aluout_s,
+    s => memrw_rtrd_aluout_s,
     y => dcache_wa0
   );
 

@@ -84,7 +84,7 @@ architecture behavior of mips is
       -- calc_controller
       calc_rdt_immext_s : in std_logic;
       -- memrw_controller
-      memrw_instr_rtrd_aluout_s : in std_logic;
+      memrw_rtrd_aluout_s : in std_logic;
       -- alu_controller
       opcode0 : out opcode_vector;
       funct0 : out funct_vector;
