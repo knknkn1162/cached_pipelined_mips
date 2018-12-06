@@ -18,6 +18,8 @@ entity datapath is
     opcode0 : out opcode_vector;
     funct0 : out funct_vector;
     alu_s : in alucont_type;
+    -- forwarding, regw buffer
+    forwarding_rds0_s, forwarding_rdt0_s : in std_logic;
     -- from cache & memory
     instr_cache_miss_en, data_cache_miss_en, valid_flag : out std_logic;
     instr_load_en, dcache_load_en : in std_logic;
@@ -180,6 +182,7 @@ architecture behavior of datapath is
   signal reg_we0 : std_logic;
   -- forwarding
   signal buf_rds0, buf_rdt0 : std_logic_vector(31 downto 0);
+  signal forwarding_rds0, forwarding_rdt0 : std_logic_vector(31 downto 0);
 
 begin
   -- scan
@@ -237,6 +240,22 @@ begin
     wa => reg_wa0, wd => reg_wd0, we => reg_we0
   );
 
+  forwarding_rds_mux : mux2 generic map(N=>32)
+  port map (
+    d0 => regw_cached_rds0,
+    d1 => aluout0,
+    s => forwarding_rds0_s,
+    y => forwarding_rds0
+  );
+
+  forwarding_rdt_mux : mux2 generic map (N=>32)
+  port map (
+    d0 => regw_cached_rdt0,
+    d1 => aluout0,
+    s => forwarding_rdt0_s,
+    y => forwarding_rdt0
+  );
+
   -- for regwritebackS
   instr_rtrd_mux : mux2 generic map (N=>CONST_REG_SIZE)
   port map (
@@ -276,12 +295,12 @@ begin
 
   reg_rds : flopr_en generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => calc_en, a => rds0, y => rds1
+    clk => clk, rst => rst, en => calc_en, a => forwarding_rds0, y => rds1
   );
 
   reg_rdt0 : flopr_en generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => calc_en, a => rdt0, y => rdt1
+    clk => clk, rst => rst, en => calc_en, a => forwarding_rdt0, y => rdt1
   );
 
   reg_immext : flopr_en generic map (N=>32)
