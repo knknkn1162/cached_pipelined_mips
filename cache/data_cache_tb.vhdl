@@ -72,7 +72,9 @@ begin
   stim_proc : process
   begin
     wait for clk_period;
-    rst <= '1'; wait for 1 ns; rst <= '0'; assert cache_miss_en = '0';
+    rst <= '1'; load <= '1'; wait for 1 ns; rst <= '0';
+    assert cache_miss_en = '0';
+    wait until rising_edge(clk); load <= '0'; wait for 1 ns;
     -- when initialization, cache_miss_en is disable
     load <= '1';
     a <= X"00000008"; wait for 1 ns; assert cache_miss_en = '0';
