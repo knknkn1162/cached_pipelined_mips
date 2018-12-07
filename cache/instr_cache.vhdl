@@ -46,7 +46,7 @@ architecture behavior of instr_cache is
 
   component cache_controller
     port (
-      clk, rst, load : in std_logic;
+      load : in std_logic;
       cache_valid : in std_logic;
       addr_tag, cache_tag : in std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
       addr_index : in std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
@@ -155,7 +155,7 @@ begin
   end process;
 
   cache_controller0 : cache_controller port map (
-    clk => clk, rst => rst, load => load,
+    load => load,
     cache_valid => valid_datum,
     addr_tag => addr_tag, cache_tag => tag_datum,
     addr_index => addr_index, addr_offset => addr_offset,
