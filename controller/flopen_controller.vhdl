@@ -36,8 +36,6 @@ begin
         else
           nextstate <= ResetS;
         end if;
-      when LoadS =>
-        nextstate <= NormalS;
       when NormalS =>
         if suspend_flag = '1' then
           nextstate <= SuspendS;
@@ -46,7 +44,7 @@ begin
         else
           nextstate <= NormalS;
         end if;
-      when SuspendS =>
+      when SuspendS | LoadS =>
         if suspend_flag = '0' then
           nextstate <= NormalS;
         else
