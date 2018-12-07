@@ -136,19 +136,20 @@ begin
     -- DecodeS : add $s1, $s0, $s0
     assert rds = X"00000005"; assert rdt = X"00000005"; -- forwarding for pipeline
     assert dcache_we = '0'; assert reg_we = '0';
+    wait until rising_edge(clk); wait for 1 ns;
 
     -- -- (- , CalcS(RtypeCalcS))
-    -- -- CalcS : add $s1, $s0, $s0
-    -- assert aluout = X"0000000A";
-    -- assert dcache_we = '0'; assert reg_we = '0';
-    -- wait for clk_period;
+    -- CalcS : add $s1, $s0, $s0
+    assert aluout = X"0000000A";
+    assert dcache_we = '0'; -- assert reg_we = '0';
+    wait for clk_period;
 
-    -- assert reg_wa = "10000"; assert reg_wd = X"00000005";
-    -- assert reg_we = '1'; assert dcache_we = '0';
-    -- wait for clk_period;
+    assert reg_wa = "10000"; assert reg_wd = X"00000005";
+    assert reg_we = '1'; assert dcache_we = '0';
+    wait for clk_period;
 
-    -- assert reg_wa = "10001"; assert reg_wd = X"0000000A";
-    -- assert reg_we = '1'; assert dcache_we = '0';
+    assert reg_wa = "10001"; assert reg_wd = X"0000000A";
+    assert reg_we = '1'; assert dcache_we = '0';
     -- skip
     stop <= TRUE;
     -- success message
