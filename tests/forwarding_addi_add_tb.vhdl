@@ -125,12 +125,13 @@ begin
 
 
     -- -- (DecodeS, FetchS)
-    -- -- -- DecodeS : addi $s0, $0, 5
-    -- assert rds = X"00000000"; assert immext = X"00000005";
-    -- -- -- FetchS : add $s1, $s0, $s0
-    -- assert pc = X"00000004"; assert pcnext = X"00000008";
-    -- assert instr = X"02108800";
-    -- wait for clk_period;
+    -- -- DecodeS : addi $s0, $0, 5
+    assert state = NormalS;
+    assert rds = X"00000000"; assert immext = X"00000005";
+    -- -- FetchS : add $s1, $s0, $s0
+    assert pc = X"00000004"; assert pcnext = X"00000008";
+    assert instr = X"02108800";
+    wait until rising_edge(clk); wait for 1 ns;
 
     -- -- (CalcS, DecodeS)
     -- assert pc = X"00000008"; assert pcnext = X"0000000C";

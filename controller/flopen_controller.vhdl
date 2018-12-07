@@ -59,30 +59,27 @@ begin
   end process;
 
   -- **_en
-  process(state)
-    variable fetch_en0, decode_en0, calc_en0, dcache_en0 : std_logic;
+  process(state, suspend_flag)
+    variable work_en : std_logic;
   begin
-    fetch_en0 := '1';
-    decode_en0 := '1';
-    calc_en0 := '1';
-    dcache_en0 := '1';
-    case state is
-      when SuspendS | ResetS | LoadS =>
-        fetch_en0 := '0';
-        decode_en0 := '0';
-        calc_en0 := '0';
-        dcache_en0 := '0';
-      -- wait for MemRead in lw instruction
-      when StallS =>
-        fetch_en0 := '0';
-        decode_en0 := '0';
-        calc_en0 := '0';
-      when others =>
-        -- do nothing
-    end case;
-    fetch_en <= fetch_en0;
-    decode_en <= decode_en0;
-    calc_en <= calc_en0;
-    dcache_en <= dcache_en0;
+    if state = StallS then
+      fetch_en <= '0';
+      decode_en <= '0';
+      calc_en <= '0';
+    else
+      case state is
+        when ResetS | LoadS =>
+          work_en := '0';
+        when SuspendS =>
+          work_en := (not suspend_flag);
+        -- wait for MemRead in lw instruction
+        when others =>
+          work_en := '1';
+      end case;
+      fetch_en <= work_en;
+      decode_en <= work_en;
+      calc_en <= work_en;
+      dcache_en <= work_en;
+    end if;
   end process;
 end architecture;
