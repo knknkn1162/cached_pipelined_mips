@@ -20,7 +20,8 @@ entity datapath is
     alu_s : in alucont_type;
     -- forwarding, regw buffer
     forwarding_rds0_s, forwarding_rdt0_s : in std_logic;
-    rs0, rs1, rt0, rt1 : out reg_vector;
+    rs0, rt0 : out reg_vector;
+    rt1, instr_rd1 : out reg_vector;
     opcode1 : out opcode_vector;
     -- from cache & memory
     instr_cache_miss_en, data_cache_miss_en, valid_flag : out std_logic;
@@ -170,7 +171,7 @@ architecture behavior of datapath is
 
   signal pc0, pc1, pcnext0 : std_logic_vector(31 downto 0);
   signal instr0, instr1 : std_logic_vector(31 downto 0);
-  signal rs0_0, rt0_0, instr_rd0, reg_wa0, instr_rtrd0, instr_rtrd1, instr_rtrd2 : reg_vector;
+  signal rs0_0, rt0_0, instr_rd0_0, reg_wa0, instr_rtrd0, instr_rtrd1, instr_rtrd2 : reg_vector;
   signal opcode0_0 : opcode_vector;
   signal rds0, rds1, rdt0, rdt1, rdt2, reg_wd0 : std_logic_vector(31 downto 0);
   signal immext0, immext1, brplus0 : std_logic_vector(31 downto 0);
@@ -229,7 +230,7 @@ begin
   instr_decoder0 : instr_decoder port map (
     instr => instr1,
     opcode => opcode0_0,
-    rs => rs0_0, rt => rt0_0, rd => instr_rd0,
+    rs => rs0_0, rt => rt0_0, rd => instr_rd0_0,
     immext => immext0,
     brplus => brplus0, -- for bne, beq instruction
     shamt => shamt0,
@@ -269,7 +270,7 @@ begin
   instr_rtrd_mux : mux2 generic map (N=>CONST_REG_SIZE)
   port map (
     d0 => rt0_0,
-    d1 => instr_rd0,
+    d1 => instr_rd0_0,
     s => decode_rt_rd_s,
     y => instr_rtrd0
   );
@@ -318,14 +319,14 @@ begin
   );
 
   -- forwarding
-  reg_rs0 : flopr_en generic map (N=>CONST_REG_SIZE)
-  port map (
-    clk => clk, rst => rst, en => calc_en, a => rs0_0, y => rs1
-  );
-
   reg_rt0 : flopr_en generic map (N=>CONST_REG_SIZE)
   port map (
     clk => clk, rst => rst, en => calc_en, a => rt0_0, y => rt1
+  );
+
+  reg_instrrd0 : flopr_en generic map (N=>CONST_REG_SIZE)
+  port map (
+    clk => clk, rst => rst, en => calc_en, a => instr_rd0_0, y => instr_rd1
   );
 
   reg_opcode1 : flopr_en generic map (N=>CONST_INSTR_OPCODE_SIZE)

@@ -117,7 +117,8 @@ architecture behavior of mips is
       alu_s : in alucont_type;
       -- forwarding, regw buffer
       forwarding_rds0_s, forwarding_rdt0_s : in std_logic;
-      rs0, rs1, rt0, rt1 : out reg_vector;
+      rs0, rt0 : out reg_vector;
+      rt1, instr_rd1 : out reg_vector;
       opcode1 : out opcode_vector;
       -- from cache & memory
       instr_cache_miss_en, data_cache_miss_en, valid_flag : out std_logic;
@@ -139,11 +140,11 @@ architecture behavior of mips is
     );
   end component;
 
-  component forwarding_controller
+  component forwarding_controller is
     port (
       opcode1 : in opcode_vector;
-      rs0, rs1 : in reg_vector;
-      rt0, rt1 : in reg_vector;
+      rs0, rt0 : in reg_vector;
+      rt1, rd1 : in reg_vector;
       forwarding_rds0_s, forwarding_rdt0_s : out std_logic
     );
   end component;
@@ -162,7 +163,7 @@ architecture behavior of mips is
 
   -- forwarding
   signal forwarding_rds0_s0, forwarding_rdt0_s0 : std_logic;
-  signal rs0, rs1, rt0, rt1 : reg_vector;
+  signal rs0, rt0, rt1, instr_rd1 : reg_vector;
   signal opcode1 : opcode_vector;
 
   -- from cache & memory
@@ -244,7 +245,8 @@ begin
     opcode0 => opcode0, funct0 => funct0, alu_s => alu_s1,
     -- forwarding, regw buffer
     forwarding_rds0_s => forwarding_rds0_s0, forwarding_rdt0_s => forwarding_rdt0_s0,
-    rs0 => rs0, rs1 => rs1, rt0 => rt0, rt1 => rt1, opcode1 => opcode1,
+    rs0 => rs0, rt0 => rt0, rt1 => rt1, instr_rd1 => instr_rd1,
+    opcode1 => opcode1,
     -- form cache & memory
     tag_s => tag_s0,
     instr_cache_miss_en => instr_cache_miss_en0, data_cache_miss_en => data_cache_miss_en0, valid_flag => valid_flag0,
@@ -265,8 +267,8 @@ begin
 
   forwarding_controller0 : forwarding_controller port map (
     opcode1 => opcode1,
-    rs0 => rs0, rs1 => rs1,
-    rt0 => rt0, rt1 => rt1,
+    rs0 => rs0, rt0 => rt0,
+    rt1 => rt1, rd1 => instr_rd1,
     forwarding_rds0_s => forwarding_rds0_s0,
     forwarding_rdt0_s => forwarding_rdt0_s0
   );
