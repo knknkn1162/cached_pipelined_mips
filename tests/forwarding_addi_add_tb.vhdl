@@ -1,5 +1,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use work.debug_pkg.ALL;
 use work.type_pkg.ALL;
 
 entity forwarding_addi_add_tb is
@@ -23,6 +24,7 @@ architecture testbench of forwarding_addi_add_tb is
       ja : out std_logic_vector(31 downto 0);
       aluout : out std_logic_vector(31 downto 0);
       -- for controller
+      flopen_state : out flopen_state_vector;
       icache_miss_en, dcache_miss_en : out std_logic;
       icache_load_en, dcache_load_en : out std_logic;
       suspend_flag : out std_logic
@@ -42,6 +44,7 @@ architecture testbench of forwarding_addi_add_tb is
   signal ja : std_logic_vector(31 downto 0);
   signal aluout : std_logic_vector(31 downto 0);
   -- for controller
+  signal flopen_state : flopen_state_vector;
   signal icache_miss_en, dcache_miss_en : std_logic;
   signal icache_load_en, dcache_load_en : std_logic;
   signal suspend_flag : std_logic;

@@ -1,5 +1,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use work.debug_pkg.ALL;
 use work.type_pkg.ALL;
 use work.cache_pkg.ALL;
 
@@ -20,6 +21,7 @@ entity mips is
     ja : out std_logic_vector(31 downto 0);
     aluout : out std_logic_vector(31 downto 0);
     -- for controller
+    flopen_state : out flopen_state_vector;
     icache_miss_en, dcache_miss_en : out std_logic;
     icache_load_en, dcache_load_en : out std_logic;
     suspend_flag : out std_logic
@@ -83,7 +85,8 @@ architecture behavior of mips is
       clk, rst, load : in std_logic;
       suspend_flag : in std_logic;
       stall_flag : in std_logic;
-      fetch_en, decode_en, calc_en, dcache_en : out std_logic
+      fetch_en, decode_en, calc_en, dcache_en : out std_logic;
+      state_vector : out flopen_state_vector
     );
   end component;
 
@@ -186,7 +189,8 @@ begin
     suspend_flag => suspend_flag0,
     stall_flag => stall_flag0,
     fetch_en => fetch_en0, decode_en => decode_en0,
-    calc_en => calc_en0, dcache_en => dcache_en0
+    calc_en => calc_en0, dcache_en => dcache_en0,
+    state_vector => flopen_state
   );
 
   mem_idcache_controller0 : mem_idcache_controller port map (
