@@ -5,6 +5,8 @@ use work.type_pkg.ALL;
 entity regw_buffer is
   port (
     clk, rst : in std_logic;
+    en0 : in std_logic;
+    en1 : in std_logic;
     wa0 : in reg_vector;
     wd0 : in std_logic_vector(31 downto 0);
     we0 : in std_logic;
