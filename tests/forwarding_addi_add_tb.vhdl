@@ -121,7 +121,7 @@ begin
 
     -- -- (DecodeS, FetchS)
     -- -- DecodeS : addi $s0, $0, 5
-    assert state = NormalS;
+    assert state = NormalS; assert suspend_flag = '0';
     assert rds = X"00000000"; assert immext = X"00000005";
     -- -- FetchS : add $s1, $s0, $s0
     assert pc = X"00000004"; assert pcnext = X"00000008";
@@ -129,13 +129,13 @@ begin
     wait until rising_edge(clk); wait for 1 ns;
 
     -- -- (CalcS, DecodeS)
-    -- assert pc = X"00000008"; assert pcnext = X"0000000C";
-    -- -- CalcS(AddiCalcS) : addi $t0, $s0, 5
-    -- assert aluout = X"0000000A";
-    -- -- DecodeS : add $s1, $s0, $s0
-    -- assert rds = X"00000005"; assert rdt = X"00000005"; -- forwarding for pipeline
-    -- assert dcache_we = '0'; assert reg_we = '0';
-    -- wait for clk_period;
+    assert state = NormalS; assert suspend_flag = '0';
+    assert pc = X"00000008"; assert pcnext = X"0000000C";
+    -- CalcS(AddiCalcS) : addi $s0, $0, 5
+    assert aluout = X"00000005";
+    -- DecodeS : add $s1, $s0, $s0
+    assert rds = X"00000005"; assert rdt = X"00000005"; -- forwarding for pipeline
+    assert dcache_we = '0'; assert reg_we = '0';
 
     -- -- (- , CalcS(RtypeCalcS))
     -- -- CalcS : add $s1, $s0, $s0
