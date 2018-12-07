@@ -1,6 +1,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use work.debug_pkg.ALL;
+use work.state_pkg.ALL;
 use work.type_pkg.ALL;
 
 entity forwarding_addi_add_tb is
@@ -44,12 +45,13 @@ architecture testbench of forwarding_addi_add_tb is
   signal ja : std_logic_vector(31 downto 0);
   signal aluout : std_logic_vector(31 downto 0);
   -- for controller
-  signal flopen_state : flopen_state_vector;
+  signal flopen_state_vec : flopen_state_vector;
   signal icache_miss_en, dcache_miss_en : std_logic;
   signal icache_load_en, dcache_load_en : std_logic;
   signal suspend_flag : std_logic;
   constant clk_period : time := 10 ns;
   signal stop : boolean;
+  signal state : flopen_statetype;
 
 begin
   mips0 : mips generic map(memfile=>memfile)
@@ -63,11 +65,13 @@ begin
     reg_wa => reg_wa, reg_wd => reg_wd, reg_we => reg_we,
     rds => rds, rdt => rdt, immext => immext,
     ja => ja, aluout => aluout,
-    flopen_state => flopen_state,
+    flopen_state => flopen_state_vec,
     icache_miss_en => icache_miss_en, dcache_miss_en => dcache_miss_en,
     icache_load_en => icache_load_en, dcache_load_en => dcache_load_en,
     suspend_flag => suspend_flag
   );
+
+  state <= encode_flopen_state(flopen_state_vec);
 
   clk_process: process
   begin
@@ -84,26 +88,34 @@ begin
     -- add $s1, $s0, $s0
     wait for clk_period;
     rst <= '1'; wait for 1 ns; rst <= '0';
+    assert state = ResetS;
     assert pc = X"00000000"; assert pcnext = X"00000004";
     assert dcache_miss_en = '0'; assert icache_miss_en = '0';
     wait until rising_edge(clk); wait for 1 ns;
     -- Load (cache_miss)
+    assert state = LoadS;
     assert dcache_miss_en = '1'; assert icache_miss_en = '1'; assert suspend_flag = '1';
-    wait until rising_edge(clk);
-    assert suspend_flag = '1';
-    wait for 1 ns;
+    wait until rising_edge(clk); assert suspend_flag = '1'; wait for 1 ns;
+
     -- (instr: Mem2CacheS, mem : NormalS)
+    assert state = SuspendS;
     assert icache_load_en = '0'; assert dcache_load_en = '0'; assert suspend_flag = '1';
     wait until rising_edge(clk); wait for 1 ns;
+
     -- (instr: CacheWriteBackS, mem : Mem2CacheS)
+    assert state = SuspendS;
     assert icache_load_en = '1'; assert dcache_load_en = '0'; assert suspend_flag = '1';
     wait until rising_edge(clk); wait for 1 ns;
+
     -- (instr: NormalS, mem : CacheWriteBackS)
+    assert state = SuspendS;
     assert icache_load_en = '0'; assert dcache_load_en = '1'; assert suspend_flag = '1';
     wait until rising_edge(clk); wait for 1 ns;
+
     -- (FetchS, InitS) (restore from SuspendS)
-    wait until rising_edge(clk); wait for 1 ns;
+    assert state = SuspendS;
     assert icache_load_en = '0'; assert dcache_load_en = '0'; assert suspend_flag = '0';
+    assert icache_miss_en = '0';
     -- -- FetchS : addi $t0, $0, 5
     assert pc = X"00000000"; assert pcnext = X"00000004";
     assert instr = X"20100005";

@@ -7,6 +7,7 @@ package debug_pkg is
   subtype flopen_state_vector is std_logic_vector(2 downto 0);
   function decode_state(pos : integer; size : natural) return std_logic_vector;
   function decode_flopen_state(state: flopen_statetype; size : natural) return std_logic_vector;
+  function encode_flopen_state(vec : flopen_state_vector) return flopen_statetype;
 end package;
 
 package body debug_pkg is
@@ -21,6 +22,17 @@ package body debug_pkg is
     variable res : flopen_state_vector;
   begin
     res := decode_state(flopen_statetype'pos(state), size);
+    return res;
+  end function;
+
+  function encode_flopen_state(vec : flopen_state_vector) return flopen_statetype is
+    variable res : flopen_statetype;
+  begin
+    if is_X(vec) then
+      res := ErrorS;
+    else
+      res := flopen_statetype'val(to_integer(unsigned(vec)));
+    end if;
     return res;
   end function;
 end package body;
