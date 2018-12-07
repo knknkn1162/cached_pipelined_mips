@@ -155,7 +155,7 @@ begin
   end process;
 
   cache_controller0 : cache_controller port map (
-                                                  clk => clk, rst => rst, load => load,
+    clk => clk, rst => rst, load => load,
     cache_valid => valid_datum,
     addr_tag => addr_tag, cache_tag => tag_datum,
     addr_index => addr_index, addr_offset => addr_offset,
