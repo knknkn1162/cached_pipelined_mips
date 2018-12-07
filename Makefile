@@ -16,9 +16,9 @@ mips: type_pkg cache_pkg datapath mem ${CONTROLLERS}
 	make a F=mips
 datapath: flopr_en instr_decoder mux2 mux4 alu regfile mem_idcache_controller mem data_cache instr_cache regw_buffer
 	make a F=datapath
+
 forwarding_controller: type_pkg
 	make a F=forwarding_controller DIR=controller/
-	make a F=datapath
 instr_decoder: type_pkg slt2 sgnext
 	make a F=instr_decoder DIR=component/
 load_controller: bflopr
