@@ -72,6 +72,7 @@ architecture behavior of mips is
   component decode_controller
     port (
       opcode : in opcode_vector;
+      valid : in std_logic;
       decode_pc_br_ja_s : out std_logic_vector(1 downto 0);
       dcache_we, decode_rt_rd_s : out std_logic;
       calc_rdt_immext_s : out std_logic;
@@ -112,6 +113,7 @@ architecture behavior of mips is
       decode_rt_rd_s, calc_rdt_immext_s : in std_logic;
       decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
       tag_s : in std_logic;
+      instr_valid : out std_logic;
       opcode0 : out opcode_vector;
       funct0 : out funct_vector;
       alu_s : in alucont_type;
@@ -154,6 +156,8 @@ architecture behavior of mips is
   signal alu_s0, alu_s1 : alucont_type;
   signal reg_we1, reg_we1_0, reg_we2, reg_we2_0 : std_logic;
   signal load0 : std_logic;
+
+  signal instr_valid0 : std_logic;
   signal opcode0 : opcode_vector;
   signal funct0 : funct_vector;
 
@@ -208,6 +212,7 @@ begin
 
   decode_controller0 : decode_controller port map (
     opcode => opcode0,
+    valid => instr_valid0,
     decode_pc_br_ja_s => decode_pc_br_ja_s0,
     dcache_we => dcache_we0,
     decode_rt_rd_s => decode_rt_rd_s0,
@@ -241,6 +246,7 @@ begin
     decode_pc_br_ja_s => decode_pc_br_ja_s0,
     dcache_we => dcache_we2, decode_rt_rd_s => decode_rt_rd_s0,
     calc_rdt_immext_s => calc_rdt_immext_s1,
+    instr_valid => instr_valid0,
     -- alu_controller
     opcode0 => opcode0, funct0 => funct0, alu_s => alu_s1,
     -- forwarding, regw buffer

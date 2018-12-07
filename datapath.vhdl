@@ -15,6 +15,7 @@ entity datapath is
     decode_rt_rd_s, calc_rdt_immext_s : in std_logic;
     decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
     tag_s : in std_logic;
+    instr_valid : out std_logic;
     opcode0 : out opcode_vector;
     funct0 : out funct_vector;
     alu_s : in alucont_type;
@@ -238,6 +239,7 @@ begin
     funct => funct0,
     target2 => target2 -- for j instruction
   );
+  instr_valid <= '0' when instr1 = X"00000000" else '1';
   rs0 <= rs0_0; rt0 <= rt0_0;
   opcode0 <= opcode0_0;
 
