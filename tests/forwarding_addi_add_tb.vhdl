@@ -81,10 +81,25 @@ begin
     wait for clk_period;
     rst <= '1'; wait for 1 ns; rst <= '0';
     assert pc = X"00000000"; assert pcnext = X"00000004";
+    assert dcache_miss_en = '0'; assert icache_miss_en = '0';
+    wait until rising_edge(clk); wait for 1 ns;
+    -- Load (cache_miss)
+    assert dcache_miss_en = '1'; assert icache_miss_en = '1'; assert suspend_flag = '1';
     wait until rising_edge(clk);
-    -- Load
-    wait for clk_period;
-    wait for clk_period;
+    assert suspend_flag = '1';
+    wait for 1 ns;
+    -- (instr: Mem2CacheS, mem : NormalS)
+    assert icache_load_en = '0'; assert dcache_load_en = '0'; assert suspend_flag = '1';
+    wait until rising_edge(clk); wait for 1 ns;
+    -- (instr: CacheWriteBackS, mem : Mem2CacheS)
+    assert icache_load_en = '1'; assert dcache_load_en = '0'; assert suspend_flag = '1';
+    wait until rising_edge(clk); wait for 1 ns;
+    -- (instr: NormalS, mem : CacheWriteBackS)
+    assert icache_load_en = '0'; assert dcache_load_en = '1'; assert suspend_flag = '1';
+    wait until rising_edge(clk); wait for 1 ns;
+    -- NormalS (restore from SuspendS)
+    wait until rising_edge(clk); wait for 1 ns;
+    assert icache_load_en = '0'; assert dcache_load_en = '0'; assert suspend_flag = '0';
 
     -- (FetchS, InitS)
     -- -- FetchS : addi $t0, $0, 5
