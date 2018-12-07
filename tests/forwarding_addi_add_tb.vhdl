@@ -141,7 +141,7 @@ begin
     -- -- (- , CalcS(RtypeCalcS))
     -- CalcS : add $s1, $s0, $s0
     assert aluout = X"0000000A";
-    assert dcache_we = '0'; -- assert reg_we = '0';
+    assert dcache_we = '0'; assert reg_we = '0';
     wait for clk_period;
 
     assert reg_wa = "10000"; assert reg_wd = X"00000005";
