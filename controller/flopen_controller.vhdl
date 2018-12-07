@@ -1,22 +1,23 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+use work.debug_pkg.ALL;
+use work.state_pkg.ALL;
 
 entity flopen_controller is
   port (
     clk, rst, load : in std_logic;
     suspend_flag : in std_logic;
     stall_flag : in std_logic;
-    fetch_en, decode_en, calc_en, dcache_en : out std_logic
+    fetch_en, decode_en, calc_en, dcache_en : out std_logic;
+    state_vector : out flopen_state_vector
   );
 end entity;
 
 architecture behavior of flopen_controller is
-  type statetype is (
-    ResetS, LoadS, SuspendS, NormalS, StallS, ErrorS
-  );
-  signal state, nextstate : statetype;
-
+  signal state, nextstate : flopen_statetype;
 begin
+  state_vector <= decode_flopen_state(state, flopen_state_vector'length);
   process(clk, rst, nextstate)
   begin
     if rst = '1' then

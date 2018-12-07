@@ -27,7 +27,7 @@ regwe_controller: type_pkg
 	make a F=regwe_controller DIR=controller/
 decode_controller: type_pkg
 	make a F=decode_controller DIR=controller/
-flopen_controller:
+flopen_controller: state_pkg debug_pkg
 	make a F=flopen_controller DIR=controller/
 shift_controller: type_pkg flopr_en
 	make a F=shift_controller DIR=controller/
@@ -78,10 +78,14 @@ mux4:
 	make aer F=mux4 DIR=general/
 mux8:
 	make aer F=mux8 DIR=general/
+debug_pkg: state_pkg
+	make a F=debug_pkg DIR=pkg/
 tools_pkg:
 	make aer F=tools_pkg DIR=pkg/
 type_pkg:
 	make a F=type_pkg DIR=pkg/
+state_pkg:
+	make a F=state_pkg DIR=pkg/
 aer:
 	ghdl -a ${DEBUG} ${DIR}$(F).${VHDL} ${DIR}${F}_tb.$(VHDL)
 	make er F=${F} DEBUG=${DEBUG}
