@@ -9,8 +9,6 @@ architecture behavior of regw_buffer_tb is
   component regw_buffer is
     port (
       clk, rst : in std_logic;
-      en0 : in std_logic;
-      en1 : in std_logic;
       wa0 : in reg_vector;
       wd0 : in std_logic_vector(31 downto 0);
       we0 : in std_logic;
@@ -31,7 +29,6 @@ architecture behavior of regw_buffer_tb is
 
   -- skip
   signal clk, rst : std_logic;
-  signal en0, en1 : std_logic;
   signal wa0, wa1, wa2, ra1, ra2 : reg_vector;
   signal wd0, wd1, wd2, rd1, rd2 : std_logic_vector(31 downto 0);
   signal we0, we1, we2, s1 : std_logic;
@@ -41,7 +38,6 @@ architecture behavior of regw_buffer_tb is
 begin
   uut : regw_buffer port map (
     clk => clk, rst => rst,
-    en0 => en0, en1 => en1,
     wa0 => wa0, wd0 => wd0, we0 => we0,
     wa1 => wa1, wd1 => wd1, we1 => we1,
     wa2 => wa2, wd2 => wd2, we2 => we2,
@@ -61,7 +57,6 @@ begin
   stim_proc : process
   begin
     wait for clk_period;
-    en0 <= '1'; en1 <= '1';
     wa0 <= "00001"; wd0 <= X"00000003"; we0 <= '1';
     wa1 <= "00010"; wd1 <= X"00000005"; we1 <= '1';
     wait until rising_edge(clk);
