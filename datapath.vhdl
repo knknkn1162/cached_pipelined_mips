@@ -196,7 +196,8 @@ begin
   instr <= instr0;
   addr <= dcache_a0; dcache_rd <= dcache_rd0; dcache_wd <= dcache_wd0;
   reg_wa <= reg_wa0; reg_wd <= reg_wd0; reg_we <= reg_we0;
-  rds <= rds0; rdt <= rdt0; immext <= immext0;
+  rds <= forwarding_rds0; rdt <= forwarding_rdt0;
+  immext <= immext0;
   ja <= ja0;
   aluout <= aluout0;
 
