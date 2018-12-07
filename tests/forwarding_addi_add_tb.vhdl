@@ -26,7 +26,6 @@ architecture testbench of forwarding_addi_add_tb is
       aluout : out std_logic_vector(31 downto 0);
       -- for controller
       flopen_state : out flopen_state_vector;
-      icache_miss_en, dcache_miss_en : out std_logic;
       icache_load_en, dcache_load_en : out std_logic;
       suspend_flag : out std_logic
     );
@@ -46,7 +45,6 @@ architecture testbench of forwarding_addi_add_tb is
   signal aluout : std_logic_vector(31 downto 0);
   -- for controller
   signal flopen_state_vec : flopen_state_vector;
-  signal icache_miss_en, dcache_miss_en : std_logic;
   signal icache_load_en, dcache_load_en : std_logic;
   signal suspend_flag : std_logic;
   constant clk_period : time := 10 ns;
@@ -66,7 +64,6 @@ begin
     rds => rds, rdt => rdt, immext => immext,
     ja => ja, aluout => aluout,
     flopen_state => flopen_state_vec,
-    icache_miss_en => icache_miss_en, dcache_miss_en => dcache_miss_en,
     icache_load_en => icache_load_en, dcache_load_en => dcache_load_en,
     suspend_flag => suspend_flag
   );
@@ -90,11 +87,10 @@ begin
     rst <= '1'; wait for 1 ns; rst <= '0';
     assert state = ResetS;
     assert pc = X"00000000"; assert pcnext = X"00000004";
-    assert dcache_miss_en = '0'; assert icache_miss_en = '0';
     wait until rising_edge(clk); wait for 1 ns;
     -- Load (cache_miss)
     assert state = LoadS;
-    assert dcache_miss_en = '1'; assert icache_miss_en = '1'; assert suspend_flag = '1';
+    assert suspend_flag = '1';
     wait until rising_edge(clk); assert suspend_flag = '1'; wait for 1 ns;
 
     -- (instr: Mem2CacheS, mem : NormalS)
@@ -115,7 +111,6 @@ begin
     -- (FetchS, InitS) (restore from SuspendS)
     assert state = SuspendS;
     assert icache_load_en = '0'; assert dcache_load_en = '0'; assert suspend_flag = '0';
-    assert icache_miss_en = '0';
     -- -- FetchS : addi $t0, $0, 5
     assert pc = X"00000000"; assert pcnext = X"00000004";
     assert instr = X"20100005";
