@@ -20,6 +20,7 @@ entity mips is
     ja : out std_logic_vector(31 downto 0);
     aluout : out std_logic_vector(31 downto 0);
     -- for controller
+    icache_miss_en, dcache_miss_en : out std_logic;
     icache_load_en, dcache_load_en : out std_logic;
     suspend_flag : out std_logic
   );
@@ -197,6 +198,8 @@ begin
     mem_we => mem_we0,
     suspend_flag => suspend_flag0
   );
+  icache_miss_en <= instr_cache_miss_en0;
+  dcache_miss_en <= data_cache_miss_en0;
   icache_load_en <= icache_load_en0;
   dcache_load_en <= dcache_load_en0;
   suspend_flag <= suspend_flag0;

@@ -23,6 +23,7 @@ architecture testbench of forwarding_addi_add_tb is
       ja : out std_logic_vector(31 downto 0);
       aluout : out std_logic_vector(31 downto 0);
       -- for controller
+      icache_miss_en, dcache_miss_en : out std_logic;
       icache_load_en, dcache_load_en : out std_logic;
       suspend_flag : out std_logic
     );
@@ -41,6 +42,7 @@ architecture testbench of forwarding_addi_add_tb is
   signal ja : std_logic_vector(31 downto 0);
   signal aluout : std_logic_vector(31 downto 0);
   -- for controller
+  signal icache_miss_en, dcache_miss_en : std_logic;
   signal icache_load_en, dcache_load_en : std_logic;
   signal suspend_flag : std_logic;
   constant clk_period : time := 10 ns;
@@ -58,6 +60,7 @@ begin
     reg_wa => reg_wa, reg_wd => reg_wd, reg_we => reg_we,
     rds => rds, rdt => rdt, immext => immext,
     ja => ja, aluout => aluout,
+    icache_miss_en => icache_miss_en, dcache_miss_en => dcache_miss_en,
     icache_load_en => icache_load_en, dcache_load_en => dcache_load_en,
     suspend_flag => suspend_flag
   );
@@ -80,6 +83,7 @@ begin
     assert pc = X"00000000"; assert pcnext = X"00000004";
     wait until rising_edge(clk);
     -- Load
+    wait for clk_period;
     wait for clk_period;
 
     -- (FetchS, InitS)
