@@ -63,6 +63,7 @@ begin
     reg_wa => reg_wa, reg_wd => reg_wd, reg_we => reg_we,
     rds => rds, rdt => rdt, immext => immext,
     ja => ja, aluout => aluout,
+    flopen_state => flopen_state,
     icache_miss_en => icache_miss_en, dcache_miss_en => dcache_miss_en,
     icache_load_en => icache_load_en, dcache_load_en => dcache_load_en,
     suspend_flag => suspend_flag
