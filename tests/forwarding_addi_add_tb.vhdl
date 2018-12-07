@@ -100,18 +100,16 @@ begin
     -- (instr: NormalS, mem : CacheWriteBackS)
     assert icache_load_en = '0'; assert dcache_load_en = '1'; assert suspend_flag = '1';
     wait until rising_edge(clk); wait for 1 ns;
-    -- NormalS (restore from SuspendS)
+    -- (FetchS, InitS) (restore from SuspendS)
     wait until rising_edge(clk); wait for 1 ns;
     assert icache_load_en = '0'; assert dcache_load_en = '0'; assert suspend_flag = '0';
-
-    -- (FetchS, InitS)
     -- -- FetchS : addi $t0, $0, 5
-    -- assert pc = X"00000000"; assert pcnext = X"00000004";
-    -- -- cache miss!
-    -- assert instr = X"20100005";
-    -- -- (not yet)
-    -- assert rds = X"00000000"; assert immext = X"00000000";
-    -- wait for clk_period;
+    assert pc = X"00000000"; assert pcnext = X"00000004";
+    assert instr = X"20100005";
+    -- (not yet)
+    assert rds = X"00000000"; assert immext = X"00000000";
+    wait until rising_edge(clk); wait for 1 ns;
+
 
     -- -- (DecodeS, FetchS)
     -- -- -- DecodeS : addi $s0, $0, 5
