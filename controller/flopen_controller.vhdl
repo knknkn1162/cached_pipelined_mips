@@ -59,13 +59,14 @@ begin
   end process;
 
   -- **_en
-  process(state, suspend)
+  process(stall, state, suspend)
     variable work_en : std_logic;
   begin
-    if state = StallS then
+    if stall = '1' then
       fetch_en <= '0';
       decode_en <= '0';
       calc_en <= '0';
+      dcache_en <= '1';
     else
       case state is
         when ResetS | LoadS =>
