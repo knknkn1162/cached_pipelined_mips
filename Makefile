@@ -25,7 +25,7 @@ forwarding_controller: type_pkg
 	make a F=forwarding_controller DIR=controller/
 instr_decoder: type_pkg slt2 sgnext
 	make a F=instr_decoder DIR=component/
-load_controller: bflopr
+load_controller:
 	make aer F=load_controller DIR=controller/
 regwe_controller: type_pkg
 	make a F=regwe_controller DIR=controller/
@@ -76,8 +76,8 @@ flopr_en:
 	make aer F=flopr_en DIR=general/
 flopr:
 	make aer F=flopr DIR=general/
-bflopr:
-	make aer F=bflopr DIR=general/
+bflopr_en:
+	make aer F=bflopr_en DIR=general/
 sgnext:
 	make aer F=sgnext DIR=general/
 slt2:
