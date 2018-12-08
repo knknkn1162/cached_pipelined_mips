@@ -144,7 +144,7 @@ begin
     -- DecodeS : addi $s1, $0, 6
     assert rds = X"00000000"; assert immext = X"00000006"; -- forwarding for pipeline
     -- FetchS : add $t1, $s0, $s0
-    assert instr = X"02104800";
+    assert instr = X"02104820";
     wait until rising_edge(clk); wait for 1 ns;
 
     -- (-, CalcS, DecodeS)
