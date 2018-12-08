@@ -27,8 +27,7 @@ architecture testbench of stall_lw_add_tb is
       -- for controller
       flopen_state : out flopen_state_vector;
       icache_load_en, dcache_load_en : out std_logic;
-      suspend : out std_logic;
-      stall : out std_logic
+      suspend, stall, halt : out std_logic
     );
   end component;
 
@@ -47,8 +46,7 @@ architecture testbench of stall_lw_add_tb is
   -- for controller
   signal flopen_state_vec : flopen_state_vector;
   signal icache_load_en, dcache_load_en : std_logic;
-  signal suspend : std_logic;
-  signal stall : std_logic;
+  signal suspend, stall, halt : std_logic;
   constant clk_period : time := 10 ns;
   signal stop : boolean;
   signal state : flopen_statetype;
@@ -67,7 +65,7 @@ begin
     ja => ja, aluout => aluout,
     flopen_state => flopen_state_vec,
     icache_load_en => icache_load_en, dcache_load_en => dcache_load_en,
-    suspend => suspend, stall => stall
+    suspend => suspend, stall => stall, halt => halt
   );
 
   state <= encode_flopen_state(flopen_state_vec);
@@ -217,12 +215,14 @@ begin
     -- addi $s2, $s1, 4
     assert reg_wa = "10010"; assert reg_wd = X"00000009";
     -- (add $t1, $s1, $s2)
+    -- CalcS, DecodeS, FetchS (nop)
     wait until rising_edge(clk); wait for 1 ns;
 
-    -- assert state = NormalS;
-    -- assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0'; assert stall = '0';
-    -- -- add $t1, $s1, $s2
-    -- assert reg_wa = "01001"; assert reg_wd = X"0000000E";
+    assert state = NormalS;
+    assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0'; assert stall = '0';
+    -- add $t1, $s1, $s2
+    assert reg_wa = "01001"; assert reg_wd = X"0000000E";
+    -- CalcS, DecodeS, FetchS (nop)
 
     stop <= TRUE;
     -- success message
