@@ -68,8 +68,8 @@ alu_controller: type_pkg
 	make a F=alu_controller DIR=controller/
 alu: type_pkg
 	make aer F=alu DIR=general/
-flopr_en_clr:
-	make aer F=flopr_en_clr DIR=general/
+flopr_clr:
+	make aer F=flopr_clr DIR=general/
 flopr_en:
 	make aer F=flopr_en DIR=general/
 flopr:
