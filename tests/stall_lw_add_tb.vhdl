@@ -173,13 +173,55 @@ begin
     -- DecodeS : addi $s2, $s1, 4 [ Require Stall ]
     assert rds = X"00000000"; assert immext = X"00000004";
     -- FetchS : add $t1, $s1, $s2
+    assert pc = X"00000010"; assert pcnext = X"00000014";
     assert instr = X"02324820";
     wait until rising_edge(clk); wait for 1 ns;
 
-    -- assert state = StallS;
-    -- assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0';
-    -- assert reg_wa = "10001"; assert reg_wd = X"0000000A";
-    -- skip
+    -- (-, -, MemReadS, DecodeS, FetchS) [Stall]
+    assert state = StallS;
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0'; assert stall = '1';
+    -- MemReadS : lw $s1, 12($s0)
+    assert addr = X"0000000C"; assert dcache_rd = X"00000005";
+    -- DecodeS : addi $s2, $s1, 4 [Stall]
+    assert rds = X"00000005"; -- forwarding
+    assert immext = X"00000004";
+    -- FetchS : add $t1, $s1, $s2 [Stall]
+    assert pc = X"00000010"; assert pcnext = X"00000014";
+    assert instr = X"02324820";
+    wait until rising_edge(clk); wait for 1 ns;
+
+    assert state = NormalS;
+    -- assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0'; assert stall = '0';
+    -- -- (lw $s1, 12($s0))
+    -- assert reg_wa = "10001"; assert reg_wd = X"00000005";
+    -- -- CalcS : addi $s2, $s1, 4
+    -- assert aluout = X"00000009";
+    -- -- DecodeS add $t1, $s1, $s2
+    -- assert rds = X"00000005"; assert rdt = X"00000009";
+    -- -- FetchS (nop)
+    -- assert pc = X"00000014"; assert pcnext = X"00000018";
+    -- wait until rising_edge(clk); wait for 1 ns;
+
+    -- assert state = NormalS;
+    -- assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0'; assert stall = '0';
+    -- -- addi $s2, $s1, 4
+    -- -- CalcS : add $t1, $s1, $s2
+    -- assert aluout = X"0000000E";
+    -- -- DecodeS, FetchS (nop)
+    -- wait until rising_edge(clk); wait for 1 ns;
+
+    -- assert state = NormalS;
+    -- assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0'; assert stall = '0';
+    -- -- addi $s2, $s1, 4
+    -- assert reg_wa = "10010"; assert reg_wd = X"00000009";
+    -- -- (add $t1, $s1, $s2)
+    -- wait until rising_edge(clk); wait for 1 ns;
+
+    -- assert state = NormalS;
+    -- assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0'; assert stall = '0';
+    -- -- add $t1, $s1, $s2
+    -- assert reg_wa = "01001"; assert reg_wd = X"0000000E";
+
     stop <= TRUE;
     -- success message
     assert false report "end of test" severity note;
