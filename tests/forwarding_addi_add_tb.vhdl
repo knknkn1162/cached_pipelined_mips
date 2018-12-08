@@ -86,31 +86,36 @@ begin
     wait for clk_period;
     rst <= '1'; wait for 1 ns; rst <= '0';
     assert state = ResetS;
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend_flag = '0';
     assert pc = X"00000000"; assert pcnext = X"00000004";
     wait until rising_edge(clk); wait for 1 ns;
     -- Load (cache_miss)
     assert state = LoadS;
-    assert suspend_flag = '1';
-    wait until rising_edge(clk); assert suspend_flag = '1'; wait for 1 ns;
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend_flag = '1';
+    wait until rising_edge(clk); wait for 1 ns;
 
     -- (instr: Mem2CacheS, mem : NormalS)
     assert state = SuspendS;
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend_flag = '1';
     assert icache_load_en = '0'; assert dcache_load_en = '0'; assert suspend_flag = '1';
     wait until rising_edge(clk); wait for 1 ns;
 
     -- (instr: CacheWriteBackS, mem : Mem2CacheS)
     assert state = SuspendS;
-    assert icache_load_en = '1'; assert dcache_load_en = '0'; assert suspend_flag = '1';
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend_flag = '1';
+    assert icache_load_en = '1'; assert dcache_load_en = '0';
     wait until rising_edge(clk); wait for 1 ns;
 
     -- (instr: NormalS, mem : CacheWriteBackS)
     assert state = SuspendS;
-    assert icache_load_en = '0'; assert dcache_load_en = '1'; assert suspend_flag = '1';
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend_flag = '1';
+    assert icache_load_en = '0'; assert dcache_load_en = '1';
     wait until rising_edge(clk); wait for 1 ns;
 
     -- (FetchS, InitS) (restore from SuspendS)
     assert state = SuspendS;
-    assert icache_load_en = '0'; assert dcache_load_en = '0'; assert suspend_flag = '0';
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend_flag = '0';
+    assert icache_load_en = '0'; assert dcache_load_en = '0';
     -- -- FetchS : addi $t0, $0, 5
     assert pc = X"00000000"; assert pcnext = X"00000004";
     assert instr = X"20100005";
@@ -121,7 +126,8 @@ begin
 
     -- -- (DecodeS, FetchS)
     -- -- DecodeS : addi $s0, $0, 5
-    assert state = NormalS; assert suspend_flag = '0';
+    assert state = NormalS;
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend_flag = '0';
     assert rds = X"00000000"; assert immext = X"00000005";
     -- -- FetchS : add $s1, $s0, $s0
     assert pc = X"00000004"; assert pcnext = X"00000008";
@@ -129,7 +135,8 @@ begin
     wait until rising_edge(clk); wait for 1 ns;
 
     -- -- (CalcS, DecodeS)
-    assert state = NormalS; assert suspend_flag = '0';
+    assert state = NormalS;
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend_flag = '0';
     assert pc = X"00000008"; assert pcnext = X"0000000C";
     -- CalcS(AddiCalcS) : addi $s0, $0, 5
     assert aluout = X"00000005";
@@ -140,16 +147,19 @@ begin
 
     -- -- (- , CalcS(RtypeCalcS))
     -- CalcS : add $s1, $s0, $s0
+    assert state = NormalS;
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend_flag = '0';
     assert aluout = X"0000000A";
-    assert dcache_we = '0'; assert reg_we = '0';
-    wait for clk_period;
+    wait until rising_edge(clk); wait for 1 ns;
 
+    assert state = NormalS;
+    assert dcache_we = '0'; assert reg_we = '1'; assert suspend_flag = '0';
     assert reg_wa = "10000"; assert reg_wd = X"00000005";
-    assert reg_we = '1'; assert dcache_we = '0';
-    wait for clk_period;
+    wait until rising_edge(clk); wait for 1 ns;
 
+    assert state = NormalS;
+    assert dcache_we = '0'; assert reg_we = '1'; assert suspend_flag = '0';
     assert reg_wa = "10001"; assert reg_wd = X"0000000A";
-    assert reg_we = '1'; assert dcache_we = '0';
     -- skip
     stop <= TRUE;
     -- success message
