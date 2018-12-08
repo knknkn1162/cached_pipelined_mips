@@ -9,7 +9,7 @@ entity mem_cache_controller is
     tag_s : out std_logic;
     load_en : out std_logic;
     mem_we : out std_logic;
-    suspend_flag : out std_logic
+    suspend : out std_logic
   );
 end entity;
 
@@ -34,9 +34,9 @@ begin
   begin
     if state = NormalS then
       if cache_miss_en = '1' then
-        suspend_flag <= '1';
+        suspend <= '1';
       else
-        suspend_flag <= '0';
+        suspend <= '0';
       end if;
     end if;
   end process;

@@ -9,7 +9,7 @@ entity mem_idcache_controller is
     tag_s : out std_logic;
     instr_load_en, data_load_en : out std_logic;
     mem_we : out std_logic;
-    suspend_flag : out std_logic
+    suspend : out std_logic
   );
 end entity;
 
@@ -22,7 +22,7 @@ architecture behavior of mem_idcache_controller is
       tag_s : out std_logic;
       load_en : out std_logic;
       mem_we : out std_logic;
-      suspend_flag : out std_logic
+      suspend : out std_logic
     );
   end component;
 
@@ -39,7 +39,7 @@ architecture behavior of mem_idcache_controller is
   signal valid_flag0, valid_flag1 : std_logic;
   signal cache_vector0, cache_vector1 : std_logic_vector(1 downto 0);
   signal both_cache_miss_en0, both_cache_miss_en1 : std_logic;
-  signal instr_suspend_flag, data_suspend_flag : std_logic;
+  signal instr_suspend, data_suspend : std_logic;
 
 begin
   both_cache_miss_en0 <= instr_cache_miss_en and data_cache_miss_en;
@@ -72,7 +72,7 @@ begin
     tag_s => tag_s,
     load_en => data_load_en,
     mem_we => mem_we,
-    suspend_flag => data_suspend_flag
+    suspend => data_suspend
   );
 
   mem_icache_controller : mem_cache_controller port map (
@@ -83,7 +83,7 @@ begin
     -- tag_s => tag_s, -- in fact, always '1'(new)
     load_en => instr_load_en,
     -- mem_we => imem_we0 -- always '0'
-    suspend_flag => instr_suspend_flag
+    suspend => instr_suspend
   );
-  suspend_flag <= data_suspend_flag or instr_suspend_flag;
+  suspend <= data_suspend or instr_suspend;
 end architecture;

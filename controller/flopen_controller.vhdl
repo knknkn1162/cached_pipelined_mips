@@ -7,7 +7,7 @@ use work.state_pkg.ALL;
 entity flopen_controller is
   port (
     clk, rst, load : in std_logic;
-    suspend_flag : in std_logic;
+    suspend : in std_logic;
     stall_flag : in std_logic;
     fetch_en, decode_en, calc_en, dcache_en : out std_logic;
     state_vector : out flopen_state_vector
@@ -28,7 +28,7 @@ begin
   end process;
 
   -- nextstate
-  process(state, load, suspend_flag, stall_flag)
+  process(state, load, suspend, stall_flag)
   begin
     case state is
       when ResetS =>
@@ -38,7 +38,7 @@ begin
           nextstate <= ResetS;
         end if;
       when NormalS =>
-        if suspend_flag = '1' then
+        if suspend = '1' then
           nextstate <= SuspendS;
         elsif stall_flag = '1' then
           nextstate <= StallS;
@@ -46,7 +46,7 @@ begin
           nextstate <= NormalS;
         end if;
       when SuspendS | LoadS =>
-        if suspend_flag = '0' then
+        if suspend = '0' then
           nextstate <= NormalS;
         else
           nextstate  <= SuspendS;
@@ -59,7 +59,7 @@ begin
   end process;
 
   -- **_en
-  process(state, suspend_flag)
+  process(state, suspend)
     variable work_en : std_logic;
   begin
     if state = StallS then
@@ -71,7 +71,7 @@ begin
         when ResetS | LoadS =>
           work_en := '0';
         when SuspendS =>
-          work_en := (not suspend_flag);
+          work_en := (not suspend);
         -- wait for MemRead in lw instruction
         when others =>
           work_en := '1';
