@@ -58,9 +58,7 @@ begin
 
   process(opcode, valid)
   begin
-    if valid = '0' then
-      reg_we1 <= '0'; reg_we2 <= '0';
-    else
+    if valid = '1' then
       case opcode is
         when OP_RTYPE | OP_ADDI | OP_SLTI | OP_ORI | OP_ANDI =>
           reg_we1 <= '1'; reg_we2 <= '0';
@@ -69,6 +67,8 @@ begin
         -- OP_SW
         when others => reg_we1 <= '0'; reg_we2 <= '0';
       end case;
+    else
+      reg_we1 <= '0'; reg_we2 <= '0';
     end if;
   end process;
 end architecture;
