@@ -59,7 +59,7 @@ begin
   end process;
 
   -- **_en
-  process(stall, state, suspend)
+  process(stall, state, suspend, halt)
     variable work_en : std_logic;
   begin
     if state = NormalS and stall = '1' then
