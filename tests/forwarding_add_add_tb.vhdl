@@ -168,18 +168,28 @@ begin
     assert reg_wa = "10000"; assert reg_wd = X"00000005";
     -- CalcS : add $t1, $s0, $s0
     assert aluout = X"0000000A";
+    -- DecodeS : add $s2, $t1, $s1
+    assert rds = X"0000000A"; assert rdt = X"00000006";
     wait until rising_edge(clk); wait for 1 ns;
 
     assert state = NormalS;
     assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0';
     -- RegWriteBack : addi $s1, $0, 6
     assert reg_wa = "10001"; assert reg_wd = X"00000006";
+    -- CalcS : add $s2, $t1, $s1
+    assert aluout = X"00000010";
     wait until rising_edge(clk); wait for 1 ns;
 
     assert state = NormalS;
     assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0';
     -- RegWriteBack : add $t1, $s0, $s0
     assert reg_wa = "01001"; assert reg_wd = X"0000000A";
+    wait until rising_edge(clk); wait for 1 ns;
+
+    assert state = NormalS;
+    assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0';
+    -- RegWriteBack : add $s2, $t1, $s1
+    assert reg_wa = "10010"; assert reg_wd = X"00000010";
 
     stop <= TRUE;
     -- success message
