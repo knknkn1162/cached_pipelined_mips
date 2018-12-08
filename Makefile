@@ -33,7 +33,7 @@ decode_controller: type_pkg
 	make a F=decode_controller DIR=controller/
 flopen_controller: state_pkg debug_pkg
 	make a F=flopen_controller DIR=controller/
-shift_controller: type_pkg flopr_en flopr_clr
+shift_controller: type_pkg flopr_en flopr_en_clr
 	make a F=shift_controller DIR=controller/
 stall_controller: type_pkg
 	make a F=stall_controller DIR=controller/
