@@ -23,7 +23,8 @@ entity mips is
     -- for controller
     flopen_state : out flopen_state_vector;
     icache_load_en, dcache_load_en : out std_logic;
-    suspend : out std_logic
+    suspend : out std_logic;
+    stall : out std_logic
   );
 end entity;
 
@@ -84,7 +85,7 @@ architecture behavior of mips is
     port (
       clk, rst, load : in std_logic;
       suspend : in std_logic;
-      stall_en : in std_logic;
+      stall : in std_logic;
       fetch_en, decode_en, calc_en, dcache_en : out std_logic;
       state_vector : out flopen_state_vector
     );
@@ -155,7 +156,7 @@ architecture behavior of mips is
     port (
       opcode0, opcode1 : in opcode_vector;
       rs0, rt0, rt1 : in reg_vector;
-      stall_en : out std_logic
+      stall : out std_logic
     );
   end component;
 
@@ -178,7 +179,7 @@ architecture behavior of mips is
   signal rs0, rt0, rt1, instr_rd1 : reg_vector;
   signal opcode1 : opcode_vector;
   -- stall
-  signal stall_en0 : std_logic;
+  signal stall0 : std_logic;
 
   -- from cache & memory
   signal mem_we0 : std_logic;
@@ -199,13 +200,14 @@ begin
   stall_controller0 : stall_controller port map (
     opcode0 => opcode0, opcode1 => opcode1,
     rs0 => rs0, rt0 => rt0, rt1 => rt1,
-    stall_en => stall_en0
+    stall => stall0
   );
+  stall <= stall0;
 
   flopen_controller0 : flopen_controller port map (
     clk => clk, rst => rst, load => load0,
     suspend => suspend0,
-    stall_en => stall_en0,
+    stall => stall0,
     fetch_en => fetch_en0, decode_en => decode_en0,
     calc_en => calc_en0, dcache_en => dcache_en0,
     state_vector => flopen_state

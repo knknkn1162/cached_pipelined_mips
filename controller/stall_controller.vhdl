@@ -6,7 +6,7 @@ entity stall_controller is
   port (
     opcode0, opcode1 : in opcode_vector;
     rs0, rt0, rt1 : in reg_vector;
-    stall_en : out std_logic
+    stall : out std_logic
   );
 end entity;
 
@@ -16,19 +16,19 @@ begin
   begin
     if opcode1 = OP_LW then
       if rt1 = rs0 then
-        stall_en <= '1';
+        stall <= '1';
       else
-        stall_en <= '0';
+        stall <= '0';
       end if;
     else
       case opcode0 is
         when OP_RTYPE | OP_BEQ | OP_BNE =>
           if rt1 = rt0 then
-            stall_en <= '1';
+            stall <= '1';
           else
-            stall_en <= '0';
+            stall <= '0';
           end if;
-        when others => stall_en <= '0';
+        when others => stall <= '0';
       end case;
     end if;
   end process;

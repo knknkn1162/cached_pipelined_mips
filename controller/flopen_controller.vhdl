@@ -8,7 +8,7 @@ entity flopen_controller is
   port (
     clk, rst, load : in std_logic;
     suspend : in std_logic;
-    stall_en : in std_logic;
+    stall : in std_logic;
     fetch_en, decode_en, calc_en, dcache_en : out std_logic;
     state_vector : out flopen_state_vector
   );
@@ -28,7 +28,7 @@ begin
   end process;
 
   -- nextstate
-  process(state, load, suspend, stall_en)
+  process(state, load, suspend, stall)
   begin
     case state is
       when ResetS =>
@@ -40,7 +40,7 @@ begin
       when NormalS =>
         if suspend = '1' then
           nextstate <= SuspendS;
-        elsif stall_en = '1' then
+        elsif stall = '1' then
           nextstate <= StallS;
         else
           nextstate <= NormalS;

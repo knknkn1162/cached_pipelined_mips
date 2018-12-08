@@ -27,7 +27,8 @@ architecture testbench of stall_lw_add_tb is
       -- for controller
       flopen_state : out flopen_state_vector;
       icache_load_en, dcache_load_en : out std_logic;
-      suspend : out std_logic
+      suspend : out std_logic;
+      stall : out std_logic
     );
   end component;
 
@@ -47,6 +48,7 @@ architecture testbench of stall_lw_add_tb is
   signal flopen_state_vec : flopen_state_vector;
   signal icache_load_en, dcache_load_en : std_logic;
   signal suspend : std_logic;
+  signal stall : std_logic;
   constant clk_period : time := 10 ns;
   signal stop : boolean;
   signal state : flopen_statetype;
@@ -65,7 +67,7 @@ begin
     ja => ja, aluout => aluout,
     flopen_state => flopen_state_vec,
     icache_load_en => icache_load_en, dcache_load_en => dcache_load_en,
-    suspend => suspend
+    suspend => suspend, stall => stall
   );
 
   state <= encode_flopen_state(flopen_state_vec);
@@ -162,6 +164,7 @@ begin
     -- (-, MemWriteS, CalcS, DecodeS, FetchS)
     assert state = NormalS;
     assert dcache_we = '1'; assert reg_we = '1'; assert suspend = '0';
+    assert stall = '1';
     -- (addi $s0, $0, 5)
     assert reg_wa = "10000"; assert reg_wd = X"00000005";
     -- MemWriteS : sw $s0, 12($0)
