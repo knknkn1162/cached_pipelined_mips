@@ -8,8 +8,8 @@ CONTROLLERS=$(addsuffix _controller, ${CONTROLLER_LIST})
 
 forwarding_addi_add: mips
 	make tb F=forwarding_addi_add
-addi_add: mips
-	make tb F=addi_add
+forwarding_add_add: mips
+	make tb F=forwarding_add_add
 tb:
 	make a F=tests/${F}_tb
 	make er F=${F}
