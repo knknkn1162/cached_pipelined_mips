@@ -40,16 +40,20 @@ architecture behavior of shift_controller is
     );
   end component;
 
-  signal instr_valid0_vec, instr_valid1_vec : std_logic_vector(0 downto 0);
+  component bflopr_en
+    port (
+      clk, rst, en: in std_logic;
+      a : in std_logic;
+      y : out std_logic
+    );
+  end component;
+
 begin
-  instr_valid0_vec <= instr_valid0 & "";
-  flopr_instr_valid : flopr_en generic map(N=>1)
-  port map (
+  flopr_instr_valid : bflopr_en port map (
     clk => clk, rst => rst, en => decode_en,
-    a => instr_valid0_vec,
-    y => instr_valid1_vec
+    a => instr_valid0,
+    y => instr_valid1
   );
-  instr_valid1 <= instr_valid1_vec(0);
 
   cont0 <= dcache_we0 & reg_we2_0 & calc_rdt_immext_s0 & reg_we1_0 & alu_s0;
 
