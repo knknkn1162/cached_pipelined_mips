@@ -102,9 +102,11 @@ architecture behavior of mips is
   component shift_controller
     port (
       clk, rst : in std_logic;
-      calc_en, calc_clr, dcache_en : in std_logic;
+      decode_en, calc_en, calc_clr, dcache_en : in std_logic;
+      instr_valid0 : in std_logic;
       calc_rdt_immext_s0, dcache_we0, reg_we2_0, reg_we1_0 : in std_logic;
       alu_s0 : in alucont_type;
+      instr_valid1 : out std_logic;
       calc_rdt_immext_s1, reg_we1 : out std_logic;
       dcache_we2, reg_we2 : out std_logic;
       alu_s1 : out alucont_type
@@ -124,7 +126,6 @@ architecture behavior of mips is
       decode_rt_rd_s, calc_rdt_immext_s : in std_logic;
       decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
       tag_s : in std_logic;
-      instr_valid : out std_logic;
       opcode0 : out opcode_vector;
       funct0 : out funct_vector;
       alu_s : in alucont_type;
@@ -179,7 +180,7 @@ architecture behavior of mips is
 
   signal instr0 : std_logic_vector(31 downto 0);
   signal halt0 : std_logic;
-  signal instr_valid0 : std_logic;
+  signal instr_valid0, instr_valid1 : std_logic;
   signal opcode0 : opcode_vector;
   signal funct0 : funct_vector;
 
@@ -219,7 +220,7 @@ begin
 
   stall_controller0 : stall_controller port map (
     opcode0 => opcode0, opcode1 => opcode1,
-    valid0 => instr_valid0,
+    valid0 => instr_valid1,
     rs0 => rs0, rt0 => rt0, rt1 => rt1,
     stall => stall0
   );
@@ -246,7 +247,7 @@ begin
 
   decode_controller0 : decode_controller port map (
     opcode => opcode0,
-    valid => instr_valid0,
+    valid => instr_valid1,
     decode_pc_br_ja_s => decode_pc_br_ja_s0,
     dcache_we => dcache_we0,
     decode_rt_rd_s => decode_rt_rd_s0,
@@ -262,9 +263,12 @@ begin
 
   shift_controller0 : shift_controller port map (
     clk => clk, rst => rst,
+    decode_en => decode_en0,
     calc_en => calc_en0, calc_clr => calc_clr0, dcache_en => dcache_en0,
+    instr_valid0 => instr_valid0,
     calc_rdt_immext_s0 => calc_rdt_immext_s0, dcache_we0 => dcache_we0,
     reg_we2_0 => reg_we2_0, reg_we1_0 => reg_we1_0, alu_s0 => alu_s0,
+    instr_valid1 => instr_valid1,
     calc_rdt_immext_s1 => calc_rdt_immext_s1, reg_we1 => reg_we1,
     dcache_we2 => dcache_we2, reg_we2 => reg_we2, alu_s1 => alu_s1
   );
@@ -288,7 +292,6 @@ begin
     decode_pc_br_ja_s => decode_pc_br_ja_s0,
     dcache_we => dcache_we2, decode_rt_rd_s => decode_rt_rd_s0,
     calc_rdt_immext_s => calc_rdt_immext_s1,
-    instr_valid => instr_valid0,
     -- alu_controller
     opcode0 => opcode0, funct0 => funct0, alu_s => alu_s1,
     -- forwarding, regw buffer

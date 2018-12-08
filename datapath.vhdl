@@ -212,12 +212,13 @@ begin
   instr_cache0 : instr_cache port map (
     clk => clk, rst => rst, load => load,
     a => pc0,
-    rd => instr0,
+    rd => instr0_0,
     load_en => instr_load_en,
     wd01 => mem2cache_d1, wd02 => mem2cache_d2, wd03 => mem2cache_d3, wd04 => mem2cache_d4,
     wd05 => mem2cache_d5, wd06 => mem2cache_d6, wd07 => mem2cache_d7, wd08 => mem2cache_d8,
     cache_miss_en => instr_cache_miss_en
   );
+  instr0 <= instr0_0;
 
   -- DecodeS
   -- -- (decoder & regfile part)
@@ -227,7 +228,6 @@ begin
     a => instr0_0,
     y => instr1
   );
-  instr0 <= instr0_0;
 
   instr_decoder0 : instr_decoder port map (
     instr => instr1,
