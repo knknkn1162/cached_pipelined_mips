@@ -11,12 +11,12 @@ end entity;
 
 architecture behavior of instr_controller is
   type statetype is (
-    LoadS, NormalS, HaltS
+    LoadS, NormalS
   );
   signal state, nextstate : statetype;
   signal valid0 : std_logic;
 begin
-  process(clk, rst)
+  process(clk, rst, nextstate)
   begin
     if rst = '1' then
       state <= LoadS;
