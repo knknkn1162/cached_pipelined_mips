@@ -37,6 +37,8 @@ shift_controller: type_pkg flopr_en flopr_en_clr
 	make a F=shift_controller DIR=controller/
 stall_controller: type_pkg
 	make a F=stall_controller DIR=controller/
+instr_controller:
+	make a F=instr_controller DIR=controller/
 
 cache_decoder: cache_pkg
 	make aer F=cache_decoder DIR=cache/
