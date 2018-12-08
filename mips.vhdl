@@ -23,7 +23,7 @@ entity mips is
     -- for controller
     flopen_state : out flopen_state_vector;
     icache_load_en, dcache_load_en : out std_logic;
-    suspend_flag : out std_logic
+    suspend : out std_logic
   );
 end entity;
 
@@ -50,7 +50,7 @@ architecture behavior of mips is
       tag_s : out std_logic;
       instr_load_en, data_load_en : out std_logic;
       mem_we : out std_logic;
-      suspend_flag : out std_logic
+      suspend : out std_logic
     );
   end component;
 
@@ -83,7 +83,7 @@ architecture behavior of mips is
   component flopen_controller
     port (
       clk, rst, load : in std_logic;
-      suspend_flag : in std_logic;
+      suspend : in std_logic;
       stall_flag : in std_logic;
       fetch_en, decode_en, calc_en, dcache_en : out std_logic;
       state_vector : out flopen_state_vector
@@ -172,7 +172,7 @@ architecture behavior of mips is
 
   -- from cache & memory
   signal mem_we0 : std_logic;
-  signal suspend_flag0, stall_flag0 : std_logic;
+  signal suspend0, stall_flag0 : std_logic;
   signal instr_cache_miss_en0, data_cache_miss_en0, valid_flag0 : std_logic;
   signal icache_load_en0, dcache_load_en0 : std_logic;
   signal mem2cache_d1, mem2cache_d2, mem2cache_d3, mem2cache_d4, mem2cache_d5, mem2cache_d6, mem2cache_d7, mem2cache_d8 : std_logic_vector(31 downto 0);
@@ -190,7 +190,7 @@ begin
 
   flopen_controller0 : flopen_controller port map (
     clk => clk, rst => rst, load => load0,
-    suspend_flag => suspend_flag0,
+    suspend => suspend0,
     stall_flag => stall_flag0,
     fetch_en => fetch_en0, decode_en => decode_en0,
     calc_en => calc_en0, dcache_en => dcache_en0,
@@ -204,11 +204,11 @@ begin
     tag_s => tag_s0,
     instr_load_en => icache_load_en0, data_load_en => dcache_load_en0,
     mem_we => mem_we0,
-    suspend_flag => suspend_flag0
+    suspend => suspend0
   );
   icache_load_en <= icache_load_en0;
   dcache_load_en <= dcache_load_en0;
-  suspend_flag <= suspend_flag0;
+  suspend <= suspend0;
 
   decode_controller0 : decode_controller port map (
     opcode => opcode0,
