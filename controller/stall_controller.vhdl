@@ -13,7 +13,7 @@ end entity;
 
 architecture behavior of stall_controller is
 begin
-  process(opcode1, rt1, rs0, rt0, opcode0)
+  process(opcode1, rt1, rs0, rt0, opcode0, valid0)
   begin
     if valid0 /= '1' then
       stall <= '0';
@@ -21,18 +21,18 @@ begin
       if rt1 = rs0 then
         stall <= '1';
       else
-        stall <= '0';
+        case opcode0 is
+          when OP_RTYPE | OP_BEQ | OP_BNE =>
+            if rt1 = rt0 then
+              stall <= '1';
+            else
+              stall <= '0';
+            end if;
+          when others => stall <= '0';
+        end case;
       end if;
     else
-      case opcode0 is
-        when OP_RTYPE | OP_BEQ | OP_BNE =>
-          if rt1 = rt0 then
-            stall <= '1';
-          else
-            stall <= '0';
-          end if;
-        when others => stall <= '0';
-      end case;
+      stall <= '0';
     end if;
   end process;
 
