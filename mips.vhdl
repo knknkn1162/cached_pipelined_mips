@@ -155,6 +155,7 @@ architecture behavior of mips is
   component stall_controller
     port (
       opcode0, opcode1 : in opcode_vector;
+      valid0 : in std_logic;
       rs0, rt0, rt1 : in reg_vector;
       stall : out std_logic
     );
@@ -199,6 +200,7 @@ begin
 
   stall_controller0 : stall_controller port map (
     opcode0 => opcode0, opcode1 => opcode1,
+    valid0 => instr_valid0,
     rs0 => rs0, rt0 => rt0, rt1 => rt1,
     stall => stall0
   );
