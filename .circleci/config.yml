@@ -1,0 +1,14 @@
+version: 2
+jobs:
+  build:
+    working_directory: /app
+    docker:
+      - image: ghdl/ext
+    steps:
+      - checkout
+      - run:
+          name: Greeting
+          command: echo Hello, world.
+      - run:
+          name: Print the Current Time
+          command: date
