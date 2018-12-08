@@ -9,7 +9,7 @@ end entity;
 architecture testbench of instr_cache_tb is
   component instr_cache
     port (
-      clk, rst : in std_logic;
+      clk, rst, load : in std_logic;
       -- program counter is 4-byte aligned
       a : in std_logic_vector(31 downto 0);
       rd : out std_logic_vector(31 downto 0);
@@ -22,7 +22,7 @@ architecture testbench of instr_cache_tb is
     );
   end component;
 
-  signal clk, rst, we : std_logic;
+  signal clk, rst, load, we : std_logic;
   signal a : std_logic_vector(31 downto 0);
   signal rd : std_logic_vector(31 downto 0);
 
@@ -35,7 +35,7 @@ architecture testbench of instr_cache_tb is
 
 begin
   uut : instr_cache port map (
-    clk => clk, rst => rst,
+    clk => clk, rst => rst, load => load,
     a => a,
     rd => rd,
     load_en => load_en,
@@ -57,7 +57,9 @@ begin
   begin
     wait for clk_period;
     rst <= '1'; wait for 1 ns; rst <= '0';
-
+    load <= '1'; wait until rising_edge(clk); load <= '0';
+    wait for 1 ns;
+    
     -- read with empty cache
     a <= X"00000008"; wait for 1 ns; assert rd = all_x; assert cache_miss_en = '1';
 

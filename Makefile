@@ -3,11 +3,22 @@ VHDL=vhdl
 MEM=dummy
 DIR=./
 DEBUG=
+CONTROLLER_LIST=mem_idcache alu load flopen decode shift forwarding
+CONTROLLERS=$(addsuffix _controller, ${CONTROLLER_LIST})
 
-mips: type_pkg cache_pkg datapath mem_idcache_controller alu_controller mem load_controller
-	make aer F=mips
-datapath: flopr_en instr_decoder mux2 regfile mem_idcache_controller mem data_cache instr_cache regw_buffer
+forwarding_addi_add: mips
+	make tb F=forwarding_addi_add
+tb:
+	make a F=tests/${F}_tb
+	make er F=${F}
+
+mips: type_pkg cache_pkg datapath mem ${CONTROLLERS}
+	make a F=mips
+datapath: flopr_en instr_decoder mux2 mux4 alu regfile mem_idcache_controller mem data_cache instr_cache regw_buffer
 	make a F=datapath
+
+forwarding_controller: type_pkg
+	make a F=forwarding_controller DIR=controller/
 instr_decoder: type_pkg slt2 sgnext
 	make a F=instr_decoder DIR=component/
 load_controller: bflopr
@@ -16,7 +27,7 @@ regwe_controller: type_pkg
 	make a F=regwe_controller DIR=controller/
 decode_controller: type_pkg
 	make a F=decode_controller DIR=controller/
-flopen_controller:
+flopen_controller: state_pkg debug_pkg
 	make a F=flopen_controller DIR=controller/
 shift_controller: type_pkg flopr_en
 	make a F=shift_controller DIR=controller/
@@ -67,10 +78,14 @@ mux4:
 	make aer F=mux4 DIR=general/
 mux8:
 	make aer F=mux8 DIR=general/
+debug_pkg: state_pkg
+	make a F=debug_pkg DIR=pkg/
 tools_pkg:
 	make aer F=tools_pkg DIR=pkg/
 type_pkg:
 	make a F=type_pkg DIR=pkg/
+state_pkg:
+	make a F=state_pkg DIR=pkg/
 aer:
 	ghdl -a ${DEBUG} ${DIR}$(F).${VHDL} ${DIR}${F}_tb.$(VHDL)
 	make er F=${F} DEBUG=${DEBUG}

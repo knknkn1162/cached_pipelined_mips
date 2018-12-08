@@ -32,7 +32,7 @@ begin
   cont0 <= dcache_we0 & reg_we2_0 & calc_rdt_immext_s0 & reg_we1_0 & alu_s0;
 
   -- shift
-  flopr_cont0 : flopr_en generic map (N=>5)
+  flopr_cont0 : flopr_en generic map (N=>N0)
   port map (
     clk => clk, rst => rst, en => calc_en,
     a => cont0,
@@ -40,7 +40,7 @@ begin
   );
   cont1_1 <= cont1(N0-1 downto N0-N1);
 
-  flopr_cont1 : flopr_en generic map (N=>5)
+  flopr_cont1 : flopr_en generic map (N=>N1)
   port map (
     clk => clk, rst => rst, en => dcache_en,
     a => cont1_1,

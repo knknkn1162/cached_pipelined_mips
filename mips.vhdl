@@ -1,10 +1,11 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use work.debug_pkg.ALL;
 use work.type_pkg.ALL;
 use work.cache_pkg.ALL;
 
 entity mips is
-  generic(memfile : string ; MEM_BITS_SIZE : natural);
+  generic(memfile : string);
   port (
     clk, rst : in std_logic;
     -- for scan
@@ -20,7 +21,9 @@ entity mips is
     ja : out std_logic_vector(31 downto 0);
     aluout : out std_logic_vector(31 downto 0);
     -- for controller
-    icache_load_en, dcache_load_en : out std_logic
+    flopen_state : out flopen_state_vector;
+    icache_load_en, dcache_load_en : out std_logic;
+    suspend_flag : out std_logic
   );
 end entity;
 
@@ -69,6 +72,7 @@ architecture behavior of mips is
   component decode_controller
     port (
       opcode : in opcode_vector;
+      valid : in std_logic;
       decode_pc_br_ja_s : out std_logic_vector(1 downto 0);
       dcache_we, decode_rt_rd_s : out std_logic;
       calc_rdt_immext_s : out std_logic;
@@ -78,8 +82,11 @@ architecture behavior of mips is
 
   component flopen_controller
     port (
+      clk, rst, load : in std_logic;
       suspend_flag : in std_logic;
-      fetch_en, decode_en, calc_en, dcache_en : out std_logic
+      stall_flag : in std_logic;
+      fetch_en, decode_en, calc_en, dcache_en : out std_logic;
+      state_vector : out flopen_state_vector
     );
   end component;
 
@@ -106,9 +113,15 @@ architecture behavior of mips is
       decode_rt_rd_s, calc_rdt_immext_s : in std_logic;
       decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
       tag_s : in std_logic;
+      instr_valid : out std_logic;
       opcode0 : out opcode_vector;
       funct0 : out funct_vector;
       alu_s : in alucont_type;
+      -- forwarding, regw buffer
+      forwarding_rds0_s, forwarding_rdt0_s : in std_logic;
+      rs0, rt0 : out reg_vector;
+      rt1, instr_rd1 : out reg_vector;
+      opcode1 : out opcode_vector;
       -- from cache & memory
       instr_cache_miss_en, data_cache_miss_en, valid_flag : out std_logic;
       instr_load_en, dcache_load_en : in std_logic;
@@ -129,11 +142,22 @@ architecture behavior of mips is
     );
   end component;
 
+  component forwarding_controller is
+    port (
+      opcode1 : in opcode_vector;
+      rs0, rt0 : in reg_vector;
+      rt1, rd1 : in reg_vector;
+      forwarding_rds0_s, forwarding_rdt0_s : out std_logic
+    );
+  end component;
+
   signal fetch_en0, decode_en0, calc_en0, dcache_en0 : std_logic;
   signal tag_s0 : std_logic;
   signal alu_s0, alu_s1 : alucont_type;
   signal reg_we1, reg_we1_0, reg_we2, reg_we2_0 : std_logic;
   signal load0 : std_logic;
+
+  signal instr_valid0 : std_logic;
   signal opcode0 : opcode_vector;
   signal funct0 : funct_vector;
 
@@ -141,9 +165,14 @@ architecture behavior of mips is
   signal dcache_we0, dcache_we2, decode_rt_rd_s0 : std_logic;
   signal calc_rdt_immext_s0, calc_rdt_immext_s1 : std_logic;
 
+  -- forwarding
+  signal forwarding_rds0_s0, forwarding_rdt0_s0 : std_logic;
+  signal rs0, rt0, rt1, instr_rd1 : reg_vector;
+  signal opcode1 : opcode_vector;
+
   -- from cache & memory
   signal mem_we0 : std_logic;
-  signal suspend_flag0 : std_logic;
+  signal suspend_flag0, stall_flag0 : std_logic;
   signal instr_cache_miss_en0, data_cache_miss_en0, valid_flag0 : std_logic;
   signal icache_load_en0, dcache_load_en0 : std_logic;
   signal mem2cache_d1, mem2cache_d2, mem2cache_d3, mem2cache_d4, mem2cache_d5, mem2cache_d6, mem2cache_d7, mem2cache_d8 : std_logic_vector(31 downto 0);
@@ -157,10 +186,15 @@ begin
     clk => clk, rst => rst, load => load0
   );
 
+  -- TODO: stall_controller
+
   flopen_controller0 : flopen_controller port map (
+    clk => clk, rst => rst, load => load0,
     suspend_flag => suspend_flag0,
+    stall_flag => stall_flag0,
     fetch_en => fetch_en0, decode_en => decode_en0,
-    calc_en => calc_en0, dcache_en => dcache_en0
+    calc_en => calc_en0, dcache_en => dcache_en0,
+    state_vector => flopen_state
   );
 
   mem_idcache_controller0 : mem_idcache_controller port map (
@@ -174,9 +208,11 @@ begin
   );
   icache_load_en <= icache_load_en0;
   dcache_load_en <= dcache_load_en0;
+  suspend_flag <= suspend_flag0;
 
   decode_controller0 : decode_controller port map (
     opcode => opcode0,
+    valid => instr_valid0,
     decode_pc_br_ja_s => decode_pc_br_ja_s0,
     dcache_we => dcache_we0,
     decode_rt_rd_s => decode_rt_rd_s0,
@@ -210,8 +246,13 @@ begin
     decode_pc_br_ja_s => decode_pc_br_ja_s0,
     dcache_we => dcache_we2, decode_rt_rd_s => decode_rt_rd_s0,
     calc_rdt_immext_s => calc_rdt_immext_s1,
+    instr_valid => instr_valid0,
     -- alu_controller
     opcode0 => opcode0, funct0 => funct0, alu_s => alu_s1,
+    -- forwarding, regw buffer
+    forwarding_rds0_s => forwarding_rds0_s0, forwarding_rdt0_s => forwarding_rdt0_s0,
+    rs0 => rs0, rt0 => rt0, rt1 => rt1, instr_rd1 => instr_rd1,
+    opcode1 => opcode1,
     -- form cache & memory
     tag_s => tag_s0,
     instr_cache_miss_en => instr_cache_miss_en0, data_cache_miss_en => data_cache_miss_en0, valid_flag => valid_flag0,
@@ -228,6 +269,14 @@ begin
     reg_wa => reg_wa, reg_wd => reg_wd, reg_we => reg_we,
     rds => rds, rdt => rdt, immext => immext,
     ja => ja, aluout => aluout
+  );
+
+  forwarding_controller0 : forwarding_controller port map (
+    opcode1 => opcode1,
+    rs0 => rs0, rt0 => rt0,
+    rt1 => rt1, rd1 => instr_rd1,
+    forwarding_rds0_s => forwarding_rds0_s0,
+    forwarding_rdt0_s => forwarding_rdt0_s0
   );
 
   -- memory

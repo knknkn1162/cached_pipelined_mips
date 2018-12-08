@@ -5,6 +5,7 @@ use work.type_pkg.ALL;
 entity decode_controller is
   port (
     opcode : in opcode_vector;
+    valid : in std_logic;
     decode_pc_br_ja_s : out std_logic_vector(1 downto 0);
     dcache_we, decode_rt_rd_s : out std_logic;
     calc_rdt_immext_s : out std_logic;
@@ -55,15 +56,19 @@ begin
     end if;
   end process;
 
-  process(opcode)
+  process(opcode, valid)
   begin
-    case opcode is
-      when OP_RTYPE | OP_ADDI | OP_SLTI | OP_ORI | OP_ANDI =>
-        reg_we1 <= '1'; reg_we2 <= '0';
-      when OP_LW =>
-        reg_we1 <= '0'; reg_we2 <= '1';
-      -- OP_SW
-      when others => reg_we1 <= '0'; reg_we2 <= '0';
-    end case;
+    if valid = '1' then
+      case opcode is
+        when OP_RTYPE | OP_ADDI | OP_SLTI | OP_ORI | OP_ANDI =>
+          reg_we1 <= '1'; reg_we2 <= '0';
+        when OP_LW =>
+          reg_we1 <= '0'; reg_we2 <= '1';
+        -- OP_SW
+        when others => reg_we1 <= '0'; reg_we2 <= '0';
+      end case;
+    else
+      reg_we1 <= '0'; reg_we2 <= '0';
+    end if;
   end process;
 end architecture;

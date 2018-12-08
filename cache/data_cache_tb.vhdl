@@ -9,7 +9,7 @@ end entity;
 architecture testbench of data_cache_tb is
   component data_cache
     port (
-      clk, rst : in std_logic;
+      clk, rst, load : in std_logic;
       we : in std_logic;
       -- program counter is 4-byte aligned
       a : in std_logic_vector(31 downto 0);
@@ -28,7 +28,7 @@ architecture testbench of data_cache_tb is
     );
   end component;
 
-  signal clk, rst, we : std_logic;
+  signal clk, rst, load, we : std_logic;
   signal a : std_logic_vector(31 downto 0);
   signal wd, rd : std_logic_vector(31 downto 0);
 
@@ -44,7 +44,7 @@ architecture testbench of data_cache_tb is
 
 begin
   uut : data_cache port map (
-    clk => clk, rst => rst,
+    clk => clk, rst => rst, load => load,
     we => we,
     a => a,
     wd => wd,
@@ -72,8 +72,14 @@ begin
   stim_proc : process
   begin
     wait for clk_period;
-    rst <= '1'; wait for 1 ns; rst <= '0'; assert cache_miss_en = '0';
+    rst <= '1'; load <= '1'; wait for 1 ns; rst <= '0';
+    assert cache_miss_en = '0';
+    wait until rising_edge(clk); load <= '0'; wait for 1 ns;
+    -- when initialization, cache_miss_en is disable
+    load <= '1';
+    a <= X"00000008"; wait for 1 ns; assert cache_miss_en = '0';
 
+    wait until rising_edge(clk); load <= '0'; wait for 1 ns;
     -- read with empty cache
     a <= X"00000008"; wait for 1 ns; assert rd = all_x; assert cache_miss_en = '1'; assert valid_flag = '0';
     a <= X"00000008"; we <= '0'; wait for 1 ns; assert rd = all_x; assert cache_miss_en = '1'; assert valid_flag = '0';

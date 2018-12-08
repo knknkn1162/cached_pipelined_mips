@@ -37,6 +37,7 @@ begin
     a => imm,
     y => immext0
   );
+  immext <= immext0;
 
   rd <= instr(15 downto 11);
   shamt <= instr(10 downto 6);
