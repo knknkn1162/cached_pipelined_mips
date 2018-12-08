@@ -7,8 +7,7 @@ use work.state_pkg.ALL;
 entity flopen_controller is
   port (
     clk, rst, load : in std_logic;
-    suspend : in std_logic;
-    stall : in std_logic;
+    suspend, stall, halt : in std_logic;
     fetch_en, decode_en, calc_en, dcache_en : out std_logic;
     calc_clr : out std_logic;
     state_vector : out flopen_state_vector
@@ -78,7 +77,7 @@ begin
         when others =>
           work_en := '1';
       end case;
-      fetch_en <= work_en;
+      fetch_en <= work_en and (not halt);
       decode_en <= work_en;
       calc_en <= work_en;
       calc_clr <= '0';
