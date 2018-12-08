@@ -23,8 +23,7 @@ entity mips is
     -- for controller
     flopen_state : out flopen_state_vector;
     icache_load_en, dcache_load_en : out std_logic;
-    suspend : out std_logic;
-    stall : out std_logic
+    suspend, stall, halt : out std_logic
   );
 end entity;
 
@@ -40,6 +39,15 @@ architecture behavior of mips is
       index : in std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
       wd1, wd2, wd3, wd4, wd5, wd6, wd7, wd8 : in std_logic_vector(31 downto 0);
       rd1, rd2, rd3, rd4, rd5, rd6, rd7, rd8 : out std_logic_vector(31 downto 0)
+    );
+  end component;
+
+  component instr_controller
+    port (
+      clk, rst : in std_logic;
+      instr : in std_logic_vector(31 downto 0);
+      valid : out std_logic;
+      halt : out std_logic
     );
   end component;
 
@@ -110,6 +118,8 @@ architecture behavior of mips is
       -- controller
       load : in std_logic;
       fetch_en, decode_en, calc_en, dcache_en : in std_logic;
+      -- -- instr_controller
+      instr0 : out std_logic_vector(31 downto 0);
       reg_we1, reg_we2 : in std_logic;
       dcache_we : in std_logic;
       decode_rt_rd_s, calc_rdt_immext_s : in std_logic;
@@ -133,7 +143,6 @@ architecture behavior of mips is
       dcache2mem_d1, dcache2mem_d2, dcache2mem_d3, dcache2mem_d4, dcache2mem_d5, dcache2mem_d6, dcache2mem_d7, dcache2mem_d8 : out std_logic_vector(31 downto 0);
       -- scan
       pc, pcnext : out std_logic_vector(31 downto 0);
-      instr : out std_logic_vector(31 downto 0);
       addr, dcache_rd, dcache_wd : out std_logic_vector(31 downto 0);
       reg_wa : out reg_vector;
       reg_wd : out std_logic_vector(31 downto 0);
@@ -169,6 +178,8 @@ architecture behavior of mips is
   signal reg_we1, reg_we1_0, reg_we2, reg_we2_0 : std_logic;
   signal load0 : std_logic;
 
+  signal instr0 : std_logic_vector(31 downto 0);
+  signal halt0 : std_logic;
   signal instr_valid0 : std_logic;
   signal opcode0 : opcode_vector;
   signal funct0 : funct_vector;
@@ -195,6 +206,13 @@ architecture behavior of mips is
   signal mem_index0 : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
 
 begin
+  -- for scan
+  instr <= instr0;
+  icache_load_en <= icache_load_en0;
+  dcache_load_en <= dcache_load_en0;
+  suspend <= suspend0;
+  halt <= halt0;
+
   -- controller
   load_controller0 : load_controller port map (
     clk => clk, rst => rst, load => load0
@@ -227,9 +245,6 @@ begin
     mem_we => mem_we0,
     suspend => suspend0
   );
-  icache_load_en <= icache_load_en0;
-  dcache_load_en <= dcache_load_en0;
-  suspend <= suspend0;
 
   decode_controller0 : decode_controller port map (
     opcode => opcode0,
@@ -257,10 +272,18 @@ begin
   );
   dcache_we <= dcache_we2;
 
+  instr_controller0 : instr_controller port map (
+    clk => clk, rst => rst,
+    instr => instr0,
+    valid => instr_valid0, halt => halt0
+  );
+
   datapath0 : datapath port map (
     clk => clk, rst => rst, load => load0,
     -- flopren_controller
     fetch_en => fetch_en0, decode_en => decode_en0, calc_en => calc_en0, dcache_en => dcache_en0,
+    -- instr_controller
+    instr0 => instr0,
     -- regwe_controller
     reg_we1 => reg_we1, reg_we2 => reg_we2,
     -- decode_controller
@@ -285,7 +308,6 @@ begin
     dcache2mem_d5 => dcache2mem_d5, dcache2mem_d6 => dcache2mem_d6, dcache2mem_d7 => dcache2mem_d7, dcache2mem_d8 => dcache2mem_d8,
     -- for scan
     pc => pc, pcnext => pcnext,
-    instr => instr,
     addr => addr, dcache_rd => dcache_rd, dcache_wd => dcache_wd,
     reg_wa => reg_wa, reg_wd => reg_wd, reg_we => reg_we,
     rds => rds, rdt => rdt, immext => immext,

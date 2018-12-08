@@ -10,12 +10,13 @@ entity datapath is
     -- controller
     load : in std_logic;
     fetch_en, decode_en, calc_en, dcache_en : in std_logic;
+    -- -- instr_controller
+    instr0 : out std_logic_vector(31 downto 0);
     reg_we1, reg_we2 : in std_logic;
     dcache_we : in std_logic;
     decode_rt_rd_s, calc_rdt_immext_s : in std_logic;
     decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
     tag_s : in std_logic;
-    instr_valid : out std_logic;
     opcode0 : out opcode_vector;
     funct0 : out funct_vector;
     alu_s : in alucont_type;
@@ -33,7 +34,6 @@ entity datapath is
     dcache2mem_d1, dcache2mem_d2, dcache2mem_d3, dcache2mem_d4, dcache2mem_d5, dcache2mem_d6, dcache2mem_d7, dcache2mem_d8 : out std_logic_vector(31 downto 0);
     -- scan
     pc, pcnext : out std_logic_vector(31 downto 0);
-    instr : out std_logic_vector(31 downto 0);
     addr, dcache_rd, dcache_wd : out std_logic_vector(31 downto 0);
     reg_wa : out reg_vector;
     reg_wd : out std_logic_vector(31 downto 0);
@@ -171,7 +171,7 @@ architecture behavior of datapath is
   end component;
 
   signal pc0, pc1, pcnext0 : std_logic_vector(31 downto 0);
-  signal instr0, instr1 : std_logic_vector(31 downto 0);
+  signal instr0_0, instr1 : std_logic_vector(31 downto 0);
   signal rs0_0, rt0_0, instr_rd0_0, reg_wa0, instr_rtrd0, instr_rtrd1, instr_rtrd2 : reg_vector;
   signal opcode0_0 : opcode_vector;
   signal rds0, rds1, rdt0, rdt1, rdt2, reg_wd0 : std_logic_vector(31 downto 0);
@@ -194,7 +194,6 @@ begin
   -- scan
   pc <= pc0;
   pcnext <= pcnext0;
-  instr <= instr0;
   addr <= dcache_a0; dcache_rd <= dcache_rd0; dcache_wd <= dcache_wd0;
   reg_wa <= reg_wa0; reg_wd <= reg_wd0; reg_we <= reg_we0;
   rds <= forwarding_rds0; rdt <= forwarding_rdt0;
@@ -225,9 +224,10 @@ begin
   reg_instr : flopr_en generic map (N=>32)
   port map (
     clk => clk, rst => rst, en => decode_en,
-    a => instr0,
+    a => instr0_0,
     y => instr1
   );
+  instr0 <= instr0_0;
 
   instr_decoder0 : instr_decoder port map (
     instr => instr1,
@@ -239,7 +239,6 @@ begin
     funct => funct0,
     target2 => target2 -- for j instruction
   );
-  instr_valid <= '0' when instr1 = X"00000000" else '1';
   rs0 <= rs0_0; rt0 <= rt0_0;
   opcode0 <= opcode0_0;
 

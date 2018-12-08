@@ -3,7 +3,7 @@ VHDL=vhdl
 MEM=dummy
 DIR=./
 DEBUG=
-CONTROLLER_LIST=mem_idcache alu load flopen decode shift forwarding stall
+CONTROLLER_LIST=mem_idcache alu load flopen decode shift forwarding stall instr
 CONTROLLERS=$(addsuffix _controller, ${CONTROLLER_LIST})
 
 stall_lw_add: mips
