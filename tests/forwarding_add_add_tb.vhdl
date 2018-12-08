@@ -4,10 +4,10 @@ use work.debug_pkg.ALL;
 use work.state_pkg.ALL;
 use work.type_pkg.ALL;
 
-entity addi_add_tb is
+entity forwarding_add_add_tb is
 end entity;
 
-architecture testbench of addi_add_tb is
+architecture testbench of forwarding_add_add_tb is
   component mips
     generic(memfile : string);
     port (
@@ -31,7 +31,7 @@ architecture testbench of addi_add_tb is
     );
   end component;
 
-  constant memfile : string := "./assets/addi_add.hex";
+  constant memfile : string := "./assets/forwarding_add_add.hex";
   signal clk, rst : std_logic;
   signal pc, pcnext : std_logic_vector(31 downto 0);
   signal instr : std_logic_vector(31 downto 0);
@@ -84,6 +84,7 @@ begin
     -- addi $s0, $0, 5
     -- addi $s1, $0, 6
     -- add $t1, $s0, $s0
+    -- add $s2, $t1, $s1
     wait for clk_period;
     rst <= '1'; wait for 1 ns; rst <= '0';
     assert state = ResetS;
@@ -147,14 +148,17 @@ begin
     assert instr = X"02104820";
     wait until rising_edge(clk); wait for 1 ns;
 
-    -- (-, CalcS, DecodeS)
+    -- (-, CalcS, DecodeS, FetchS)
     assert state = NormalS;
+    -- (addi $s0, $0, 5)
     assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0';
     assert pc = X"0000000C"; assert pcnext = X"00000010";
     -- CalcS : addi $s1, $0, 6
     assert aluout = X"00000006";
     -- DecodeS : add $t1, $s0, $s0
     assert rds = X"00000005"; assert rdt = X"00000005";
+    -- FetchS : add $s2, $t1, $s1
+    assert instr = X"01319020";
     wait until rising_edge(clk); wait for 1 ns;
 
     -- (-, -, CalcS)
