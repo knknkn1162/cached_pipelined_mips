@@ -6,6 +6,8 @@ DEBUG=
 CONTROLLER_LIST=mem_idcache alu load flopen decode shift forwarding
 CONTROLLERS=$(addsuffix _controller, ${CONTROLLER_LIST})
 
+stall_lw_add: mips
+	make tb F=stall_lw_add
 forwarding_addi_add: mips
 	make tb F=forwarding_addi_add
 forwarding_add_add: mips
