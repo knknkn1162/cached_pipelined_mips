@@ -26,25 +26,24 @@ begin
   end process;
 
   -- FSM
-  process(state)
+  process(state, valid0)
   begin
     case state is
       when LoadS =>
         if valid0 = '1' then
           nextstate <= NormalS;
+        else
+          nextstate <= LoadS;
         end if;
       when NormalS =>
-        if valid0 = '0' then
-          nextstate <= HaltS;
-        end if;
-      when HaltS =>
-        nextstate <= HaltS;
+        nextstate <= NormalS;
       when others =>
         -- do nothing
     end case;
   end process;
 
-  valid0 <= '0' when instr = X"00000000" else '1';
+
+  valid0 <= '0' when (instr = X"00000000") or is_X(instr) else '1';
   valid <= valid0;
-  halt <= '1' when state = HaltS else '0';
+  halt <= '1' when (state = NormalS and valid0 = '0') else '0';
 end architecture;
