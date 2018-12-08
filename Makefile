@@ -3,7 +3,7 @@ VHDL=vhdl
 MEM=dummy
 DIR=./
 DEBUG=
-CONTROLLER_LIST=mem_idcache alu load flopen decode shift forwarding
+CONTROLLER_LIST=mem_idcache alu load flopen decode shift forwarding stall
 CONTROLLERS=$(addsuffix _controller, ${CONTROLLER_LIST})
 
 stall_lw_add: mips
@@ -35,6 +35,8 @@ flopen_controller: state_pkg debug_pkg
 	make a F=flopen_controller DIR=controller/
 shift_controller: type_pkg flopr_en
 	make a F=shift_controller DIR=controller/
+stall_controller: type_pkg
+	make a F=stall_controller DIR=controller/
 
 cache_decoder: cache_pkg
 	make aer F=cache_decoder DIR=cache/

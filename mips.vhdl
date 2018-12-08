@@ -84,7 +84,7 @@ architecture behavior of mips is
     port (
       clk, rst, load : in std_logic;
       suspend : in std_logic;
-      stall_flag : in std_logic;
+      stall_en : in std_logic;
       fetch_en, decode_en, calc_en, dcache_en : out std_logic;
       state_vector : out flopen_state_vector
     );
@@ -151,6 +151,14 @@ architecture behavior of mips is
     );
   end component;
 
+  component stall_controller
+    port (
+      opcode0, opcode1 : in opcode_vector;
+      rs0, rt0, rt1 : in reg_vector;
+      stall_en : out std_logic
+    );
+  end component;
+
   signal fetch_en0, decode_en0, calc_en0, dcache_en0 : std_logic;
   signal tag_s0 : std_logic;
   signal alu_s0, alu_s1 : alucont_type;
@@ -169,10 +177,12 @@ architecture behavior of mips is
   signal forwarding_rds0_s0, forwarding_rdt0_s0 : std_logic;
   signal rs0, rt0, rt1, instr_rd1 : reg_vector;
   signal opcode1 : opcode_vector;
+  -- stall
+  signal stall_en0 : std_logic;
 
   -- from cache & memory
   signal mem_we0 : std_logic;
-  signal suspend0, stall_flag0 : std_logic;
+  signal suspend0 : std_logic;
   signal instr_cache_miss_en0, data_cache_miss_en0, valid_flag0 : std_logic;
   signal icache_load_en0, dcache_load_en0 : std_logic;
   signal mem2cache_d1, mem2cache_d2, mem2cache_d3, mem2cache_d4, mem2cache_d5, mem2cache_d6, mem2cache_d7, mem2cache_d8 : std_logic_vector(31 downto 0);
@@ -186,12 +196,16 @@ begin
     clk => clk, rst => rst, load => load0
   );
 
-  -- TODO: stall_controller
+  stall_controller0 : stall_controller port map (
+    opcode0 => opcode0, opcode1 => opcode1,
+    rs0 => rs0, rt0 => rt0, rt1 => rt1,
+    stall_en => stall_en0
+  );
 
   flopen_controller0 : flopen_controller port map (
     clk => clk, rst => rst, load => load0,
     suspend => suspend0,
-    stall_flag => stall_flag0,
+    stall_en => stall_en0,
     fetch_en => fetch_en0, decode_en => decode_en0,
     calc_en => calc_en0, dcache_en => dcache_en0,
     state_vector => flopen_state
