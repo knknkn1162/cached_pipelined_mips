@@ -62,7 +62,7 @@ begin
   process(stall, state, suspend)
     variable work_en : std_logic;
   begin
-    if stall = '1' then
+    if state = NormalS and stall = '1' then
       fetch_en <= '0';
       decode_en <= '0';
       calc_en <= '0';
