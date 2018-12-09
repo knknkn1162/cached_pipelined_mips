@@ -7,9 +7,8 @@ use work.state_pkg.ALL;
 entity flopen_controller is
   port (
     clk, rst, load : in std_logic;
-    suspend : in std_logic;
-    stall_flag : in std_logic;
-    fetch_en, decode_en, calc_en, dcache_en : out std_logic;
+    suspend, stall, halt : in std_logic;
+    fetch_en, decode_en, calc_clr, dcache_en : out std_logic;
     state_vector : out flopen_state_vector
   );
 end entity;
@@ -28,7 +27,7 @@ begin
   end process;
 
   -- nextstate
-  process(state, load, suspend, stall_flag)
+  process(state, load, suspend, stall)
   begin
     case state is
       when ResetS =>
@@ -40,7 +39,7 @@ begin
       when NormalS =>
         if suspend = '1' then
           nextstate <= SuspendS;
-        elsif stall_flag = '1' then
+        elsif stall = '1' then
           nextstate <= StallS;
         else
           nextstate <= NormalS;
@@ -59,13 +58,14 @@ begin
   end process;
 
   -- **_en
-  process(state, suspend)
+  process(stall, state, suspend, halt)
     variable work_en : std_logic;
   begin
-    if state = StallS then
+    if state = NormalS and stall = '1' then
       fetch_en <= '0';
       decode_en <= '0';
-      calc_en <= '0';
+      calc_clr <= '1';
+      dcache_en <= '1';
     else
       case state is
         when ResetS | LoadS =>
@@ -76,9 +76,9 @@ begin
         when others =>
           work_en := '1';
       end case;
-      fetch_en <= work_en;
+      fetch_en <= work_en and (not halt);
       decode_en <= work_en;
-      calc_en <= work_en;
+      calc_clr <= (not work_en);
       dcache_en <= work_en;
     end if;
   end process;

@@ -4,10 +4,10 @@ use work.debug_pkg.ALL;
 use work.state_pkg.ALL;
 use work.type_pkg.ALL;
 
-entity forwarding_add_add_tb is
+entity stall_lw_add_tb is
 end entity;
 
-architecture testbench of forwarding_add_add_tb is
+architecture testbench of stall_lw_add_tb is
   component mips
     generic(memfile : string);
     port (
@@ -31,7 +31,7 @@ architecture testbench of forwarding_add_add_tb is
     );
   end component;
 
-  constant memfile : string := "./assets/forwarding_add_add.hex";
+  constant memfile : string := "./assets/stall_lw_add.hex";
   signal clk, rst : std_logic;
   signal pc, pcnext : std_logic_vector(31 downto 0);
   signal instr : std_logic_vector(31 downto 0);
@@ -82,13 +82,11 @@ begin
   stim_proc : process
   begin
     -- addi $s0, $0, 5
-    -- addi $s1, $0, 6
-    -- add $t1, $s0, $s0
-    -- add $s2, $t1, $s1
+    -- add $s1, $s0, $s0
     wait for clk_period;
     rst <= '1'; wait for 1 ns; rst <= '0';
     assert state = ResetS;
-    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0';
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0'; assert stall = '0';
     assert pc = X"00000000"; assert pcnext = X"00000004";
     wait until rising_edge(clk); wait for 1 ns;
     -- Load (cache_miss)
@@ -98,27 +96,27 @@ begin
 
     -- (instr: Mem2CacheS, mem : NormalS)
     assert state = SuspendS;
-    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '1';
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '1'; assert stall = '0';
     assert icache_load_en = '0'; assert dcache_load_en = '0'; assert suspend = '1';
     wait until rising_edge(clk); wait for 1 ns;
 
     -- (instr: CacheWriteBackS, mem : Mem2CacheS)
     assert state = SuspendS;
-    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '1';
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '1'; assert stall = '0';
     assert icache_load_en = '1'; assert dcache_load_en = '0';
     wait until rising_edge(clk); wait for 1 ns;
 
     -- (instr: NormalS, mem : CacheWriteBackS)
     assert state = SuspendS;
-    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '1';
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '1'; assert stall = '0';
     assert icache_load_en = '0'; assert dcache_load_en = '1';
     wait until rising_edge(clk); wait for 1 ns;
 
     -- (FetchS, InitS) (restore from SuspendS)
     assert state = SuspendS;
-    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0';
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0'; assert stall = '0';
     assert icache_load_en = '0'; assert dcache_load_en = '0';
-    -- -- FetchS : addi $s0, $0, 5
+    -- -- FetchS : addi $t0, $0, 5
     assert pc = X"00000000"; assert pcnext = X"00000004";
     assert instr = X"20100005";
     -- (not yet)
@@ -126,70 +124,105 @@ begin
     wait until rising_edge(clk); wait for 1 ns;
 
 
-    -- (DecodeS, FetchS, -)
-    -- -- DecodeS : addi $s0, $0, 5
+    -- (DecodeS, FetchS)
     assert state = NormalS;
-    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0';
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0'; assert stall = '0';
+    -- -- DecodeS : addi $s0, $0, 5
     assert rds = X"00000000"; assert immext = X"00000005";
-    -- -- FetchS : addi $s1, $0, 6
+    -- -- FetchS : sw $s0, 12($0)
     assert pc = X"00000004"; assert pcnext = X"00000008";
-    assert instr = X"20110006";
+    assert instr = X"AC10000C";
     wait until rising_edge(clk); wait for 1 ns;
 
     -- (CalcS, DecodeS, FetchS)
     assert state = NormalS;
-    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0';
-    assert pc = X"00000008"; assert pcnext = X"0000000C";
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0'; assert stall = '0';
     -- CalcS(AddiCalcS) : addi $s0, $0, 5
     assert aluout = X"00000005";
-    -- DecodeS : addi $s1, $0, 6
-    assert rds = X"00000000"; assert immext = X"00000006"; -- forwarding for pipeline
-    -- FetchS : add $t1, $s0, $s0
-    assert instr = X"02104820";
+    -- DecodeS : sw $s0, 12($0)
+    assert rds = X"00000000"; assert immext = X"0000000C";
+    -- FetchS : lw $s1, 12($0)
+    assert pc = X"00000008"; assert pcnext = X"0000000C";
+    assert instr = X"8C11000C";
     wait until rising_edge(clk); wait for 1 ns;
 
     -- (-, CalcS, DecodeS, FetchS)
     assert state = NormalS;
     -- (addi $s0, $0, 5)
-    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0';
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0'; assert stall = '0';
+    -- CalcS : sw $s0, 12($0)
+    assert aluout = X"0000000C";
+    -- DecodeS : lw $s1, 12($0)
+    assert rds = X"00000000"; assert immext = X"0000000C";
+    -- FetchS : addi $s2, $s1, 4
     assert pc = X"0000000C"; assert pcnext = X"00000010";
-    -- CalcS : addi $s1, $0, 6
-    assert aluout = X"00000006";
-    -- DecodeS : add $t1, $s0, $s0
-    assert rds = X"00000005"; assert rdt = X"00000005";
-    -- FetchS : add $s2, $t1, $s1
-    assert instr = X"01319020";
+    assert instr = X"22320004";
     wait until rising_edge(clk); wait for 1 ns;
 
-    -- (-, -, CalcS)
+    -- (-, MemWriteS, CalcS, DecodeS, FetchS)
     assert state = NormalS;
-    -- RegWriteBack : addi $s0, $0, 5
-    assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0';
+    assert dcache_we = '1'; assert reg_we = '1'; assert suspend = '0'; assert stall = '1';
+    -- (addi $s0, $0, 5)
     assert reg_wa = "10000"; assert reg_wd = X"00000005";
-    -- CalcS : add $t1, $s0, $s0
-    assert aluout = X"0000000A";
-    -- DecodeS : add $s2, $t1, $s1
-    assert rds = X"0000000A"; assert rdt = X"00000006";
+    -- MemWriteS : sw $s0, 12($0)
+    assert addr = X"0000000C"; assert dcache_wd = X"00000005";
+    -- CalcS : lw $s1, 12($0)
+    assert aluout = X"0000000C";
+    -- DecodeS : addi $s2, $s1, 4 [ Require Stall ]
+    assert rds = X"00000000"; assert immext = X"00000004";
+    -- FetchS : add $t1, $s1, $s2
+    assert pc = X"00000010"; assert pcnext = X"00000014";
+    assert instr = X"02324820";
+    wait until rising_edge(clk); wait for 1 ns;
+
+    -- (-, -, MemReadS, DecodeS, FetchS) [Stall]
+    assert state = StallS;
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0'; assert stall = '0';
+    -- MemReadS : lw $s1, 12($s0)
+    assert addr = X"0000000C"; assert dcache_rd = X"00000005";
+    -- CalcS : nop
+    assert aluout /= X"0000000C";
+    -- DecodeS : addi $s2, $s1, 4 [Stall]
+    assert rds = X"00000005"; -- forwarding
+    assert immext = X"00000004";
+    -- FetchS : add $t1, $s1, $s2 [Stall]
+    assert pc = X"00000010"; assert pcnext = X"00000014";
+    assert instr = X"02324820";
     wait until rising_edge(clk); wait for 1 ns;
 
     assert state = NormalS;
-    assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0';
-    -- RegWriteBack : addi $s1, $0, 6
-    assert reg_wa = "10001"; assert reg_wd = X"00000006";
-    -- CalcS : add $s2, $t1, $s1
-    assert aluout = X"00000010";
+    assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0'; assert stall = '0';
+    -- (lw $s1, 12($s0))
+    assert reg_wa = "10001"; assert reg_wd = X"00000005";
+    -- CalcS : addi $s2, $s1, 4
+    assert aluout = X"00000009";
+    -- DecodeS add $t1, $s1, $s2
+    assert rds = X"00000005"; assert rdt = X"00000009";
+    -- FetchS (nop)
+    assert pc = X"00000014"; assert pcnext = X"00000018";
     wait until rising_edge(clk); wait for 1 ns;
 
     assert state = NormalS;
-    assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0';
-    -- RegWriteBack : add $t1, $s0, $s0
-    assert reg_wa = "01001"; assert reg_wd = X"0000000A";
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0'; assert stall = '0';
+    -- addi $s2, $s1, 4
+    -- CalcS : add $t1, $s1, $s2
+    assert aluout = X"0000000E";
+    -- DecodeS, FetchS (nop)
     wait until rising_edge(clk); wait for 1 ns;
 
     assert state = NormalS;
-    assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0';
-    -- RegWriteBack : add $s2, $t1, $s1
-    assert reg_wa = "10010"; assert reg_wd = X"00000010";
+    assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0'; assert stall = '0';
+    -- addi $s2, $s1, 4
+    assert reg_wa = "10010"; assert reg_wd = X"00000009";
+    -- (add $t1, $s1, $s2)
+    -- CalcS, DecodeS, FetchS (nop)
+    wait until rising_edge(clk); wait for 1 ns;
+
+    assert state = NormalS;
+    assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0'; assert stall = '0';
+    -- add $t1, $s1, $s2
+    assert reg_wa = "01001"; assert reg_wd = X"0000000E";
+    -- CalcS, DecodeS, FetchS (nop)
 
     stop <= TRUE;
     -- success message

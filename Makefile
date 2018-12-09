@@ -3,9 +3,11 @@ VHDL=vhdl
 MEM=dummy
 DIR=./
 DEBUG=
-CONTROLLER_LIST=mem_idcache alu load flopen decode shift forwarding
+CONTROLLER_LIST=mem_idcache alu load flopen decode shift forwarding stall instr
 CONTROLLERS=$(addsuffix _controller, ${CONTROLLER_LIST})
 
+stall_lw_add: mips
+	make tb F=stall_lw_add
 forwarding_addi_add: mips
 	make tb F=forwarding_addi_add
 forwarding_add_add: mips
@@ -16,14 +18,14 @@ tb:
 
 mips: type_pkg cache_pkg datapath mem ${CONTROLLERS}
 	make a F=mips
-datapath: flopr_en instr_decoder mux2 mux4 alu regfile mem_idcache_controller mem data_cache instr_cache regw_buffer
+datapath: flopr_en flopr_clr instr_decoder mux2 mux4 alu regfile mem_idcache_controller mem data_cache instr_cache regw_buffer
 	make a F=datapath
 
 forwarding_controller: type_pkg
 	make a F=forwarding_controller DIR=controller/
 instr_decoder: type_pkg slt2 sgnext
 	make a F=instr_decoder DIR=component/
-load_controller: bflopr
+load_controller:
 	make aer F=load_controller DIR=controller/
 regwe_controller: type_pkg
 	make a F=regwe_controller DIR=controller/
@@ -31,8 +33,12 @@ decode_controller: type_pkg
 	make a F=decode_controller DIR=controller/
 flopen_controller: state_pkg debug_pkg
 	make a F=flopen_controller DIR=controller/
-shift_controller: type_pkg flopr_en
+shift_controller: type_pkg flopr_en flopr_clr bflopr_en
 	make a F=shift_controller DIR=controller/
+stall_controller: type_pkg
+	make a F=stall_controller DIR=controller/
+instr_controller:
+	make a F=instr_controller DIR=controller/
 
 cache_decoder: cache_pkg
 	make aer F=cache_decoder DIR=cache/
@@ -64,12 +70,14 @@ alu_controller: type_pkg
 	make a F=alu_controller DIR=controller/
 alu: type_pkg
 	make aer F=alu DIR=general/
+flopr_clr:
+	make aer F=flopr_clr DIR=general/
 flopr_en:
 	make aer F=flopr_en DIR=general/
 flopr:
 	make aer F=flopr DIR=general/
-bflopr:
-	make aer F=bflopr DIR=general/
+bflopr_en:
+	make aer F=bflopr_en DIR=general/
 sgnext:
 	make aer F=sgnext DIR=general/
 slt2:
