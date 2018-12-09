@@ -3,7 +3,7 @@ VHDL=vhdl
 MEM=dummy
 DIR=./
 DEBUG=
-CONTROLLER_LIST=mem_idcache alu load flopen decode shift stall instr
+CONTROLLER_LIST=mem_idcache alu load flopen decode shift stall instr pcnext
 CONTROLLERS=$(addsuffix _controller, ${CONTROLLER_LIST})
 TEST_LIST=stall_lw_add forwarding_addi_add forwarding_add_add beq
 
@@ -42,6 +42,8 @@ stall_controller: type_pkg
 	make a F=stall_controller DIR=controller/
 instr_controller:
 	make a F=instr_controller DIR=controller/
+pcnext_controller:
+	make a F=pcnext_controller DIR=controller/
 
 cache_decoder: cache_pkg
 	make aer F=cache_decoder DIR=cache/
