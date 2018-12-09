@@ -27,7 +27,7 @@ architecture testbench of forwarding_add_add_tb is
       -- for controller
       flopen_state : out flopen_state_vector;
       icache_load_en, dcache_load_en : out std_logic;
-      suspend : out std_logic
+      suspend, stall, halt : out std_logic
     );
   end component;
 
@@ -46,7 +46,7 @@ architecture testbench of forwarding_add_add_tb is
   -- for controller
   signal flopen_state_vec : flopen_state_vector;
   signal icache_load_en, dcache_load_en : std_logic;
-  signal suspend : std_logic;
+  signal suspend, stall, halt : std_logic;
   constant clk_period : time := 10 ns;
   signal stop : boolean;
   signal state : flopen_statetype;
@@ -65,7 +65,7 @@ begin
     ja => ja, aluout => aluout,
     flopen_state => flopen_state_vec,
     icache_load_en => icache_load_en, dcache_load_en => dcache_load_en,
-    suspend => suspend
+    suspend => suspend, stall => stall, halt => halt
   );
 
   state <= encode_flopen_state(flopen_state_vec);
