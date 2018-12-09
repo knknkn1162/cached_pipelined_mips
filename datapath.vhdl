@@ -20,8 +20,7 @@ entity datapath is
     opcode0 : out opcode_vector;
     funct0 : out funct_vector;
     alu_s : in alucont_type;
-    -- forwarding, regw buffer
-    forwarding_rds0_s, forwarding_rdt0_s : in std_logic;
+    -- regw buffer including forwarding
     rs0, rt0 : out reg_vector;
     rt1, instr_rd1 : out reg_vector;
     opcode1 : out opcode_vector;
@@ -258,24 +257,8 @@ begin
     wa => reg_wa0, wd => reg_wd0, we => reg_we0
   );
 
-  regw_cached_rds0 <= rds0 when is_X(buf_rds0) else buf_rds0;
-  regw_cached_rdt0 <= rdt0 when is_X(buf_rdt0) else buf_rdt0;
-
-  forwarding_rds_mux : mux2 generic map(N=>32)
-  port map (
-    d0 => regw_cached_rds0,
-    d1 => aluout0,
-    s => forwarding_rds0_s,
-    y => forwarding_rds0
-  );
-
-  forwarding_rdt_mux : mux2 generic map (N=>32)
-  port map (
-    d0 => regw_cached_rdt0,
-    d1 => aluout0,
-    s => forwarding_rdt0_s,
-    y => forwarding_rdt0
-  );
+  forwarding_rds0 <= rds0 when is_X(buf_rds0) else buf_rds0;
+  forwarding_rdt0 <= rdt0 when is_X(buf_rdt0) else buf_rdt0;
 
   -- for regwritebackS
   instr_rtrd_mux : mux2 generic map (N=>CONST_REG_SIZE)
