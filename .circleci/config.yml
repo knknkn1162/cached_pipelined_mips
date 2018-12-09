@@ -6,18 +6,10 @@ jobs:
       - image: ghdl/ghdl:ubuntu18-llvm-5.0
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - make-cache-{{ arch }}-{{ .Branch }}
-            - make-cache
       - run:
           name: install make dependencies
           command: |
             apt-get update && apt-get install build-essential -y
-      - save_cache:
-          key: make-cache-{{ arch }}-{{ .Branch }}
-          paths:
-            - /
       - run:
           name: run all testbenches
           command: |
