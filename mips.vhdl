@@ -82,10 +82,17 @@ architecture behavior of mips is
     port (
       opcode : in opcode_vector;
       valid : in std_logic;
-      decode_pc_br_ja_s : out std_logic_vector(1 downto 0);
       dcache_we, decode_rt_rd_s : out std_logic;
       calc_rdt_immext_s : out std_logic;
       reg_we1, reg_we2 : out std_logic
+    );
+  end component;
+
+  component pcnext_controller
+    port (
+      opcode : in opcode_vector;
+      cmp_eq : in std_logic;
+      decode_pc_br_ja_s : out std_logic_vector(1 downto 0)
     );
   end component;
 
@@ -122,8 +129,12 @@ architecture behavior of mips is
       instr0 : out std_logic_vector(31 downto 0);
       reg_we1, reg_we2 : in std_logic;
       dcache_we : in std_logic;
-      decode_rt_rd_s, calc_rdt_immext_s : in std_logic;
+      -- pcnext_controller
       decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
+      cmp_eq : out std_logic;
+      -- decode_controller
+      calc_rdt_immext_s : in std_logic;
+      decode_rt_rd_s : in std_logic;
       tag_s : in std_logic;
       opcode0 : out opcode_vector;
       funct0 : out funct_vector;
@@ -173,7 +184,11 @@ architecture behavior of mips is
   signal opcode0 : opcode_vector;
   signal funct0 : funct_vector;
 
+  -- pcnext_controller
   signal decode_pc_br_ja_s0 : std_logic_vector(1 downto 0);
+  signal cmp_eq0 : std_logic;
+
+  -- decode_controller
   signal dcache_we0, dcache_we2, decode_rt_rd_s0 : std_logic;
   signal calc_rdt_immext_s0, calc_rdt_immext_s1 : std_logic;
 
@@ -234,11 +249,16 @@ begin
   decode_controller0 : decode_controller port map (
     opcode => opcode0,
     valid => instr_valid1,
-    decode_pc_br_ja_s => decode_pc_br_ja_s0,
     dcache_we => dcache_we0,
     decode_rt_rd_s => decode_rt_rd_s0,
     calc_rdt_immext_s => calc_rdt_immext_s0,
     reg_we1 => reg_we1_0, reg_we2 => reg_we2_0
+  );
+
+  pcnext_controller0 : pcnext_controller port map (
+    opcode => opcode0,
+    cmp_eq => cmp_eq0,
+    decode_pc_br_ja_s => decode_pc_br_ja_s0
   );
 
   alucont0 : alu_controller port map (
@@ -274,8 +294,9 @@ begin
     instr0 => instr0,
     -- regwe_controller
     reg_we1 => reg_we1, reg_we2 => reg_we2,
+    -- pcnext_controller
+    decode_pc_br_ja_s => decode_pc_br_ja_s0, cmp_eq => cmp_eq0,
     -- decode_controller
-    decode_pc_br_ja_s => decode_pc_br_ja_s0,
     dcache_we => dcache_we2, decode_rt_rd_s => decode_rt_rd_s0,
     calc_rdt_immext_s => calc_rdt_immext_s1,
     -- alu_controller

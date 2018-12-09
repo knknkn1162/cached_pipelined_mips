@@ -12,9 +12,12 @@ entity datapath is
     fetch_en, decode_en, calc_clr, dcache_en : in std_logic;
     -- -- instr_controller
     instr0 : out std_logic_vector(31 downto 0);
+    -- decode controller
     reg_we1, reg_we2 : in std_logic;
     dcache_we : in std_logic;
-    decode_rt_rd_s, calc_rdt_immext_s : in std_logic;
+    decode_rt_rd_s : in std_logic;
+    cmp_eq : out std_logic;
+    calc_rdt_immext_s : in std_logic;
     decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
     tag_s : in std_logic;
     opcode0 : out opcode_vector;
@@ -259,6 +262,8 @@ begin
 
   forwarding_rds0 <= rds0 when is_X(buf_rds0) else buf_rds0;
   forwarding_rdt0 <= rdt0 when is_X(buf_rdt0) else buf_rdt0;
+
+  cmp_eq <= '1' when rds0 = rdt0 else '0';
 
   -- for regwritebackS
   instr_rtrd_mux : mux2 generic map (N=>CONST_REG_SIZE)
