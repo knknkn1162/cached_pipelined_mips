@@ -5,17 +5,20 @@ DIR=./
 DEBUG=
 CONTROLLER_LIST=mem_idcache alu load flopen decode shift stall instr
 CONTROLLERS=$(addsuffix _controller, ${CONTROLLER_LIST})
+TEST_LIST=stall_lw_add forwarding_addi_add forwarding_add_add
 
-stall_lw_add: mips
+all: mips ${TEST_LIST}
+
+stall_lw_add:
 	make tb F=stall_lw_add
-forwarding_addi_add: mips
+forwarding_addi_add:
 	make tb F=forwarding_addi_add
-forwarding_add_add: mips
+forwarding_add_add:
 	make tb F=forwarding_add_add
+
 tb:
 	make a F=tests/${F}_tb
 	make er F=${F}
-
 mips: type_pkg cache_pkg datapath mem ${CONTROLLERS}
 	make a F=mips
 datapath: flopr_en flopr_clr instr_decoder mux2 mux4 alu regfile mem_idcache_controller mem data_cache instr_cache regw_buffer

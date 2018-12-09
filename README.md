@@ -58,3 +58,15 @@ begin
 ```
 
 The command `make debug F=sample DIR=elem/` make us get the debug information!
+
+# circleci tips
+
+We use `ghdl/ghdl:ubuntu18-llvm-5.0` image and `make` command to test the files on tests directory:
+
+```bash
+# use circleci test on local
+brew install circleci
+# check yml validation
+circleci config validate
+circleci local execute
+```

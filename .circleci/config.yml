@@ -1,0 +1,17 @@
+version: 2
+jobs:
+  build:
+    working_directory: /app
+    docker:
+      - image: ghdl/ghdl:ubuntu18-llvm-5.0
+    steps:
+      - checkout
+      - run:
+          name: install make dependencies
+          command: |
+            apt-get update && apt-get install build-essential -y
+      - run:
+          name: run all testbenches
+          command: |
+            make --no-print-directory all
+          working_directory: /app
