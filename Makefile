@@ -18,7 +18,7 @@ tb:
 
 mips: type_pkg cache_pkg datapath mem ${CONTROLLERS}
 	make a F=mips
-datapath: flopr_en instr_decoder mux2 mux4 alu regfile mem_idcache_controller mem data_cache instr_cache regw_buffer
+datapath: flopr_en flopr_clr instr_decoder mux2 mux4 alu regfile mem_idcache_controller mem data_cache instr_cache regw_buffer
 	make a F=datapath
 
 forwarding_controller: type_pkg
@@ -33,7 +33,7 @@ decode_controller: type_pkg
 	make a F=decode_controller DIR=controller/
 flopen_controller: state_pkg debug_pkg
 	make a F=flopen_controller DIR=controller/
-shift_controller: type_pkg flopr_en flopr_en_clr bflopr_en
+shift_controller: type_pkg flopr_en flopr_clr bflopr_en
 	make a F=shift_controller DIR=controller/
 stall_controller: type_pkg
 	make a F=stall_controller DIR=controller/

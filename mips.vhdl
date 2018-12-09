@@ -93,8 +93,7 @@ architecture behavior of mips is
     port (
       clk, rst, load : in std_logic;
       suspend, stall, halt : in std_logic;
-      fetch_en, decode_en, calc_en, dcache_en : out std_logic;
-      calc_clr : out std_logic;
+      fetch_en, decode_en, calc_clr, dcache_en : out std_logic;
       state_vector : out flopen_state_vector
     );
   end component;
@@ -102,7 +101,7 @@ architecture behavior of mips is
   component shift_controller
     port (
       clk, rst : in std_logic;
-      decode_en, calc_en, calc_clr, dcache_en : in std_logic;
+      decode_en, calc_clr, dcache_en : in std_logic;
       instr_valid0 : in std_logic;
       calc_rdt_immext_s0, dcache_we0, reg_we2_0, reg_we1_0 : in std_logic;
       alu_s0 : in alucont_type;
@@ -118,7 +117,7 @@ architecture behavior of mips is
       clk, rst : in std_logic;
       -- controller
       load : in std_logic;
-      fetch_en, decode_en, calc_en, dcache_en : in std_logic;
+      fetch_en, decode_en, calc_clr, dcache_en : in std_logic;
       -- -- instr_controller
       instr0 : out std_logic_vector(31 downto 0);
       reg_we1, reg_we2 : in std_logic;
@@ -171,7 +170,7 @@ architecture behavior of mips is
     );
   end component;
 
-  signal fetch_en0, decode_en0, calc_en0, dcache_en0 : std_logic;
+  signal fetch_en0, decode_en0, dcache_en0 : std_logic;
   signal calc_clr0 : std_logic; -- for stall
   signal tag_s0 : std_logic;
   signal alu_s0, alu_s1 : alucont_type;
@@ -230,8 +229,7 @@ begin
     clk => clk, rst => rst, load => load0,
     suspend => suspend0, stall => stall0, halt => halt0,
     fetch_en => fetch_en0, decode_en => decode_en0,
-    calc_en => calc_en0, dcache_en => dcache_en0,
-    calc_clr => calc_clr0,
+    calc_clr => calc_clr0, dcache_en => dcache_en0,
     state_vector => flopen_state
   );
 
@@ -264,7 +262,7 @@ begin
   shift_controller0 : shift_controller port map (
     clk => clk, rst => rst,
     decode_en => decode_en0,
-    calc_en => calc_en0, calc_clr => calc_clr0, dcache_en => dcache_en0,
+    calc_clr => calc_clr0, dcache_en => dcache_en0,
     instr_valid0 => instr_valid0,
     calc_rdt_immext_s0 => calc_rdt_immext_s0, dcache_we0 => dcache_we0,
     reg_we2_0 => reg_we2_0, reg_we1_0 => reg_we1_0, alu_s0 => alu_s0,
@@ -283,7 +281,7 @@ begin
   datapath0 : datapath port map (
     clk => clk, rst => rst, load => load0,
     -- flopren_controller
-    fetch_en => fetch_en0, decode_en => decode_en0, calc_en => calc_en0, dcache_en => dcache_en0,
+    fetch_en => fetch_en0, decode_en => decode_en0, calc_clr => calc_clr0, dcache_en => dcache_en0,
     -- instr_controller
     instr0 => instr0,
     -- regwe_controller

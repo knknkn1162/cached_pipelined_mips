@@ -9,7 +9,7 @@ entity datapath is
     clk, rst : in std_logic;
     -- controller
     load : in std_logic;
-    fetch_en, decode_en, calc_en, dcache_en : in std_logic;
+    fetch_en, decode_en, calc_clr, dcache_en : in std_logic;
     -- -- instr_controller
     instr0 : out std_logic_vector(31 downto 0);
     reg_we1, reg_we2 : in std_logic;
@@ -49,6 +49,15 @@ architecture behavior of datapath is
     generic(N : natural);
     port (
       clk, rst, en: in std_logic;
+      a : in std_logic_vector(N-1 downto 0);
+      y : out std_logic_vector(N-1 downto 0)
+    );
+  end component;
+
+  component flopr_clr
+    generic(N : natural);
+    port (
+      clk, rst, clr: in std_logic;
       a : in std_logic_vector(N-1 downto 0);
       y : out std_logic_vector(N-1 downto 0)
     );
@@ -300,40 +309,40 @@ begin
   );
 
   -- CalcS
-  reg_instr_rtrd0 : flopr_en generic map (N=>CONST_REG_SIZE)
+  reg_instr_rtrd0 : flopr_clr generic map (N=>CONST_REG_SIZE)
   port map (
-    clk => clk, rst => rst, en => calc_en, a => instr_rtrd0, y => instr_rtrd1
+    clk => clk, rst => rst, clr => calc_clr, a => instr_rtrd0, y => instr_rtrd1
   );
 
-  reg_rds : flopr_en generic map (N=>32)
+  reg_rds : flopr_clr generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => calc_en, a => forwarding_rds0, y => rds1
+    clk => clk, rst => rst, clr => calc_clr, a => forwarding_rds0, y => rds1
   );
 
-  reg_rdt0 : flopr_en generic map (N=>32)
+  reg_rdt0 : flopr_clr generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => calc_en, a => forwarding_rdt0, y => rdt1
+    clk => clk, rst => rst, clr => calc_clr, a => forwarding_rdt0, y => rdt1
   );
 
-  reg_immext : flopr_en generic map (N=>32)
+  reg_immext : flopr_clr generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => calc_en, a => immext0, y => immext1
+    clk => clk, rst => rst, clr => calc_clr, a => immext0, y => immext1
   );
 
   -- forwarding
-  reg_rt0 : flopr_en generic map (N=>CONST_REG_SIZE)
+  reg_rt0 : flopr_clr generic map (N=>CONST_REG_SIZE)
   port map (
-    clk => clk, rst => rst, en => calc_en, a => rt0_0, y => rt1
+    clk => clk, rst => rst, clr => calc_clr, a => rt0_0, y => rt1
   );
 
-  reg_instrrd0 : flopr_en generic map (N=>CONST_REG_SIZE)
+  reg_instrrd0 : flopr_clr generic map (N=>CONST_REG_SIZE)
   port map (
-    clk => clk, rst => rst, en => calc_en, a => instr_rd0_0, y => instr_rd1
+    clk => clk, rst => rst, clr => calc_clr, a => instr_rd0_0, y => instr_rd1
   );
 
-  reg_opcode1 : flopr_en generic map (N=>CONST_INSTR_OPCODE_SIZE)
+  reg_opcode1 : flopr_clr generic map (N=>CONST_INSTR_OPCODE_SIZE)
   port map (
-    clk => clk, rst => rst, en => calc_en, a => opcode0_0, y => opcode1
+    clk => clk, rst => rst, clr => calc_clr, a => opcode0_0, y => opcode1
   );
 
   mux2_rdt_immext : mux2 generic map (N=>32)
