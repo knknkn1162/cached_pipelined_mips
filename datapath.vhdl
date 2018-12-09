@@ -9,18 +9,18 @@ entity datapath is
     clk, rst : in std_logic;
     -- controller
     load : in std_logic;
-    fetch_en, decode_en, calc_en, dcache_en : in std_logic;
+    fetch_en, decode_en, calc_clr, dcache_en : in std_logic;
+    -- -- instr_controller
+    instr0 : out std_logic_vector(31 downto 0);
     reg_we1, reg_we2 : in std_logic;
     dcache_we : in std_logic;
     decode_rt_rd_s, calc_rdt_immext_s : in std_logic;
     decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
     tag_s : in std_logic;
-    instr_valid : out std_logic;
     opcode0 : out opcode_vector;
     funct0 : out funct_vector;
     alu_s : in alucont_type;
-    -- forwarding, regw buffer
-    forwarding_rds0_s, forwarding_rdt0_s : in std_logic;
+    -- regw buffer including forwarding
     rs0, rt0 : out reg_vector;
     rt1, instr_rd1 : out reg_vector;
     opcode1 : out opcode_vector;
@@ -33,7 +33,6 @@ entity datapath is
     dcache2mem_d1, dcache2mem_d2, dcache2mem_d3, dcache2mem_d4, dcache2mem_d5, dcache2mem_d6, dcache2mem_d7, dcache2mem_d8 : out std_logic_vector(31 downto 0);
     -- scan
     pc, pcnext : out std_logic_vector(31 downto 0);
-    instr : out std_logic_vector(31 downto 0);
     addr, dcache_rd, dcache_wd : out std_logic_vector(31 downto 0);
     reg_wa : out reg_vector;
     reg_wd : out std_logic_vector(31 downto 0);
@@ -49,6 +48,15 @@ architecture behavior of datapath is
     generic(N : natural);
     port (
       clk, rst, en: in std_logic;
+      a : in std_logic_vector(N-1 downto 0);
+      y : out std_logic_vector(N-1 downto 0)
+    );
+  end component;
+
+  component flopr_clr
+    generic(N : natural);
+    port (
+      clk, rst, clr: in std_logic;
       a : in std_logic_vector(N-1 downto 0);
       y : out std_logic_vector(N-1 downto 0)
     );
@@ -171,7 +179,7 @@ architecture behavior of datapath is
   end component;
 
   signal pc0, pc1, pcnext0 : std_logic_vector(31 downto 0);
-  signal instr0, instr1 : std_logic_vector(31 downto 0);
+  signal instr0_0, instr1 : std_logic_vector(31 downto 0);
   signal rs0_0, rt0_0, instr_rd0_0, reg_wa0, instr_rtrd0, instr_rtrd1, instr_rtrd2 : reg_vector;
   signal opcode0_0 : opcode_vector;
   signal rds0, rds1, rdt0, rdt1, rdt2, reg_wd0 : std_logic_vector(31 downto 0);
@@ -194,7 +202,6 @@ begin
   -- scan
   pc <= pc0;
   pcnext <= pcnext0;
-  instr <= instr0;
   addr <= dcache_a0; dcache_rd <= dcache_rd0; dcache_wd <= dcache_wd0;
   reg_wa <= reg_wa0; reg_wd <= reg_wd0; reg_we <= reg_we0;
   rds <= forwarding_rds0; rdt <= forwarding_rdt0;
@@ -213,19 +220,20 @@ begin
   instr_cache0 : instr_cache port map (
     clk => clk, rst => rst, load => load,
     a => pc0,
-    rd => instr0,
+    rd => instr0_0,
     load_en => instr_load_en,
     wd01 => mem2cache_d1, wd02 => mem2cache_d2, wd03 => mem2cache_d3, wd04 => mem2cache_d4,
     wd05 => mem2cache_d5, wd06 => mem2cache_d6, wd07 => mem2cache_d7, wd08 => mem2cache_d8,
     cache_miss_en => instr_cache_miss_en
   );
+  instr0 <= instr0_0;
 
   -- DecodeS
   -- -- (decoder & regfile part)
   reg_instr : flopr_en generic map (N=>32)
   port map (
     clk => clk, rst => rst, en => decode_en,
-    a => instr0,
+    a => instr0_0,
     y => instr1
   );
 
@@ -239,7 +247,6 @@ begin
     funct => funct0,
     target2 => target2 -- for j instruction
   );
-  instr_valid <= '0' when instr1 = X"00000000" else '1';
   rs0 <= rs0_0; rt0 <= rt0_0;
   opcode0 <= opcode0_0;
 
@@ -250,24 +257,8 @@ begin
     wa => reg_wa0, wd => reg_wd0, we => reg_we0
   );
 
-  regw_cached_rds0 <= rds0 when is_X(buf_rds0) else buf_rds0;
-  regw_cached_rdt0 <= rdt0 when is_X(buf_rdt0) else buf_rdt0;
-
-  forwarding_rds_mux : mux2 generic map(N=>32)
-  port map (
-    d0 => regw_cached_rds0,
-    d1 => aluout0,
-    s => forwarding_rds0_s,
-    y => forwarding_rds0
-  );
-
-  forwarding_rdt_mux : mux2 generic map (N=>32)
-  port map (
-    d0 => regw_cached_rdt0,
-    d1 => aluout0,
-    s => forwarding_rdt0_s,
-    y => forwarding_rdt0
-  );
+  forwarding_rds0 <= rds0 when is_X(buf_rds0) else buf_rds0;
+  forwarding_rdt0 <= rdt0 when is_X(buf_rdt0) else buf_rdt0;
 
   -- for regwritebackS
   instr_rtrd_mux : mux2 generic map (N=>CONST_REG_SIZE)
@@ -301,40 +292,40 @@ begin
   );
 
   -- CalcS
-  reg_instr_rtrd0 : flopr_en generic map (N=>CONST_REG_SIZE)
+  reg_instr_rtrd0 : flopr_clr generic map (N=>CONST_REG_SIZE)
   port map (
-    clk => clk, rst => rst, en => calc_en, a => instr_rtrd0, y => instr_rtrd1
+    clk => clk, rst => rst, clr => calc_clr, a => instr_rtrd0, y => instr_rtrd1
   );
 
-  reg_rds : flopr_en generic map (N=>32)
+  reg_rds : flopr_clr generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => calc_en, a => forwarding_rds0, y => rds1
+    clk => clk, rst => rst, clr => calc_clr, a => forwarding_rds0, y => rds1
   );
 
-  reg_rdt0 : flopr_en generic map (N=>32)
+  reg_rdt0 : flopr_clr generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => calc_en, a => forwarding_rdt0, y => rdt1
+    clk => clk, rst => rst, clr => calc_clr, a => forwarding_rdt0, y => rdt1
   );
 
-  reg_immext : flopr_en generic map (N=>32)
+  reg_immext : flopr_clr generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => calc_en, a => immext0, y => immext1
+    clk => clk, rst => rst, clr => calc_clr, a => immext0, y => immext1
   );
 
   -- forwarding
-  reg_rt0 : flopr_en generic map (N=>CONST_REG_SIZE)
+  reg_rt0 : flopr_clr generic map (N=>CONST_REG_SIZE)
   port map (
-    clk => clk, rst => rst, en => calc_en, a => rt0_0, y => rt1
+    clk => clk, rst => rst, clr => calc_clr, a => rt0_0, y => rt1
   );
 
-  reg_instrrd0 : flopr_en generic map (N=>CONST_REG_SIZE)
+  reg_instrrd0 : flopr_clr generic map (N=>CONST_REG_SIZE)
   port map (
-    clk => clk, rst => rst, en => calc_en, a => instr_rd0_0, y => instr_rd1
+    clk => clk, rst => rst, clr => calc_clr, a => instr_rd0_0, y => instr_rd1
   );
 
-  reg_opcode1 : flopr_en generic map (N=>CONST_INSTR_OPCODE_SIZE)
+  reg_opcode1 : flopr_clr generic map (N=>CONST_INSTR_OPCODE_SIZE)
   port map (
-    clk => clk, rst => rst, en => calc_en, a => opcode0_0, y => opcode1
+    clk => clk, rst => rst, clr => calc_clr, a => opcode0_0, y => opcode1
   );
 
   mux2_rdt_immext : mux2 generic map (N=>32)

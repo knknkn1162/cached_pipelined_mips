@@ -4,10 +4,10 @@ use work.debug_pkg.ALL;
 use work.state_pkg.ALL;
 use work.type_pkg.ALL;
 
-entity addi_add_tb is
+entity forwarding_add_add_tb is
 end entity;
 
-architecture testbench of addi_add_tb is
+architecture testbench of forwarding_add_add_tb is
   component mips
     generic(memfile : string);
     port (
@@ -27,11 +27,11 @@ architecture testbench of addi_add_tb is
       -- for controller
       flopen_state : out flopen_state_vector;
       icache_load_en, dcache_load_en : out std_logic;
-      suspend : out std_logic
+      suspend, stall, halt : out std_logic
     );
   end component;
 
-  constant memfile : string := "./assets/addi_add.hex";
+  constant memfile : string := "./assets/forwarding_add_add.hex";
   signal clk, rst : std_logic;
   signal pc, pcnext : std_logic_vector(31 downto 0);
   signal instr : std_logic_vector(31 downto 0);
@@ -46,7 +46,7 @@ architecture testbench of addi_add_tb is
   -- for controller
   signal flopen_state_vec : flopen_state_vector;
   signal icache_load_en, dcache_load_en : std_logic;
-  signal suspend : std_logic;
+  signal suspend, stall, halt : std_logic;
   constant clk_period : time := 10 ns;
   signal stop : boolean;
   signal state : flopen_statetype;
@@ -65,7 +65,7 @@ begin
     ja => ja, aluout => aluout,
     flopen_state => flopen_state_vec,
     icache_load_en => icache_load_en, dcache_load_en => dcache_load_en,
-    suspend => suspend
+    suspend => suspend, stall => stall, halt => halt
   );
 
   state <= encode_flopen_state(flopen_state_vec);
@@ -84,6 +84,7 @@ begin
     -- addi $s0, $0, 5
     -- addi $s1, $0, 6
     -- add $t1, $s0, $s0
+    -- add $s2, $t1, $s1
     wait for clk_period;
     rst <= '1'; wait for 1 ns; rst <= '0';
     assert state = ResetS;
@@ -144,17 +145,20 @@ begin
     -- DecodeS : addi $s1, $0, 6
     assert rds = X"00000000"; assert immext = X"00000006"; -- forwarding for pipeline
     -- FetchS : add $t1, $s0, $s0
-    assert instr = X"02104800";
+    assert instr = X"02104820";
     wait until rising_edge(clk); wait for 1 ns;
 
-    -- (-, CalcS, DecodeS)
+    -- (-, CalcS, DecodeS, FetchS)
     assert state = NormalS;
+    -- (addi $s0, $0, 5)
     assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0';
     assert pc = X"0000000C"; assert pcnext = X"00000010";
     -- CalcS : addi $s1, $0, 6
     assert aluout = X"00000006";
     -- DecodeS : add $t1, $s0, $s0
     assert rds = X"00000005"; assert rdt = X"00000005";
+    -- FetchS : add $s2, $t1, $s1
+    assert instr = X"01319020";
     wait until rising_edge(clk); wait for 1 ns;
 
     -- (-, -, CalcS)
@@ -164,18 +168,28 @@ begin
     assert reg_wa = "10000"; assert reg_wd = X"00000005";
     -- CalcS : add $t1, $s0, $s0
     assert aluout = X"0000000A";
+    -- DecodeS : add $s2, $t1, $s1
+    assert rds = X"0000000A"; assert rdt = X"00000006";
     wait until rising_edge(clk); wait for 1 ns;
 
     assert state = NormalS;
     assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0';
     -- RegWriteBack : addi $s1, $0, 6
     assert reg_wa = "10001"; assert reg_wd = X"00000006";
+    -- CalcS : add $s2, $t1, $s1
+    assert aluout = X"00000010";
     wait until rising_edge(clk); wait for 1 ns;
 
     assert state = NormalS;
     assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0';
     -- RegWriteBack : add $t1, $s0, $s0
     assert reg_wa = "01001"; assert reg_wd = X"0000000A";
+    wait until rising_edge(clk); wait for 1 ns;
+
+    assert state = NormalS;
+    assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0';
+    -- RegWriteBack : add $s2, $t1, $s1
+    assert reg_wa = "10010"; assert reg_wd = X"00000010";
 
     stop <= TRUE;
     -- success message
