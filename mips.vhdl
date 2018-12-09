@@ -128,8 +128,7 @@ architecture behavior of mips is
       opcode0 : out opcode_vector;
       funct0 : out funct_vector;
       alu_s : in alucont_type;
-      -- forwarding, regw buffer
-      forwarding_rds0_s, forwarding_rdt0_s : in std_logic;
+      -- regw buffer including forwarding
       rs0, rt0 : out reg_vector;
       rt1, instr_rd1 : out reg_vector;
       opcode1 : out opcode_vector;
@@ -149,15 +148,6 @@ architecture behavior of mips is
       rds, rdt, immext : out std_logic_vector(31 downto 0);
       ja : out std_logic_vector(31 downto 0);
       aluout : out std_logic_vector(31 downto 0)
-    );
-  end component;
-
-  component forwarding_controller is
-    port (
-      opcode1 : in opcode_vector;
-      rs0, rt0 : in reg_vector;
-      rt1, rd1 : in reg_vector;
-      forwarding_rds0_s, forwarding_rdt0_s : out std_logic
     );
   end component;
 
@@ -187,8 +177,6 @@ architecture behavior of mips is
   signal dcache_we0, dcache_we2, decode_rt_rd_s0 : std_logic;
   signal calc_rdt_immext_s0, calc_rdt_immext_s1 : std_logic;
 
-  -- forwarding
-  signal forwarding_rds0_s0, forwarding_rdt0_s0 : std_logic;
   signal rs0, rt0, rt1, instr_rd1 : reg_vector;
   signal opcode1 : opcode_vector;
   -- stall
@@ -292,8 +280,7 @@ begin
     calc_rdt_immext_s => calc_rdt_immext_s1,
     -- alu_controller
     opcode0 => opcode0, funct0 => funct0, alu_s => alu_s1,
-    -- forwarding, regw buffer
-    forwarding_rds0_s => forwarding_rds0_s0, forwarding_rdt0_s => forwarding_rdt0_s0,
+    -- regw buffer including forwarding
     rs0 => rs0, rt0 => rt0, rt1 => rt1, instr_rd1 => instr_rd1,
     opcode1 => opcode1,
     -- form cache & memory
@@ -311,14 +298,6 @@ begin
     reg_wa => reg_wa, reg_wd => reg_wd, reg_we => reg_we,
     rds => rds, rdt => rdt, immext => immext,
     ja => ja, aluout => aluout
-  );
-
-  forwarding_controller0 : forwarding_controller port map (
-    opcode1 => opcode1,
-    rs0 => rs0, rt0 => rt0,
-    rt1 => rt1, rd1 => instr_rd1,
-    forwarding_rds0_s => forwarding_rds0_s0,
-    forwarding_rdt0_s => forwarding_rdt0_s0
   );
 
   -- memory
