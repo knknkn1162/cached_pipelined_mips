@@ -263,7 +263,7 @@ begin
   forwarding_rds0 <= rds0 when is_X(buf_rds0) else buf_rds0;
   forwarding_rdt0 <= rdt0 when is_X(buf_rdt0) else buf_rdt0;
 
-  cmp_eq <= '1' when rds0 = rdt0 else '0';
+  cmp_eq <= '1' when forwarding_rds0 = forwarding_rdt0 else '0';
 
   -- for regwritebackS
   instr_rtrd_mux : mux2 generic map (N=>CONST_REG_SIZE)

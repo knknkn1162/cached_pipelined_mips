@@ -19,10 +19,12 @@ begin
       branch_taken <= cmp_eq;
     elsif opcode = OP_BNE then
       branch_taken <= (not cmp_eq);
+    else
+      branch_taken <= '0';
     end if;
   end process;
 
-  process(opcode)
+  process(opcode, branch_taken)
   begin
     case opcode is
       when OP_BEQ | OP_BNE =>
