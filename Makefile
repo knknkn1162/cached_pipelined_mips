@@ -5,10 +5,13 @@ DIR=./
 DEBUG=
 CONTROLLER_LIST=mem_idcache alu load flopen decode shift forwarding
 CONTROLLERS=$(addsuffix _controller, ${CONTROLLER_LIST})
+TEST_LIST=forwarding_addi_add addi_add
 
-forwarding_addi_add: mips
+all: mips forwarding_addi_add addi_add
+
+forwarding_addi_add:
 	make tb F=forwarding_addi_add
-addi_add: mips
+addi_add:
 	make tb F=addi_add
 tb:
 	make a F=tests/${F}_tb

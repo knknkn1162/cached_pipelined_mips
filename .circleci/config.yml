@@ -3,13 +3,23 @@ jobs:
   build:
     working_directory: /app
     docker:
-      - image: ghdl/ext
+      - image: ghdl/ghdl:ubuntu18-llvm-5.0
     steps:
       - checkout
-      - setup_remote_docker
+      - restore_cache:
+          keys:
+            - make-cache-{{ arch }}-{{ .Branch }}
+            - make-cache
       - run:
-          name: Greeting
-          command: echo Hello, world.
+          name: install make dependencies
+          command: |
+            apt-get update && apt-get install build-essential -y
+      - save_cache:
+          key: make-cache-{{ arch }}-{{ .Branch }}
+          paths:
+            - /
       - run:
-          name: Print the Current Time
-          command: date
+          name: run all testbenches
+          command: |
+            make --no-print-directory all
+          working_directory: /app
