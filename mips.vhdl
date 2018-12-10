@@ -111,27 +111,29 @@ architecture behavior of mips is
   component datapath
     generic(memfile: string);
     port (
-      clk, rst : in std_logic;
-      -- controller
-      load : in std_logic;
+      clk, rst, load : in std_logic;
+      -- flopren_controller
       fetch_en, decode_en, decode_clr, calc_clr, dcache_en : in std_logic;
       -- -- instr_controller
       instr0 : out std_logic_vector(31 downto 0);
-      -- decode controller
-      reg_we1, reg_we2 : in std_logic;
+      -- pcnext_controller
+      decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
+      cmp_eq : out std_logic;
+      -- decode_controller
       dcache_we : in std_logic;
       decode_rt_rd_s : in std_logic;
-      cmp_eq : out std_logic;
       calc_rdt_immext_s : in std_logic;
-      decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
-      tag_s : in std_logic;
+      -- stall_controller
+      rs0, rt0, rt1 : out reg_vector;
       opcode0 : out opcode_vector;
+      opcode1 : out opcode_vector;
+      -- alu_controller
       funct0 : out funct_vector;
       alu_s : in alucont_type;
-      -- regw buffer including forwarding
-      rs0, rt0, rt1 : out reg_vector;
-      opcode1 : out opcode_vector;
+      -- regwe_controller
+      reg_we1, reg_we2 : in std_logic;
       -- from cache & memory
+      tag_s : in std_logic;
       instr_cache_miss_en, data_cache_miss_en, valid_flag : out std_logic;
       instr_load_en, dcache_load_en : in std_logic;
       idcache_addr_s : in std_logic;
