@@ -30,7 +30,7 @@ architecture behavior of data_cache is
       addr : in std_logic_vector(31 downto 0);
       tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
       index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
-      offset : out std_logic_vector(CONST_CACHE_OFFSET_SIZE-1 downto 0)
+      offset : out cache_offset_vector
     );
   end component;
 
@@ -66,10 +66,10 @@ architecture behavior of data_cache is
       cache_valid : in std_logic;
       addr_tag, cache_tag : in std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
       addr_index : in std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
-      addr_offset : in std_logic_vector(CONST_CACHE_OFFSET_SIZE-1 downto 0);
+      addr_offset : in cache_offset_vector;
       cache_miss_en : out std_logic;
       cache_valid_flag : out std_logic;
-      rd_s : out std_logic_vector(CONST_CACHE_OFFSET_SIZE-1 downto 0)
+      rd_s : out cache_offset_vector
     );
   end component;
 
@@ -84,7 +84,7 @@ architecture behavior of data_cache is
   -- decode addr
   signal addr_tag : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
   signal addr_index : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
-  signal addr_offset : std_logic_vector(CONST_CACHE_OFFSET_SIZE-1 downto 0);
+  signal addr_offset : cache_offset_vector;
 
   -- TODO: compatible with CONST_CACHE_OFFSET_SIZE
   signal ram1_datum : std_logic_vector(31 downto 0);
@@ -99,7 +99,7 @@ architecture behavior of data_cache is
   signal tag_datum : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
 
   -- is cache miss occurs or not
-  signal rd_s : std_logic_vector(CONST_CACHE_OFFSET_SIZE-1 downto 0); -- selector for mux8
+  signal rd_s : cache_offset_vector; -- selector for mux8
 
 begin
   cache_decoder0 : cache_decoder port map(

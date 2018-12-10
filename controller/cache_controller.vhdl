@@ -8,10 +8,10 @@ entity cache_controller is
     cache_valid : in std_logic;
     addr_tag, cache_tag : in std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
     addr_index : in std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
-    addr_offset : in std_logic_vector(CONST_CACHE_OFFSET_SIZE-1 downto 0);
+    addr_offset : in cache_offset_vector;
     cache_miss_en : out std_logic;
     cache_valid_flag : out std_logic;
-    rd_s : out std_logic_vector(CONST_CACHE_OFFSET_SIZE-1 downto 0)
+    rd_s : out cache_offset_vector
   );
 end entity;
 

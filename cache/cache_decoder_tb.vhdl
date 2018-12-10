@@ -12,7 +12,7 @@ architecture testbench of cache_decoder_tb is
       addr : in std_logic_vector(31 downto 0);
       tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
       index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
-      offset : out std_logic_vector(CONST_CACHE_OFFSET_SIZE-1 downto 0)
+      offset : out cache_offset_vector
     );
   end component;
 

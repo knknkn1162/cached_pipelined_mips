@@ -12,10 +12,10 @@ architecture testbench of cache_controller_tb is
       cache_valid : in std_logic;
       addr_tag, cache_tag : in std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
       addr_index : in std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
-      addr_offset : in std_logic_vector(CONST_CACHE_OFFSET_SIZE-1 downto 0);
+      addr_offset : in cache_offset_vector;
       cache_miss_en : out std_logic;
       cache_valid_flag : out std_logic;
-      rd_s : out std_logic_vector(CONST_CACHE_OFFSET_SIZE-1 downto 0)
+      rd_s : out cache_offset_vector
     );
   end component;
 
@@ -23,9 +23,9 @@ architecture testbench of cache_controller_tb is
   signal cache_valid : std_logic;
   signal addr_tag, cache_tag : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
   signal addr_index : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
-  signal addr_offset : std_logic_vector(CONST_CACHE_OFFSET_SIZE-1 downto 0);
+  signal addr_offset : cache_offset_vector;
   signal cache_miss_en, cache_valid_flag : std_logic;
-  signal rd_s : std_logic_vector(CONST_CACHE_OFFSET_SIZE-1 downto 0);
+  signal rd_s : cache_offset_vector;
   constant period : time := 10 ns;
 
 begin
