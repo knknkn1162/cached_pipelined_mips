@@ -157,6 +157,7 @@ begin
 
     assert state = NormalS;
     assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0'; assert stall = '0';
+    assert branch_taken = '0';
     -- RegWrite : addi $s0, $0, 5
     assert reg_wa = "10000"; assert reg_wd = X"00000005";
     -- Nop : (addi $s1, $0, 5)
