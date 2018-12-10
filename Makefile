@@ -2,14 +2,16 @@ F=dummy
 VHDL=vhdl
 DIR=./
 DEBUG=
-CONTROLLER_LIST=mem_idcache alu load flopen decode shift stall instr
+CONTROLLER_LIST=mem_idcache alu load flopen decode shift stall instr pcnext
 CONTROLLERS=$(addsuffix _controller, ${CONTROLLER_LIST})
-TEST_LIST=stall_lw_add forwarding_addi_add forwarding_add_add
+TEST_LIST=stall_lw_add forwarding_addi_add forwarding_add_add beq
 OPTION=--warn-error
 TESTBENCH_OPTION=--vcd=out.vcd --assert-level=error
 
 all: mips ${TEST_LIST}
 
+beq:
+	make tb F=beq
 stall_lw_add:
 	make tb F=stall_lw_add
 forwarding_addi_add:
@@ -20,9 +22,12 @@ forwarding_add_add:
 tb:
 	make a F=tests/${F}_tb
 	make er F=${F}
-mips: type_pkg cache_pkg datapath mem ${CONTROLLERS}
+mips:
+	make clean
+	make _mips
+_mips: type_pkg cache_pkg datapath mem ${CONTROLLERS}
 	make a F=mips
-datapath: flopr_en flopr_clr instr_decoder mux2 mux4 alu regfile mem_idcache_controller mem data_cache instr_cache regw_buffer
+datapath: flopr_en flopr_clr flopr_en_clr instr_decoder mux2 mux4 alu regfile mem data_cache instr_cache regw_buffer
 	make a F=datapath
 
 instr_decoder: type_pkg slt2 sgnext
@@ -35,16 +40,18 @@ decode_controller: type_pkg
 	make a F=decode_controller DIR=controller/
 flopen_controller: state_pkg debug_pkg
 	make a F=flopen_controller DIR=controller/
-shift_controller: type_pkg flopr_en flopr_clr bflopr_en
+shift_controller: type_pkg flopr_en flopr_clr bflopr_en_clr
 	make a F=shift_controller DIR=controller/
 stall_controller: type_pkg
 	make a F=stall_controller DIR=controller/
 instr_controller:
 	make a F=instr_controller DIR=controller/
+pcnext_controller:
+	make a F=pcnext_controller DIR=controller/
 
 cache_decoder: cache_pkg
 	make aer F=cache_decoder DIR=cache/
-mem_idcache_controller: mem_cache_controller flopr_en
+mem_idcache_controller: cache_pkg mem_cache_controller flopr_en
 	make aer F=mem_idcache_controller DIR=controller/
 mem_cache_controller:
 	make aer F=mem_cache_controller DIR=controller/
@@ -72,14 +79,16 @@ alu_controller: type_pkg
 	make a F=alu_controller DIR=controller/
 alu: type_pkg
 	make aer F=alu DIR=general/
+flopr_en_clr:
+	make aer F=flopr_en_clr DIR=general/
 flopr_clr:
 	make aer F=flopr_clr DIR=general/
 flopr_en:
 	make aer F=flopr_en DIR=general/
 flopr:
 	make aer F=flopr DIR=general/
-bflopr_en:
-	make aer F=bflopr_en DIR=general/
+bflopr_en_clr:
+	make aer F=bflopr_en_clr DIR=general/
 sgnext:
 	make aer F=sgnext DIR=general/
 slt2:

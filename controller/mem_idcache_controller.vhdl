@@ -6,10 +6,11 @@ entity mem_idcache_controller is
     clk, rst : in std_logic;
     instr_cache_miss_en, data_cache_miss_en : in std_logic;
     valid_flag : in std_logic;
-    tag_s : out std_logic;
+    tag_s : out std_logic; -- only in Cache2Mem in data_cache component
     instr_load_en, data_load_en : out std_logic;
     mem_we : out std_logic;
-    suspend : out std_logic
+    suspend : out std_logic;
+    idcache_addr_s : out std_logic
   );
 end entity;
 
@@ -19,6 +20,7 @@ architecture behavior of mem_idcache_controller is
       clk, rst : in std_logic;
       cache_miss_en : in std_logic;
       valid_flag : in std_logic;
+      mem2cache : out std_logic;
       tag_s : out std_logic;
       load_en : out std_logic;
       mem_we : out std_logic;
@@ -40,6 +42,8 @@ architecture behavior of mem_idcache_controller is
   signal cache_vector0, cache_vector1 : std_logic_vector(1 downto 0);
   signal both_cache_miss_en0, both_cache_miss_en1 : std_logic;
   signal instr_suspend, data_suspend : std_logic;
+  signal icache_dcache_s : std_logic;
+  signal mem2dcache0, mem2icache0 : std_logic;
 
 begin
   both_cache_miss_en0 <= instr_cache_miss_en and data_cache_miss_en;
@@ -69,6 +73,7 @@ begin
     clk => clk, rst => rst,
     cache_miss_en => data_cache_miss_en0,
     valid_flag => valid_flag0,
+    mem2cache => mem2dcache0,
     tag_s => tag_s,
     load_en => data_load_en,
     mem_we => mem_we,
@@ -80,10 +85,20 @@ begin
     cache_miss_en => instr_cache_miss_en,
     -- instrcution cache doesn't have to write back to the memory
     valid_flag => '0',
+    mem2cache => mem2icache0,
     -- tag_s => tag_s, -- in fact, always '1'(new)
     load_en => instr_load_en,
     -- mem_we => imem_we0 -- always '0'
     suspend => instr_suspend
   );
   suspend <= data_suspend or instr_suspend;
+
+  process(mem2dcache0, mem2icache0)
+  begin
+    if mem2icache0 = '1' then
+      idcache_addr_s <= '0';
+    elsif mem2dcache0 = '1' then
+      idcache_addr_s <= '1';
+    end if;
+  end process;
 end architecture;

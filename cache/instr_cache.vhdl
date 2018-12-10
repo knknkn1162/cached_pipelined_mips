@@ -14,7 +14,9 @@ entity instr_cache is
     load_en : in std_logic;
     wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08 : in std_logic_vector(31 downto 0);
     -- push cache miss to the memory
-    cache_miss_en : out std_logic
+    cache_miss_en : out std_logic;
+    tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+    index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0)
   );
 end entity;
 
@@ -98,6 +100,7 @@ begin
     index => addr_index,
     offset => addr_offset
   );
+  tag <= addr_tag; index <= addr_index;
 
   -- read & write data or load block from memory
   process(clk, rst, load_en, addr_tag, addr_index, wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08)

@@ -5,7 +5,7 @@ use work.type_pkg.ALL;
 entity shift_controller is
   port (
     clk, rst : in std_logic;
-    decode_en, calc_clr, dcache_en : in std_logic;
+    decode_en, decode_clr, calc_clr, dcache_en : in std_logic;
     instr_valid0 : in std_logic;
     calc_rdt_immext_s0, dcache_we0, reg_we2_0, reg_we1_0 : in std_logic;
     alu_s0 : in alucont_type;
@@ -40,17 +40,17 @@ architecture behavior of shift_controller is
     );
   end component;
 
-  component bflopr_en
+  component bflopr_en_clr
     port (
-      clk, rst, en: in std_logic;
+      clk, rst, en, clr: in std_logic;
       a : in std_logic;
       y : out std_logic
     );
   end component;
 
 begin
-  flopr_instr_valid : bflopr_en port map (
-    clk => clk, rst => rst, en => decode_en,
+  flopr_instr_valid : bflopr_en_clr port map (
+    clk => clk, rst => rst, en => decode_en, clr => decode_clr,
     a => instr_valid0,
     y => instr_valid1
   );

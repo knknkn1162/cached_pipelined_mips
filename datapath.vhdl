@@ -5,32 +5,35 @@ use work.cache_pkg.ALL;
 use work.type_pkg.ALL;
 
 entity datapath is
+  generic(memfile: string);
   port (
-    clk, rst : in std_logic;
-    -- controller
-    load : in std_logic;
-    fetch_en, decode_en, calc_clr, dcache_en : in std_logic;
+    clk, rst, load : in std_logic;
+    -- flopren_controller
+    fetch_en, decode_en, decode_clr, calc_clr, dcache_en : in std_logic;
     -- -- instr_controller
     instr0 : out std_logic_vector(31 downto 0);
-    reg_we1, reg_we2 : in std_logic;
-    dcache_we : in std_logic;
-    decode_rt_rd_s, calc_rdt_immext_s : in std_logic;
+    -- pcnext_controller
     decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
-    tag_s : in std_logic;
+    cmp_eq : out std_logic;
+    -- decode_controller
+    dcache_we : in std_logic;
+    decode_rt_rd_s : in std_logic;
+    calc_rdt_immext_s : in std_logic;
+    -- stall_controller
+    rs0, rt0, rt1 : out reg_vector;
     opcode0 : out opcode_vector;
+    opcode1 : out opcode_vector;
+    -- alu_controller
     funct0 : out funct_vector;
     alu_s : in alucont_type;
-    -- regw buffer including forwarding
-    rs0, rt0 : out reg_vector;
-    rt1, instr_rd1 : out reg_vector;
-    opcode1 : out opcode_vector;
+    -- regwe_controller
+    reg_we1, reg_we2 : in std_logic;
     -- from cache & memory
+    tag_s : in std_logic;
     instr_cache_miss_en, data_cache_miss_en, valid_flag : out std_logic;
     instr_load_en, dcache_load_en : in std_logic;
-    mem2cache_d1, mem2cache_d2, mem2cache_d3, mem2cache_d4, mem2cache_d5, mem2cache_d6, mem2cache_d7, mem2cache_d8 : in std_logic_vector(31 downto 0);
-    mem_tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-    mem_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
-    dcache2mem_d1, dcache2mem_d2, dcache2mem_d3, dcache2mem_d4, dcache2mem_d5, dcache2mem_d6, dcache2mem_d7, dcache2mem_d8 : out std_logic_vector(31 downto 0);
+    idcache_addr_s : in std_logic;
+    mem_we : in std_logic;
     -- scan
     pc, pcnext : out std_logic_vector(31 downto 0);
     addr, dcache_rd, dcache_wd : out std_logic_vector(31 downto 0);
@@ -60,6 +63,15 @@ architecture behavior of datapath is
       a : in std_logic_vector(N-1 downto 0);
       y : out std_logic_vector(N-1 downto 0)
     );
+  end component;
+
+  component flopr_en_clr
+    generic(N : natural);
+    port (
+      clk, rst, en, clr : in std_logic;
+      a : in std_logic_vector(N-1 downto 0);
+      y : out std_logic_vector(N-1 downto 0)
+        );
   end component;
 
   component instr_decoder
@@ -131,7 +143,9 @@ architecture behavior of datapath is
       load_en : in std_logic;
       wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08 : in std_logic_vector(31 downto 0);
       -- push cache miss to the memory
-      cache_miss_en : out std_logic
+      cache_miss_en : out std_logic;
+      tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+      index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0)
     );
   end component;
 
@@ -153,6 +167,19 @@ architecture behavior of datapath is
       valid_flag : out std_logic;
       -- pull load from the memory
       load_en : in std_logic
+    );
+  end component;
+
+  component mem
+    generic(filename : string; BITS : natural);
+    port (
+      clk, rst, load : in std_logic;
+      -- we='1' when transport cache2mem
+      we : in std_logic;
+      tag : in std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+      index : in std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+      wd1, wd2, wd3, wd4, wd5, wd6, wd7, wd8 : in std_logic_vector(31 downto 0);
+      rd1, rd2, rd3, rd4, rd5, rd6, rd7, rd8 : out std_logic_vector(31 downto 0)
     );
   end component;
 
@@ -193,13 +220,18 @@ architecture behavior of datapath is
   signal dcache_a0, dcache_rd0, dcache_wd0 : std_logic_vector(31 downto 0);
   -- RegWriteBackS
   signal reg_we0 : std_logic;
-  -- forwarding
   signal buf_rds0, buf_rdt0 : std_logic_vector(31 downto 0);
-  signal regw_cached_rds0, regw_cached_rdt0 : std_logic_vector(31 downto 0);
+  -- forwarding
   signal forwarding_rds0, forwarding_rdt0 : std_logic_vector(31 downto 0);
 
+  -- memory
+    signal mem2cache_d1, mem2cache_d2, mem2cache_d3, mem2cache_d4, mem2cache_d5, mem2cache_d6, mem2cache_d7, mem2cache_d8 : std_logic_vector(31 downto 0);
+    signal icache_tag0, dcache_tag0, mem_tag0 : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+    signal icache_index0, dcache_index0, mem_index0 : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+    signal dcache2mem_d1, dcache2mem_d2, dcache2mem_d3, dcache2mem_d4, dcache2mem_d5, dcache2mem_d6, dcache2mem_d7, dcache2mem_d8 : std_logic_vector(31 downto 0);
+
 begin
-  -- scan
+  -- for scan
   pc <= pc0;
   pcnext <= pcnext0;
   addr <= dcache_a0; dcache_rd <= dcache_rd0; dcache_wd <= dcache_wd0;
@@ -209,7 +241,7 @@ begin
   ja <= ja0;
   aluout <= aluout0;
 
-  -- FetchS
+  -- Fetch Stage
   reg_pc : flopr_en generic map (N=>32)
   port map (
     clk => clk, rst => rst, en => fetch_en,
@@ -224,15 +256,15 @@ begin
     load_en => instr_load_en,
     wd01 => mem2cache_d1, wd02 => mem2cache_d2, wd03 => mem2cache_d3, wd04 => mem2cache_d4,
     wd05 => mem2cache_d5, wd06 => mem2cache_d6, wd07 => mem2cache_d7, wd08 => mem2cache_d8,
-    cache_miss_en => instr_cache_miss_en
+    cache_miss_en => instr_cache_miss_en, tag => icache_tag0, index => icache_index0
   );
   instr0 <= instr0_0;
 
-  -- DecodeS
-  -- -- (decoder & regfile part)
-  reg_instr : flopr_en generic map (N=>32)
+  -- Decode & RegWriteBack Stage
+  -- -- Decode Stage(regfile part)
+  reg_instr : flopr_en_clr generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => decode_en,
+    clk => clk, rst => rst, en => decode_en, clr => decode_clr,
     a => instr0_0,
     y => instr1
   );
@@ -260,7 +292,9 @@ begin
   forwarding_rds0 <= rds0 when is_X(buf_rds0) else buf_rds0;
   forwarding_rdt0 <= rdt0 when is_X(buf_rdt0) else buf_rdt0;
 
-  -- for regwritebackS
+  cmp_eq <= '1' when forwarding_rds0 = forwarding_rdt0 else '0'; -- for beq, bne instruction
+
+  -- -- Regfile Writeback Stage
   instr_rtrd_mux : mux2 generic map (N=>CONST_REG_SIZE)
   port map (
     d0 => rt0_0,
@@ -269,10 +303,10 @@ begin
     y => instr_rtrd0
   );
 
-  -- -- (pc part)
-  reg_pc0 : flopr_en generic map (N=>32)
+  -- -- Decode Stage (pcnext part)
+  reg_pc0 : flopr_en_clr generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => decode_en,
+    clk => clk, rst => rst, en => decode_en, clr => decode_clr,
     a => pc0,
     y => pc1
   );
@@ -291,7 +325,7 @@ begin
     y => pcnext0
   );
 
-  -- CalcS
+  -- Calc Stage
   reg_instr_rtrd0 : flopr_clr generic map (N=>CONST_REG_SIZE)
   port map (
     clk => clk, rst => rst, clr => calc_clr, a => instr_rtrd0, y => instr_rtrd1
@@ -312,18 +346,13 @@ begin
     clk => clk, rst => rst, clr => calc_clr, a => immext0, y => immext1
   );
 
-  -- forwarding
+  -- -- for regw_buffer and stall
   reg_rt0 : flopr_clr generic map (N=>CONST_REG_SIZE)
   port map (
     clk => clk, rst => rst, clr => calc_clr, a => rt0_0, y => rt1
   );
 
-  reg_instrrd0 : flopr_clr generic map (N=>CONST_REG_SIZE)
-  port map (
-    clk => clk, rst => rst, clr => calc_clr, a => instr_rd0_0, y => instr_rd1
-  );
-
-  reg_opcode1 : flopr_clr generic map (N=>CONST_INSTR_OPCODE_SIZE)
+  reg_opcode0 : flopr_clr generic map (N=>CONST_INSTR_OPCODE_SIZE)
   port map (
     clk => clk, rst => rst, clr => calc_clr, a => opcode0_0, y => opcode1
   );
@@ -343,8 +372,8 @@ begin
     y => aluout0
   );
 
-  -- DCacheRWS
-  -- for sw instruction
+  -- Data Cache Read/WriteBack Stage
+  -- -- for sw instruction
   reg_rdt1 : flopr_en generic map (N=>32)
   port map (
     clk => clk, rst => rst, en => dcache_en,
@@ -379,13 +408,13 @@ begin
     load_en => dcache_load_en,
     wd01 => mem2cache_d1, wd02 => mem2cache_d2, wd03 => mem2cache_d3, wd04 => mem2cache_d4,
     wd05 => mem2cache_d5, wd06 => mem2cache_d6, wd07 => mem2cache_d7, wd08 => mem2cache_d8,
-    rd_tag => mem_tag, rd_index => mem_index,
+    rd_tag => dcache_tag0, rd_index => dcache_index0,
     rd01 => dcache2mem_d1, rd02 => dcache2mem_d2, rd03 => dcache2mem_d3, rd04 => dcache2mem_d4,
     rd05 => dcache2mem_d5, rd06 => dcache2mem_d6, rd07 => dcache2mem_d7, rd08 => dcache2mem_d8,
     cache_miss_en => data_cache_miss_en, valid_flag => valid_flag
   );
 
-  -- -- RegWriteBackS
+  -- -- RegWriteBack Stage
   regw_buffer0 : regw_buffer port map (
     clk => clk, rst => rst,
     -- for add(R-type), addi(part of I-type)
@@ -397,5 +426,35 @@ begin
     -- buffer search
     ra1 => rs0_0, rd1 => buf_rds0,
     ra2 => rt0_0, rd2 => buf_rdt0
+  );
+
+  -- memory
+  idcache_tag_mux : mux2 generic map (N=>CONST_CACHE_TAG_SIZE)
+  port map (
+    d0 => icache_tag0,
+    d1 => dcache_tag0,
+    s => idcache_addr_s,
+    y => mem_tag0
+  );
+
+  idcache_index_mux : mux2 generic map (N=>CONST_CACHE_INDEX_SIZE)
+  port map (
+    d0 => icache_index0,
+    d1 => dcache_index0,
+    s => idcache_addr_s,
+    y => mem_index0
+  );
+
+  mem0 : mem generic map(filename=>memfile, BITS=>MEM_BITS_SIZE)
+  port map (
+    clk => clk, rst => rst, load => load,
+    we => mem_we,
+    tag => mem_tag0, index => mem_index0,
+    -- data cache only
+    wd1 => dcache2mem_d1, wd2 => dcache2mem_d2, wd3 => dcache2mem_d3, wd4 => dcache2mem_d4,
+    wd5 => dcache2mem_d5, wd6 => dcache2mem_d6, wd7 => dcache2mem_d7, wd8 => dcache2mem_d8,
+
+    rd1 => mem2cache_d1, rd2 => mem2cache_d2, rd3 => mem2cache_d3, rd4 => mem2cache_d4,
+    rd5 => mem2cache_d5, rd6 => mem2cache_d6, rd7 => mem2cache_d7, rd8 => mem2cache_d8
   );
 end architecture;

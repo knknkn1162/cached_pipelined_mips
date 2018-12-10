@@ -6,7 +6,6 @@ entity decode_controller is
   port (
     opcode : in opcode_vector;
     valid : in std_logic;
-    decode_pc_br_ja_s : out std_logic_vector(1 downto 0);
     dcache_we, decode_rt_rd_s : out std_logic;
     calc_rdt_immext_s : out std_logic;
     reg_we1, reg_we2 : out std_logic
@@ -15,18 +14,6 @@ end entity;
 
 architecture behavior of decode_controller is
 begin
-  process(opcode)
-  begin
-    case opcode is
-      when OP_BEQ | OP_BNE =>
-        decode_pc_br_ja_s <= "01";
-      when OP_J =>
-        decode_pc_br_ja_s <= "10";
-      when others =>
-        decode_pc_br_ja_s <= "00";
-    end case;
-  end process;
-
   process(opcode)
   begin
     case opcode is

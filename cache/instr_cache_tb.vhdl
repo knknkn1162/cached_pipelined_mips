@@ -18,7 +18,9 @@ architecture testbench of instr_cache_tb is
       load_en : in std_logic;
       wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08 : in std_logic_vector(31 downto 0);
       -- push cache miss to the memory
-      cache_miss_en : out std_logic
+      cache_miss_en : out std_logic;
+      tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+      index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0)
     );
   end component;
 
@@ -29,6 +31,8 @@ architecture testbench of instr_cache_tb is
   signal wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08 : std_logic_vector(31 downto 0);
 
   signal cache_miss_en, load_en : std_logic;
+  signal tag : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+  signal index : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
   constant all_x : std_logic_vector(31 downto 0) := (others => 'X');
   constant clk_period : time := 10 ns;
   signal stop : boolean;
@@ -41,7 +45,7 @@ begin
     load_en => load_en,
     wd01 => wd01, wd02 => wd02, wd03 => wd03, wd04 => wd04,
     wd05 => wd05, wd06 => wd06, wd07 => wd07, wd08 => wd08,
-    cache_miss_en => cache_miss_en
+    cache_miss_en => cache_miss_en, tag => tag, index => index
   );
 
   clk_process: process
@@ -62,6 +66,7 @@ begin
     
     -- read with empty cache
     a <= X"00000008"; wait for 1 ns; assert rd = all_x; assert cache_miss_en = '1';
+    assert tag = X"00000"; assert index = "0000000";
 
     a <= X"00000008";
     wd01 <= X"00000010"; wd02 <= X"00000011"; wd03 <= X"00000012"; wd04 <= X"00000013";
