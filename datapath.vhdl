@@ -219,9 +219,8 @@ architecture behavior of datapath is
   signal dcache_a0, dcache_rd0, dcache_wd0 : std_logic_vector(31 downto 0);
   -- RegWriteBackS
   signal reg_we0 : std_logic;
-  -- forwarding
   signal buf_rds0, buf_rdt0 : std_logic_vector(31 downto 0);
-  signal regw_cached_rds0, regw_cached_rdt0 : std_logic_vector(31 downto 0);
+  -- forwarding
   signal forwarding_rds0, forwarding_rdt0 : std_logic_vector(31 downto 0);
 
   -- memory
@@ -231,7 +230,7 @@ architecture behavior of datapath is
     signal dcache2mem_d1, dcache2mem_d2, dcache2mem_d3, dcache2mem_d4, dcache2mem_d5, dcache2mem_d6, dcache2mem_d7, dcache2mem_d8 : std_logic_vector(31 downto 0);
 
 begin
-  -- scan
+  -- for scan
   pc <= pc0;
   pcnext <= pcnext0;
   addr <= dcache_a0; dcache_rd <= dcache_rd0; dcache_wd <= dcache_wd0;
@@ -241,7 +240,7 @@ begin
   ja <= ja0;
   aluout <= aluout0;
 
-  -- FetchS
+  -- Fetch Stage
   reg_pc : flopr_en generic map (N=>32)
   port map (
     clk => clk, rst => rst, en => fetch_en,
@@ -260,8 +259,8 @@ begin
   );
   instr0 <= instr0_0;
 
-  -- DecodeS
-  -- -- (decoder & regfile part)
+  -- Decode & RegWriteBack Stage
+  -- -- Decode Stage(regfile part)
   reg_instr : flopr_en_clr generic map (N=>32)
   port map (
     clk => clk, rst => rst, en => decode_en, clr => decode_clr,
@@ -292,9 +291,9 @@ begin
   forwarding_rds0 <= rds0 when is_X(buf_rds0) else buf_rds0;
   forwarding_rdt0 <= rdt0 when is_X(buf_rdt0) else buf_rdt0;
 
-  cmp_eq <= '1' when forwarding_rds0 = forwarding_rdt0 else '0';
+  cmp_eq <= '1' when forwarding_rds0 = forwarding_rdt0 else '0'; -- for beq, bne instruction
 
-  -- for regwritebackS
+  -- -- Regfile Writeback Stage
   instr_rtrd_mux : mux2 generic map (N=>CONST_REG_SIZE)
   port map (
     d0 => rt0_0,
@@ -303,7 +302,7 @@ begin
     y => instr_rtrd0
   );
 
-  -- -- (pc part)
+  -- -- Decode Stage (pcnext part)
   reg_pc0 : flopr_en_clr generic map (N=>32)
   port map (
     clk => clk, rst => rst, en => decode_en, clr => decode_clr,
@@ -325,7 +324,7 @@ begin
     y => pcnext0
   );
 
-  -- CalcS
+  -- Calc Stage
   reg_instr_rtrd0 : flopr_clr generic map (N=>CONST_REG_SIZE)
   port map (
     clk => clk, rst => rst, clr => calc_clr, a => instr_rtrd0, y => instr_rtrd1
@@ -346,7 +345,7 @@ begin
     clk => clk, rst => rst, clr => calc_clr, a => immext0, y => immext1
   );
 
-  -- forwarding
+  -- -- for regw_buffer and stall
   reg_rt0 : flopr_clr generic map (N=>CONST_REG_SIZE)
   port map (
     clk => clk, rst => rst, clr => calc_clr, a => rt0_0, y => rt1
@@ -357,7 +356,7 @@ begin
     clk => clk, rst => rst, clr => calc_clr, a => instr_rd0_0, y => instr_rd1
   );
 
-  reg_opcode1 : flopr_clr generic map (N=>CONST_INSTR_OPCODE_SIZE)
+  reg_opcode0 : flopr_clr generic map (N=>CONST_INSTR_OPCODE_SIZE)
   port map (
     clk => clk, rst => rst, clr => calc_clr, a => opcode0_0, y => opcode1
   );
@@ -377,8 +376,8 @@ begin
     y => aluout0
   );
 
-  -- DCacheRWS
-  -- for sw instruction
+  -- Data Cache Read/WriteBack Stage
+  -- -- for sw instruction
   reg_rdt1 : flopr_en generic map (N=>32)
   port map (
     clk => clk, rst => rst, en => dcache_en,
@@ -419,7 +418,7 @@ begin
     cache_miss_en => data_cache_miss_en, valid_flag => valid_flag
   );
 
-  -- -- RegWriteBackS
+  -- -- RegWriteBack Stage
   regw_buffer0 : regw_buffer port map (
     clk => clk, rst => rst,
     -- for add(R-type), addi(part of I-type)
@@ -433,6 +432,7 @@ begin
     ra2 => rt0_0, rd2 => buf_rdt0
   );
 
+  -- memory
   idcache_tag_mux : mux2 generic map (N=>CONST_CACHE_TAG_SIZE)
   port map (
     d0 => icache_tag0,
@@ -448,7 +448,7 @@ begin
     s => idcache_addr_s,
     y => mem_index0
   );
-  -- memory
+
   mem0 : mem generic map(filename=>memfile, BITS=>MEM_BITS_SIZE)
   port map (
     clk => clk, rst => rst, load => load,
