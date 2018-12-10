@@ -39,7 +39,7 @@ decode_controller: type_pkg
 	make a F=decode_controller DIR=controller/
 flopen_controller: state_pkg debug_pkg
 	make a F=flopen_controller DIR=controller/
-shift_controller: type_pkg flopr_en flopr_clr bflopr_en
+shift_controller: type_pkg flopr_en flopr_clr bflopr_en_clr
 	make a F=shift_controller DIR=controller/
 stall_controller: type_pkg
 	make a F=stall_controller DIR=controller/
@@ -88,6 +88,8 @@ flopr:
 	make aer F=flopr DIR=general/
 bflopr_en:
 	make aer F=bflopr_en DIR=general/
+bflopr_en_clr:
+	make aer F=bflopr_en_clr DIR=general/
 sgnext:
 	make aer F=sgnext DIR=general/
 slt2:
