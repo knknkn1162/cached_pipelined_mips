@@ -100,9 +100,8 @@ architecture behavior of mips is
   component flopen_controller
     port (
       clk, rst, load : in std_logic;
-      suspend, stall, halt : in std_logic;
-      branch_taken : in std_logic;
-      fetch_en, decode_en, calc_clr, dcache_en : out std_logic;
+      suspend, stall, halt, branch_taken : in std_logic;
+      fetch_en, decode_en, decode_clr, calc_clr, dcache_en : out std_logic;
       state_vector : out flopen_state_vector
     );
   end component;
@@ -126,7 +125,7 @@ architecture behavior of mips is
       clk, rst : in std_logic;
       -- controller
       load : in std_logic;
-      fetch_en, decode_en, calc_clr, dcache_en : in std_logic;
+      fetch_en, decode_en, decode_clr, calc_clr, dcache_en : in std_logic;
       -- -- instr_controller
       instr0 : out std_logic_vector(31 downto 0);
       reg_we1, reg_we2 : in std_logic;
@@ -174,7 +173,7 @@ architecture behavior of mips is
   end component;
 
   signal fetch_en0, decode_en0, dcache_en0 : std_logic;
-  signal calc_clr0 : std_logic; -- for stall
+  signal decode_clr0, calc_clr0 : std_logic; -- for stall
   signal tag_s0 : std_logic;
   signal alu_s0, alu_s1 : alucont_type;
   signal reg_we1, reg_we1_0, reg_we2, reg_we2_0 : std_logic;
@@ -236,7 +235,7 @@ begin
     clk => clk, rst => rst, load => load0,
     suspend => suspend0, stall => stall0, halt => halt0,
     branch_taken => branch_taken0,
-    fetch_en => fetch_en0, decode_en => decode_en0,
+    fetch_en => fetch_en0, decode_en => decode_en0, decode_clr => decode_clr0,
     calc_clr => calc_clr0, dcache_en => dcache_en0,
     state_vector => flopen_state
   );
@@ -295,7 +294,8 @@ begin
   datapath0 : datapath port map (
     clk => clk, rst => rst, load => load0,
     -- flopren_controller
-    fetch_en => fetch_en0, decode_en => decode_en0, calc_clr => calc_clr0, dcache_en => dcache_en0,
+    fetch_en => fetch_en0, decode_en => decode_en0, decode_clr => decode_clr0,
+    calc_clr => calc_clr0, dcache_en => dcache_en0,
     -- instr_controller
     instr0 => instr0,
     -- regwe_controller

@@ -26,7 +26,7 @@ mips:
 	make _mips
 _mips: type_pkg cache_pkg datapath mem ${CONTROLLERS}
 	make a F=mips
-datapath: flopr_en flopr_clr instr_decoder mux2 mux4 alu regfile mem_idcache_controller mem data_cache instr_cache regw_buffer
+datapath: flopr_en flopr_clr flopr_en_clr instr_decoder mux2 mux4 alu regfile mem_idcache_controller mem data_cache instr_cache regw_buffer
 	make a F=datapath
 
 instr_decoder: type_pkg slt2 sgnext
@@ -78,6 +78,8 @@ alu_controller: type_pkg
 	make a F=alu_controller DIR=controller/
 alu: type_pkg
 	make aer F=alu DIR=general/
+flopr_en_clr:
+	make aer F=flopr_en_clr DIR=general/
 flopr_clr:
 	make aer F=flopr_clr DIR=general/
 flopr_en:

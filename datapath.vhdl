@@ -9,7 +9,7 @@ entity datapath is
     clk, rst : in std_logic;
     -- controller
     load : in std_logic;
-    fetch_en, decode_en, calc_clr, dcache_en : in std_logic;
+    fetch_en, decode_en, decode_clr, calc_clr, dcache_en : in std_logic;
     -- -- instr_controller
     instr0 : out std_logic_vector(31 downto 0);
     -- decode controller
@@ -63,6 +63,15 @@ architecture behavior of datapath is
       a : in std_logic_vector(N-1 downto 0);
       y : out std_logic_vector(N-1 downto 0)
     );
+  end component;
+
+  component flopr_en_clr
+    generic(N : natural);
+    port (
+      clk, rst, en, clr : in std_logic;
+      a : in std_logic_vector(N-1 downto 0);
+      y : out std_logic_vector(N-1 downto 0)
+        );
   end component;
 
   component instr_decoder
@@ -233,9 +242,9 @@ begin
 
   -- DecodeS
   -- -- (decoder & regfile part)
-  reg_instr : flopr_en generic map (N=>32)
+  reg_instr : flopr_en_clr generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => decode_en,
+    clk => clk, rst => rst, en => decode_en, clr => decode_clr,
     a => instr0_0,
     y => instr1
   );
@@ -275,9 +284,9 @@ begin
   );
 
   -- -- (pc part)
-  reg_pc0 : flopr_en generic map (N=>32)
+  reg_pc0 : flopr_en_clr generic map (N=>32)
   port map (
-    clk => clk, rst => rst, en => decode_en,
+    clk => clk, rst => rst, en => decode_en, clr => decode_clr,
     a => pc0,
     y => pc1
   );
