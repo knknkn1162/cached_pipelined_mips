@@ -37,8 +37,6 @@ begin
         end if;
       when NormalS =>
         nextstate <= NormalS;
-      when others =>
-        -- do nothing
     end case;
   end process;
 
