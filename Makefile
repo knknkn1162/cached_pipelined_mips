@@ -26,7 +26,7 @@ mips:
 	make _mips
 _mips: type_pkg cache_pkg datapath mem ${CONTROLLERS}
 	make a F=mips
-datapath: flopr_en flopr_clr flopr_en_clr instr_decoder mux2 mux4 alu regfile mem_idcache_controller mem data_cache instr_cache regw_buffer
+datapath: flopr_en flopr_clr flopr_en_clr instr_decoder mux2 mux4 alu regfile mem data_cache instr_cache regw_buffer
 	make a F=datapath
 
 instr_decoder: type_pkg slt2 sgnext
@@ -50,7 +50,7 @@ pcnext_controller:
 
 cache_decoder: cache_pkg
 	make aer F=cache_decoder DIR=cache/
-mem_idcache_controller: mem_cache_controller flopr_en
+mem_idcache_controller: cache_tag mem_cache_controller flopr_en
 	make aer F=mem_idcache_controller DIR=controller/
 mem_cache_controller:
 	make aer F=mem_cache_controller DIR=controller/

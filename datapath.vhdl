@@ -5,6 +5,7 @@ use work.cache_pkg.ALL;
 use work.type_pkg.ALL;
 
 entity datapath is
+  generic(memfile: string);
   port (
     clk, rst : in std_logic;
     -- controller
@@ -30,10 +31,8 @@ entity datapath is
     -- from cache & memory
     instr_cache_miss_en, data_cache_miss_en, valid_flag : out std_logic;
     instr_load_en, dcache_load_en : in std_logic;
-    mem2cache_d1, mem2cache_d2, mem2cache_d3, mem2cache_d4, mem2cache_d5, mem2cache_d6, mem2cache_d7, mem2cache_d8 : in std_logic_vector(31 downto 0);
-    mem_tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-    mem_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
-    dcache2mem_d1, dcache2mem_d2, dcache2mem_d3, dcache2mem_d4, dcache2mem_d5, dcache2mem_d6, dcache2mem_d7, dcache2mem_d8 : out std_logic_vector(31 downto 0);
+    idcache_addr_s : in std_logic;
+    mem_we : in std_logic;
     -- scan
     pc, pcnext : out std_logic_vector(31 downto 0);
     addr, dcache_rd, dcache_wd : out std_logic_vector(31 downto 0);
@@ -143,7 +142,9 @@ architecture behavior of datapath is
       load_en : in std_logic;
       wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08 : in std_logic_vector(31 downto 0);
       -- push cache miss to the memory
-      cache_miss_en : out std_logic
+      cache_miss_en : out std_logic;
+      tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+      index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0)
     );
   end component;
 
@@ -165,6 +166,19 @@ architecture behavior of datapath is
       valid_flag : out std_logic;
       -- pull load from the memory
       load_en : in std_logic
+    );
+  end component;
+
+  component mem
+    generic(filename : string; BITS : natural);
+    port (
+      clk, rst, load : in std_logic;
+      -- we='1' when transport cache2mem
+      we : in std_logic;
+      tag : in std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+      index : in std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+      wd1, wd2, wd3, wd4, wd5, wd6, wd7, wd8 : in std_logic_vector(31 downto 0);
+      rd1, rd2, rd3, rd4, rd5, rd6, rd7, rd8 : out std_logic_vector(31 downto 0)
     );
   end component;
 
@@ -210,6 +224,12 @@ architecture behavior of datapath is
   signal regw_cached_rds0, regw_cached_rdt0 : std_logic_vector(31 downto 0);
   signal forwarding_rds0, forwarding_rdt0 : std_logic_vector(31 downto 0);
 
+  -- memory
+    signal mem2cache_d1, mem2cache_d2, mem2cache_d3, mem2cache_d4, mem2cache_d5, mem2cache_d6, mem2cache_d7, mem2cache_d8 : std_logic_vector(31 downto 0);
+    signal icache_tag0, dcache_tag0, mem_tag0 : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+    signal icache_index0, dcache_index0, mem_index0 : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+    signal dcache2mem_d1, dcache2mem_d2, dcache2mem_d3, dcache2mem_d4, dcache2mem_d5, dcache2mem_d6, dcache2mem_d7, dcache2mem_d8 : std_logic_vector(31 downto 0);
+
 begin
   -- scan
   pc <= pc0;
@@ -236,7 +256,7 @@ begin
     load_en => instr_load_en,
     wd01 => mem2cache_d1, wd02 => mem2cache_d2, wd03 => mem2cache_d3, wd04 => mem2cache_d4,
     wd05 => mem2cache_d5, wd06 => mem2cache_d6, wd07 => mem2cache_d7, wd08 => mem2cache_d8,
-    cache_miss_en => instr_cache_miss_en
+    cache_miss_en => instr_cache_miss_en, tag => icache_tag0, index => icache_index0
   );
   instr0 <= instr0_0;
 
@@ -393,7 +413,7 @@ begin
     load_en => dcache_load_en,
     wd01 => mem2cache_d1, wd02 => mem2cache_d2, wd03 => mem2cache_d3, wd04 => mem2cache_d4,
     wd05 => mem2cache_d5, wd06 => mem2cache_d6, wd07 => mem2cache_d7, wd08 => mem2cache_d8,
-    rd_tag => mem_tag, rd_index => mem_index,
+    rd_tag => dcache_tag0, rd_index => dcache_index0,
     rd01 => dcache2mem_d1, rd02 => dcache2mem_d2, rd03 => dcache2mem_d3, rd04 => dcache2mem_d4,
     rd05 => dcache2mem_d5, rd06 => dcache2mem_d6, rd07 => dcache2mem_d7, rd08 => dcache2mem_d8,
     cache_miss_en => data_cache_miss_en, valid_flag => valid_flag
@@ -411,5 +431,34 @@ begin
     -- buffer search
     ra1 => rs0_0, rd1 => buf_rds0,
     ra2 => rt0_0, rd2 => buf_rdt0
+  );
+
+  idcache_tag_mux : mux2 generic map (N=>CONST_CACHE_TAG_SIZE)
+  port map (
+    d0 => icache_tag0,
+    d1 => dcache_tag0,
+    s => idcache_addr_s,
+    y => mem_tag0
+  );
+
+  idcache_index_mux : mux2 generic map (N=>CONST_CACHE_TAG_SIZE)
+  port map (
+    d0 => icache_index0,
+    d1 => dcache_index0,
+    s => idcache_addr_s,
+    y => mem_index0
+  );
+  -- memory
+  mem0 : mem generic map(filename=>memfile, BITS=>MEM_BITS_SIZE)
+  port map (
+    clk => clk, rst => rst, load => load,
+    we => mem_we,
+    tag => mem_tag0, index => mem_index0,
+    -- data cache only
+    wd1 => dcache2mem_d1, wd2 => dcache2mem_d2, wd3 => dcache2mem_d3, wd4 => dcache2mem_d4,
+    wd5 => dcache2mem_d5, wd6 => dcache2mem_d6, wd7 => dcache2mem_d7, wd8 => dcache2mem_d8,
+
+    rd1 => mem2cache_d1, rd2 => mem2cache_d2, rd3 => mem2cache_d3, rd4 => mem2cache_d4,
+    rd5 => mem2cache_d5, rd6 => mem2cache_d6, rd7 => mem2cache_d7, rd8 => mem2cache_d8
   );
 end architecture;
