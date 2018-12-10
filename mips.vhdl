@@ -97,7 +97,7 @@ architecture behavior of mips is
   component shift_controller
     port (
       clk, rst : in std_logic;
-      decode_en, calc_clr, dcache_en : in std_logic;
+      decode_en, decode_clr, calc_clr, dcache_en : in std_logic;
       instr_valid0 : in std_logic;
       calc_rdt_immext_s0, dcache_we0, reg_we2_0, reg_we1_0 : in std_logic;
       alu_s0 : in alucont_type;
@@ -259,7 +259,7 @@ begin
 
   shift_controller0 : shift_controller port map (
     clk => clk, rst => rst,
-    decode_en => decode_en0,
+    decode_en => decode_en0, decode_clr => decode_clr0,
     calc_clr => calc_clr0, dcache_en => dcache_en0,
     instr_valid0 => instr_valid0,
     calc_rdt_immext_s0 => calc_rdt_immext_s0, dcache_we0 => dcache_we0,
