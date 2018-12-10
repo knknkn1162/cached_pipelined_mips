@@ -19,8 +19,8 @@ architecture testbench of instr_cache_tb is
       wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08 : in std_logic_vector(31 downto 0);
       -- push cache miss to the memory
       cache_miss_en : out std_logic;
-      tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-      index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0)
+      tag : out cache_tag_vector;
+      index : out cache_index_vector
     );
   end component;
 
@@ -31,8 +31,8 @@ architecture testbench of instr_cache_tb is
   signal wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08 : std_logic_vector(31 downto 0);
 
   signal cache_miss_en, load_en : std_logic;
-  signal tag : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-  signal index : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+  signal tag : cache_tag_vector;
+  signal index : cache_index_vector;
   constant all_x : std_logic_vector(31 downto 0) := (others => 'X');
   constant clk_period : time := 10 ns;
   signal stop : boolean;

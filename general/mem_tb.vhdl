@@ -13,8 +13,8 @@ architecture testbench of mem_tb is
       clk, rst, load : in std_logic;
       -- we='1' when transport cache2mem
       we : in std_logic;
-      tag : in std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-      index : in std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+      tag : in cache_tag_vector;
+      index : in cache_index_vector;
       wd1, wd2, wd3, wd4, wd5, wd6, wd7, wd8 : in std_logic_vector(31 downto 0);
       rd1, rd2, rd3, rd4, rd5, rd6, rd7, rd8 : out std_logic_vector(31 downto 0)
     );
@@ -24,8 +24,8 @@ architecture testbench of mem_tb is
   constant filename : string := "./assets/memfile.hex";
 
   signal clk, rst, load, we : std_logic;
-  signal tag : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-  signal index : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+  signal tag : cache_tag_vector;
+  signal index : cache_index_vector;
   signal wd1, wd2, wd3, wd4, wd5, wd6, wd7, wd8 : std_logic_vector(31 downto 0);
   signal rd1, rd2, rd3, rd4, rd5, rd6, rd7, rd8 : std_logic_vector(31 downto 0);
   constant clk_period : time := 10 ns;
