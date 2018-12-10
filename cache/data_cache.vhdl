@@ -14,7 +14,7 @@ entity data_cache is
     rd : out std_logic_vector(31 downto 0);
     wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08 : in std_logic_vector(31 downto 0);
     rd_tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-    rd_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+    rd_index : out cache_index_vector;
     rd01, rd02, rd03, rd04, rd05, rd06, rd07, rd08 : out std_logic_vector(31 downto 0);
     -- push cache miss to the memory
     cache_miss_en : out std_logic;
@@ -29,7 +29,7 @@ architecture behavior of data_cache is
     port (
       addr : in std_logic_vector(31 downto 0);
       tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-      index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+      index : out cache_index_vector;
       offset : out cache_offset_vector
     );
   end component;
@@ -65,7 +65,7 @@ architecture behavior of data_cache is
       load : in std_logic;
       cache_valid : in std_logic;
       addr_tag, cache_tag : in std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-      addr_index : in std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+      addr_index : in cache_index_vector;
       addr_offset : in cache_offset_vector;
       cache_miss_en : out std_logic;
       cache_valid_flag : out std_logic;
@@ -83,7 +83,7 @@ architecture behavior of data_cache is
 
   -- decode addr
   signal addr_tag : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-  signal addr_index : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+  signal addr_index : cache_index_vector;
   signal addr_offset : cache_offset_vector;
 
   -- TODO: compatible with CONST_CACHE_OFFSET_SIZE

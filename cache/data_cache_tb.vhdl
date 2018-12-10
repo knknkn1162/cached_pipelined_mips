@@ -18,7 +18,7 @@ architecture testbench of data_cache_tb is
       rd : out std_logic_vector(31 downto 0);
       wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08 : in std_logic_vector(31 downto 0);
       rd_tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-      rd_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+      rd_index : out cache_index_vector;
       rd01, rd02, rd03, rd04, rd05, rd06, rd07, rd08 : out std_logic_vector(31 downto 0);
       -- push cache miss to the memory
       cache_miss_en : out std_logic;
@@ -35,7 +35,7 @@ architecture testbench of data_cache_tb is
   signal wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08 : std_logic_vector(31 downto 0);
   signal rd01, rd02, rd03, rd04, rd05, rd06, rd07, rd08 : std_logic_vector(31 downto 0);
   signal rd_tag : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-  signal rd_index : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+  signal rd_index : cache_index_vector;
 
   signal tag_s, cache_miss_en, load_en, valid_flag : std_logic;
   constant clk_period : time := 10 ns;

@@ -145,7 +145,7 @@ architecture behavior of datapath is
       -- push cache miss to the memory
       cache_miss_en : out std_logic;
       tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-      index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0)
+      index : out cache_index_vector
     );
   end component;
 
@@ -160,7 +160,7 @@ architecture behavior of datapath is
       rd : out std_logic_vector(31 downto 0);
       wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08 : in std_logic_vector(31 downto 0);
       rd_tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-      rd_index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+      rd_index : out cache_index_vector;
       rd01, rd02, rd03, rd04, rd05, rd06, rd07, rd08 : out std_logic_vector(31 downto 0);
       -- push cache miss to the memory
       cache_miss_en : out std_logic;
@@ -177,7 +177,7 @@ architecture behavior of datapath is
       -- we='1' when transport cache2mem
       we : in std_logic;
       tag : in std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-      index : in std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+      index : in cache_index_vector;
       wd1, wd2, wd3, wd4, wd5, wd6, wd7, wd8 : in std_logic_vector(31 downto 0);
       rd1, rd2, rd3, rd4, rd5, rd6, rd7, rd8 : out std_logic_vector(31 downto 0)
     );
@@ -227,7 +227,7 @@ architecture behavior of datapath is
   -- memory
     signal mem2cache_d1, mem2cache_d2, mem2cache_d3, mem2cache_d4, mem2cache_d5, mem2cache_d6, mem2cache_d7, mem2cache_d8 : std_logic_vector(31 downto 0);
     signal icache_tag0, dcache_tag0, mem_tag0 : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-    signal icache_index0, dcache_index0, mem_index0 : std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+    signal icache_index0, dcache_index0, mem_index0 : cache_index_vector;
     signal dcache2mem_d1, dcache2mem_d2, dcache2mem_d3, dcache2mem_d4, dcache2mem_d5, dcache2mem_d6, dcache2mem_d7, dcache2mem_d8 : std_logic_vector(31 downto 0);
 
 begin

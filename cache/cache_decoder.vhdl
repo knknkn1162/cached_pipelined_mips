@@ -6,7 +6,7 @@ entity cache_decoder is
   port (
     addr : in std_logic_vector(31 downto 0);
     tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
-    index : out std_logic_vector(CONST_CACHE_INDEX_SIZE-1 downto 0);
+    index : out cache_index_vector;
     offset : out cache_offset_vector
   );
 end entity;
