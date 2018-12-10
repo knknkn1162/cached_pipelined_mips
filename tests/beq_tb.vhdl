@@ -199,7 +199,7 @@ begin
     assert rds = X"00000000"; assert rdt = X"00000000";
     -- FetchS : add $s1, $s0, $s1
     assert pc = X"00000020"; assert pcnext = X"00000024";
-    assert instr = X"02118820";
+    assert instr /= X"02118820"; -- cache miss!
     wait until rising_edge(clk); wait for 1 ns;
 
     -- instr miss(Mem2CacheS)
