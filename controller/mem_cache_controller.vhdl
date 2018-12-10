@@ -6,6 +6,7 @@ entity mem_cache_controller is
     clk, rst : in std_logic;
     cache_miss_en : in std_logic;
     valid_flag : in std_logic;
+    mem2cache : out std_logic;
     tag_s : out std_logic;
     load_en : out std_logic;
     mem_we : out std_logic;
@@ -92,6 +93,15 @@ begin
       load_en <= '1';
     else
       load_en <= '0';
+    end if;
+  end process;
+
+  process(state)
+  begin
+    if state = Mem2CacheS then
+      mem2cache <= '1';
+    else
+      mem2cache <= '0';
     end if;
   end process;
 
