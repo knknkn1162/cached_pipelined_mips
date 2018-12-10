@@ -441,7 +441,7 @@ begin
     y => mem_tag0
   );
 
-  idcache_index_mux : mux2 generic map (N=>CONST_CACHE_TAG_SIZE)
+  idcache_index_mux : mux2 generic map (N=>CONST_CACHE_INDEX_SIZE)
   port map (
     d0 => icache_index0,
     d1 => dcache_index0,
