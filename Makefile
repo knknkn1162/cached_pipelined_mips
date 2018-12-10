@@ -87,8 +87,6 @@ flopr_en:
 	make aer F=flopr_en DIR=general/
 flopr:
 	make aer F=flopr DIR=general/
-bflopr_en:
-	make aer F=bflopr_en DIR=general/
 bflopr_en_clr:
 	make aer F=bflopr_en_clr DIR=general/
 sgnext:
