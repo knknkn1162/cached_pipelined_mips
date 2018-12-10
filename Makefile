@@ -6,6 +6,7 @@ DEBUG=
 CONTROLLER_LIST=mem_idcache alu load flopen decode shift stall instr
 CONTROLLERS=$(addsuffix _controller, ${CONTROLLER_LIST})
 TEST_LIST=stall_lw_add forwarding_addi_add forwarding_add_add
+OPTION=--warn-error
 
 all: mips ${TEST_LIST}
 
@@ -107,11 +108,11 @@ clean:
 open:
 	open out.vcd
 e:
-	ghdl -e ${DEBUG} ${F}_tb
+	ghdl -e ${OPTION} ${DEBUG} ${F}_tb
 r:
-	ghdl -r ${F}_tb --vcd=out.vcd
+	ghdl -r ${OPTION} ${F}_tb --vcd=out.vcd
 a:
-	ghdl -a ${DEBUG} ${DIR}${F}.${VHDL}
+	ghdl -a ${OPTION} ${DEBUG} ${DIR}${F}.${VHDL}
 er:
 	make e
 	make r
