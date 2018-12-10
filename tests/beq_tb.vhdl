@@ -178,7 +178,6 @@ begin
     assert reg_wa = "10001"; assert reg_wd = X"00000005";
     -- Nop : (addi $s2, $0, 6)
     -- CalcS : nop
-    assert aluout = X"00000000";
     -- DecodeS : beq $s0, $s1, 1 [ should be taken ]
     assert rds = X"00000005";
     assert rdt = X"00000005";
@@ -192,10 +191,10 @@ begin
     assert state = NormalS;
     assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '1'; assert stall = '0';
     assert icache_load_en = '0'; assert dcache_load_en = '0';
+    assert branch_taken = '0';
     -- RegWrite : addi $s2, $0, 6
     assert reg_wa = "10010"; assert reg_wd = X"00000006";
     -- CalcS : nop
-    assert aluout = X"00000000";
     -- DecodeS : (purge)
     assert rds = X"00000000"; assert rdt = X"00000000";
     -- FetchS : add $s1, $s0, $s1
