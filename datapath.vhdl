@@ -25,8 +25,7 @@ entity datapath is
     funct0 : out funct_vector;
     alu_s : in alucont_type;
     -- regw buffer including forwarding
-    rs0, rt0 : out reg_vector;
-    rt1, instr_rd1 : out reg_vector;
+    rs0, rt0, rt1 : out reg_vector;
     opcode1 : out opcode_vector;
     -- from cache & memory
     instr_cache_miss_en, data_cache_miss_en, valid_flag : out std_logic;
@@ -349,11 +348,6 @@ begin
   reg_rt0 : flopr_clr generic map (N=>CONST_REG_SIZE)
   port map (
     clk => clk, rst => rst, clr => calc_clr, a => rt0_0, y => rt1
-  );
-
-  reg_instrrd0 : flopr_clr generic map (N=>CONST_REG_SIZE)
-  port map (
-    clk => clk, rst => rst, clr => calc_clr, a => instr_rd0_0, y => instr_rd1
   );
 
   reg_opcode0 : flopr_clr generic map (N=>CONST_INSTR_OPCODE_SIZE)

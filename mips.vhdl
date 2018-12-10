@@ -129,8 +129,7 @@ architecture behavior of mips is
       funct0 : out funct_vector;
       alu_s : in alucont_type;
       -- regw buffer including forwarding
-      rs0, rt0 : out reg_vector;
-      rt1, instr_rd1 : out reg_vector;
+      rs0, rt0, rt1 : out reg_vector;
       opcode1 : out opcode_vector;
       -- from cache & memory
       instr_cache_miss_en, data_cache_miss_en, valid_flag : out std_logic;
@@ -180,7 +179,7 @@ architecture behavior of mips is
   signal dcache_we0, dcache_we2, decode_rt_rd_s0 : std_logic;
   signal calc_rdt_immext_s0, calc_rdt_immext_s1 : std_logic;
 
-  signal rs0, rt0, rt1, instr_rd1 : reg_vector;
+  signal rs0, rt0, rt1 : reg_vector;
   signal opcode1 : opcode_vector;
   -- stall
   signal stall0 : std_logic;
@@ -293,9 +292,11 @@ begin
     dcache_we => dcache_we2, decode_rt_rd_s => decode_rt_rd_s0,
     calc_rdt_immext_s => calc_rdt_immext_s1,
     -- alu_controller
-    opcode0 => opcode0, funct0 => funct0, alu_s => alu_s1,
-    -- regw buffer including forwarding
-    rs0 => rs0, rt0 => rt0, rt1 => rt1, instr_rd1 => instr_rd1,
+    funct0 => funct0, alu_s => alu_s1,
+    -- stall controller
+    rs0 => rs0, rt0 => rt0, rt1 => rt1,
+    -- decode_controller & stall_controller
+    opcode0 => opcode0,
     opcode1 => opcode1,
     -- form cache & memory
     tag_s => tag_s0,
