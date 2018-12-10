@@ -23,7 +23,7 @@ entity mips is
     -- for controller
     flopen_state : out flopen_state_vector;
     icache_load_en, dcache_load_en : out std_logic;
-    suspend, stall, halt : out std_logic
+    suspend, stall, halt, branch_taken : out std_logic
   );
 end entity;
 
@@ -92,6 +92,7 @@ architecture behavior of mips is
     port (
       opcode : in opcode_vector;
       cmp_eq : in std_logic;
+      branch_taken : out std_logic;
       decode_pc_br_ja_s : out std_logic_vector(1 downto 0)
     );
   end component;
@@ -100,6 +101,7 @@ architecture behavior of mips is
     port (
       clk, rst, load : in std_logic;
       suspend, stall, halt : in std_logic;
+      branch_taken : in std_logic;
       fetch_en, decode_en, calc_clr, dcache_en : out std_logic;
       state_vector : out flopen_state_vector
     );
@@ -186,6 +188,7 @@ architecture behavior of mips is
 
   -- pcnext_controller
   signal decode_pc_br_ja_s0 : std_logic_vector(1 downto 0);
+  signal branch_taken0 : std_logic;
   signal cmp_eq0 : std_logic;
 
   -- decode_controller
@@ -214,6 +217,7 @@ begin
   dcache_load_en <= dcache_load_en0;
   suspend <= suspend0;
   halt <= halt0;
+  branch_taken <= branch_taken0;
 
   -- controller
   load_controller0 : load_controller port map (
@@ -231,6 +235,7 @@ begin
   flopen_controller0 : flopen_controller port map (
     clk => clk, rst => rst, load => load0,
     suspend => suspend0, stall => stall0, halt => halt0,
+    branch_taken => branch_taken0,
     fetch_en => fetch_en0, decode_en => decode_en0,
     calc_clr => calc_clr0, dcache_en => dcache_en0,
     state_vector => flopen_state
@@ -258,6 +263,7 @@ begin
   pcnext_controller0 : pcnext_controller port map (
     opcode => opcode0,
     cmp_eq => cmp_eq0,
+    branch_taken => branch_taken0,
     decode_pc_br_ja_s => decode_pc_br_ja_s0
   );
 
@@ -295,7 +301,8 @@ begin
     -- regwe_controller
     reg_we1 => reg_we1, reg_we2 => reg_we2,
     -- pcnext_controller
-    decode_pc_br_ja_s => decode_pc_br_ja_s0, cmp_eq => cmp_eq0,
+    decode_pc_br_ja_s => decode_pc_br_ja_s0,
+    cmp_eq => cmp_eq0,
     -- decode_controller
     dcache_we => dcache_we2, decode_rt_rd_s => decode_rt_rd_s0,
     calc_rdt_immext_s => calc_rdt_immext_s1,

@@ -21,7 +21,10 @@ forwarding_add_add:
 tb:
 	make a F=tests/${F}_tb
 	make er F=${F}
-mips: type_pkg cache_pkg datapath mem ${CONTROLLERS}
+mips:
+	make clean
+	make _mips
+_mips: type_pkg cache_pkg datapath mem ${CONTROLLERS}
 	make a F=mips
 datapath: flopr_en flopr_clr instr_decoder mux2 mux4 alu regfile mem_idcache_controller mem data_cache instr_cache regw_buffer
 	make a F=datapath

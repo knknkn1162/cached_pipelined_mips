@@ -8,6 +8,7 @@ entity flopen_controller is
   port (
     clk, rst, load : in std_logic;
     suspend, stall, halt : in std_logic;
+    branch_taken : in std_logic;
     fetch_en, decode_en, calc_clr, dcache_en : out std_logic;
     state_vector : out flopen_state_vector
   );
@@ -61,11 +62,11 @@ begin
   process(stall, state, suspend, halt)
     variable work_en : std_logic;
   begin
-    if state = NormalS and stall = '1' then
-      fetch_en <= '0';
-      decode_en <= '0';
-      calc_clr <= '1';
+    if state = NormalS then
+      fetch_en <= (not stall) and (not halt);
+      decode_en <= (not stall);
       dcache_en <= '1';
+      calc_clr <= branch_taken or stall;
     else
       case state is
         when ResetS | LoadS =>
@@ -76,7 +77,7 @@ begin
         when others =>
           work_en := '1';
       end case;
-      fetch_en <= work_en and (not halt);
+      fetch_en <= work_en;
       decode_en <= work_en;
       calc_clr <= (not work_en);
       dcache_en <= work_en;

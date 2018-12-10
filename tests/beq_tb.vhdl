@@ -27,7 +27,7 @@ architecture testbench of beq_tb is
       -- for controller
       flopen_state : out flopen_state_vector;
       icache_load_en, dcache_load_en : out std_logic;
-      suspend, stall, halt : out std_logic
+      suspend, stall, halt, branch_taken : out std_logic
     );
   end component;
 
@@ -46,7 +46,7 @@ architecture testbench of beq_tb is
   -- for controller
   signal flopen_state_vec : flopen_state_vector;
   signal icache_load_en, dcache_load_en : std_logic;
-  signal suspend, stall, halt : std_logic;
+  signal suspend, stall, halt, branch_taken : std_logic;
   constant clk_period : time := 10 ns;
   signal stop : boolean;
   signal state : flopen_statetype;
@@ -65,7 +65,7 @@ begin
     ja => ja, aluout => aluout,
     flopen_state => flopen_state_vec,
     icache_load_en => icache_load_en, dcache_load_en => dcache_load_en,
-    suspend => suspend, stall => stall, halt => halt
+    suspend => suspend, stall => stall, halt => halt, branch_taken => branch_taken
   );
 
   state <= encode_flopen_state(flopen_state_vec);
@@ -173,6 +173,7 @@ begin
 
     assert state = NormalS;
     assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0'; assert stall = '0';
+    assert branch_taken = '1';
     -- RegWrite : addi $s1, $0, 5
     assert reg_wa = "10001"; assert reg_wd = X"00000005";
     -- Nop : (addi $s2, $0, 6)
