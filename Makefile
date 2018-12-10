@@ -50,7 +50,7 @@ pcnext_controller:
 
 cache_decoder: cache_pkg
 	make aer F=cache_decoder DIR=cache/
-mem_idcache_controller: cache_tag mem_cache_controller flopr_en
+mem_idcache_controller: cache_pkg mem_cache_controller flopr_en
 	make aer F=mem_idcache_controller DIR=controller/
 mem_cache_controller:
 	make aer F=mem_cache_controller DIR=controller/
