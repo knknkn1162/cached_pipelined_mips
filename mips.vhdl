@@ -191,7 +191,7 @@ architecture behavior of mips is
   signal suspend0 : std_logic;
   signal instr_cache_miss_en0, data_cache_miss_en0, valid_flag0 : std_logic;
   signal icache_load_en0, dcache_load_en0 : std_logic;
-  signal mem_tag0 : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+  signal mem_tag0 : cache_tag_vector;
   signal mem_index0 : cache_index_vector;
 
 begin

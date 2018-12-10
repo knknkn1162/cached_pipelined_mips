@@ -6,7 +6,7 @@ entity cache_controller is
   port (
     load : in std_logic;
     cache_valid : in std_logic;
-    addr_tag, cache_tag : in std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+    addr_tag, cache_tag : in cache_tag_vector;
     addr_index : in cache_index_vector;
     addr_offset : in cache_offset_vector;
     cache_miss_en : out std_logic;

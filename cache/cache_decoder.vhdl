@@ -5,7 +5,7 @@ use work.cache_pkg.ALL;
 entity cache_decoder is
   port (
     addr : in std_logic_vector(31 downto 0);
-    tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+    tag : out cache_tag_vector;
     index : out cache_index_vector;
     offset : out cache_offset_vector
   );

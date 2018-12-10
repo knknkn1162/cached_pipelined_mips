@@ -13,7 +13,7 @@ entity data_cache is
     tag_s : in std_logic;
     rd : out std_logic_vector(31 downto 0);
     wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08 : in std_logic_vector(31 downto 0);
-    rd_tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+    rd_tag : out cache_tag_vector;
     rd_index : out cache_index_vector;
     rd01, rd02, rd03, rd04, rd05, rd06, rd07, rd08 : out std_logic_vector(31 downto 0);
     -- push cache miss to the memory
@@ -28,7 +28,7 @@ architecture behavior of data_cache is
   component cache_decoder
     port (
       addr : in std_logic_vector(31 downto 0);
-      tag : out std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+      tag : out cache_tag_vector;
       index : out cache_index_vector;
       offset : out cache_offset_vector
     );
@@ -64,7 +64,7 @@ architecture behavior of data_cache is
     port (
       load : in std_logic;
       cache_valid : in std_logic;
-      addr_tag, cache_tag : in std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+      addr_tag, cache_tag : in cache_tag_vector;
       addr_index : in cache_index_vector;
       addr_offset : in cache_offset_vector;
       cache_miss_en : out std_logic;
@@ -79,10 +79,10 @@ architecture behavior of data_cache is
   type validtype is array(natural range<>) of std_logic;
   type ramtype is array(natural range<>) of std_logic_vector(31 downto 0);
   type addr30_type is array(natural range<>) of std_logic_vector(29 downto 0);
-  type tagtype is array(natural range<>) of std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+  type tagtype is array(natural range<>) of cache_tag_vector;
 
   -- decode addr
-  signal addr_tag : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+  signal addr_tag : cache_tag_vector;
   signal addr_index : cache_index_vector;
   signal addr_offset : cache_offset_vector;
 
@@ -96,7 +96,7 @@ architecture behavior of data_cache is
   signal ram7_datum : std_logic_vector(31 downto 0);
   signal ram8_datum : std_logic_vector(31 downto 0);
   signal valid_datum : std_logic;
-  signal tag_datum : std_logic_vector(CONST_CACHE_TAG_SIZE-1 downto 0);
+  signal tag_datum : cache_tag_vector;
 
   -- is cache miss occurs or not
   signal rd_s : cache_offset_vector; -- selector for mux8
