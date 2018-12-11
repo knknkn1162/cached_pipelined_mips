@@ -309,6 +309,7 @@ begin
     assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0'; assert stall = '0'; assert branch_taken = '0';
     -- RegWriteBackS: 28: slt $4,  $7, $2     # $4 = 3 < 5 = 1
     assert reg_wa = "00100"; assert reg_wd = X"00000001";
+    -- (2C: add $7,  $4, $5     # $7 = 1 + 11 = 12)
     -- CalcS: 30: sub $7,  $7, $2     # $7 = 12 - 5 = 7
     assert aluout = X"00000007";
     -- DecodeS: 34: sw   $7, 68($3)     # [80] = 7
@@ -317,6 +318,95 @@ begin
     assert pc = X"00000038"; assert pcnext = X"0000003C";
     assert instr = X"8c020050";
     wait until rising_edge(clk); wait for 1 ns;
+
+    assert state = NormalS;
+    assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0'; assert stall = '0'; assert branch_taken = '0';
+    -- RegWriteBackS: 2C: add $7,  $4, $5     # $7 = 1 + 11 = 12
+    assert reg_wa = "00111"; assert reg_wd = X"0000000C";
+    -- (30: sub $7,  $7, $2     # $7 = 12 - 5 = 7)
+    -- CalcS: 34: sw   $7, 68($3)     # [80] = 7
+    assert aluout = X"00000050";
+    -- DecodeS: 38: lw   $2, 80($0)     # $2 = [80] = 7
+    assert rds = X"00000000"; assert immext = X"00000050";
+    -- FetchS: 3C: j    end            # should be taken
+    assert pc = X"0000003C"; assert pcnext = X"00000040";
+    assert instr = X"08000011";
+    wait until rising_edge(clk); wait for 1 ns;
+
+    -- instr & data cache miss!
+    assert state = NormalS;
+    assert dcache_we = '1'; assert reg_we = '1'; assert suspend = '1'; assert stall = '0'; assert branch_taken = '0';
+    -- RegWriteBackS: 30: sub $7,  $7, $2     # $7 = 12 - 5 = 7
+    assert reg_wa = "00111"; assert reg_wd = X"00000007";
+    -- MemWriteBackS: 34: sw   $7, 68($3)     # [80] = 7
+    assert addr = X"00000050"; assert dcache_wd = X"00000007"; -- cache_miss!
+    -- CalcS: 38: lw   $2, 80($0)     # $2 = [80] = 7
+    assert aluout = X"00000050";
+    -- DecodeS: 3C: j    end            # should be taken
+    assert ja = X"00000044";
+    -- FetchS: addi $2, $0, 1      # shouldnt happen -- cache_miss!
+    assert pc = X"00000040"; assert pcnext = X"00000044";
+    assert instr /= X"20020001";
+    wait until rising_edge(clk); wait for 1 ns;
+
+    -- (instr: Mem2CacheS, mem : NormalS)
+    assert state = SuspendS;
+    assert dcache_we = '1'; assert reg_we = '0'; assert suspend = '1'; assert stall = '0';
+    assert icache_load_en = '0'; assert dcache_load_en = '0';
+    wait until rising_edge(clk); wait for 1 ns;
+
+    -- (instr: CacheWriteBackS, mem : Mem2CacheS)
+    assert state = SuspendS;
+    assert dcache_we = '1'; assert reg_we = '0'; assert suspend = '1'; assert stall = '0';
+    assert icache_load_en = '1'; assert dcache_load_en = '0';
+    wait until rising_edge(clk); wait for 1 ns;
+
+    -- (instr: NormalS, mem : CacheWriteBackS)
+    assert state = SuspendS;
+    assert dcache_we = '1'; assert reg_we = '0'; assert suspend = '1'; assert stall = '0';
+    assert icache_load_en = '0'; assert dcache_load_en = '1';
+    wait until rising_edge(clk); wait for 1 ns;
+
+    -- (FetchS, InitS) (restore from SuspendS)
+    assert state = SuspendS;
+    assert dcache_we = '1'; assert reg_we = '0'; assert suspend = '0'; assert stall = '0';
+    assert icache_load_en = '0'; assert dcache_load_en = '0';
+    -- MemWriteBackS: 34: sw   $7, 68($3)     # [80] = 7
+    assert addr = X"00000050"; assert dcache_wd = X"00000007"; -- cache hit!
+    -- CalcS: 38: lw   $2, 80($0)     # $2 = [80] = 7
+    -- assert aluout = X"00000050";
+    -- -- DecodeS: 3C: j    end            # should be taken
+    -- assert ja = X"00000044";
+    -- -- FetchS: 40: addi $2, $0, 1      # shouldnt happen -- cache_miss!
+    -- assert pc = X"00000040"; assert pcnext = X"00000044";
+    -- assert instr = X"20020001";
+    -- wait until rising_edge(clk); wait for 1 ns;
+
+    -- -- NormalS
+    -- assert state = NormalS;
+    -- assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0'; assert stall = '0';
+    -- -- MemWeadS: 38: lw   $2, 80($0)     # $2 = [80] = 7
+    -- assert addr = X"00000050"; assert dcache_rd = X"00000007"; -- cache_hit!
+    -- -- CalcS: (nop)
+    -- -- DecodeS: (purged)
+    -- assert rds = X"00000000"; assert immext = X"00000000";
+    -- -- FetchS: 44: sw   $2, 84($0)     # write adr 84 = 7
+    -- assert pc = X"00000044"; assert pcnext = X"00000048";
+    -- assert instr = X"ac020054";
+    -- wait until rising_edge(clk); wait for 1 ns;
+
+    -- assert state = NormalS;
+    -- assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0'; assert stall = '0';
+    -- assert halt = '1';
+    -- -- RegWriteBackS: 38: lw   $2, 80($0)     # $2 = [80] = 7
+    -- assert reg_wa = "00010"; assert reg_wd = X"00000007";
+    -- -- CalcS: (purged)
+    -- -- DecodeS: 44 sw   $2, 84($0)     # write adr 84 = 7
+    -- assert rds = X"00000000"; assert immext = X"00000054";
+    -- assert pc = X"00000044"; assert pcnext = X"00000048";
+    -- assert instr = X"00000000";
+
+
 
     stop <= TRUE;
     -- success message
