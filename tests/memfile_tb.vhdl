@@ -243,11 +243,80 @@ begin
     assert state = SuspendS;
     assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0'; assert stall = '0'; assert branch_taken = '0';
     assert icache_load_en = '0'; assert dcache_load_en = '0';
-    -- FetchS : add $s1, $s0, $s1
+    -- FetchS : add $s1, $s0, $s1 [cache_hit!]
     assert pc = X"00000020"; assert pcnext = X"00000024";
     assert instr = X"10800001";
     wait until rising_edge(clk); wait for 1 ns;
 
+    -- NormalS
+    assert state = NormalS;
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0'; assert stall = '0'; assert branch_taken = '1';
+    -- CalcS: 1C: slt $4,  $3, $4     # $4 = 12 < 7 = 0
+    assert aluout = X"00000000";
+    -- DecodeS: 20: beq $4,  $0, around # should be taken
+    assert rds = X"00000000"; assert rdt = X"00000000";
+    -- FetchS: 24: addi $5, $0, 0      # shouldnt happen
+    assert pc = X"00000024"; assert pcnext = X"00000028";
+    assert instr = X"20050000";
+    wait until rising_edge(clk); wait for 1 ns;
+
+    assert state = NormalS;
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0'; assert stall = '0'; assert branch_taken = '0';
+    -- (1C: slt $4,  $3, $4     # $4 = 12 < 7 = 0)
+    -- CalcS: (nop)
+    -- DecodeS: (purged)
+    -- FetchS: 28: slt $4,  $7, $2     # $4 = 3 < 5 = 1
+    assert pc = X"00000028"; assert pcnext = X"0000002C";
+    assert instr = X"00e2202a";
+    wait until rising_edge(clk); wait for 1 ns;
+
+    assert state = NormalS;
+    assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0'; assert stall = '0'; assert branch_taken = '0';
+    -- RegWriteBackS: 1C: slt $4,  $3, $4     # $4 = 12 < 7 = 0
+    assert reg_wa = "00100"; assert reg_wd = X"00000000";
+    -- CalcS: (purged)
+    -- DecodeS: 28: slt $4,  $7, $2     # $4 = 3 < 5 = 1
+    assert rds = X"00000003"; assert rdt = X"00000005";
+    -- FetchS: 2C: add $7,  $4, $5     # $7 = 1 + 11 = 12
+    assert pc = X"0000002C"; assert pcnext = X"00000030";
+    assert instr = X"00853820";
+    wait until rising_edge(clk); wait for 1 ns;
+
+    assert state = NormalS;
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0'; assert stall = '0'; assert branch_taken = '0';
+    -- CalcS: 28: slt $4,  $7, $2     # $4 = 3 < 5 = 1
+    assert aluout = X"00000001";
+    -- DecodeS: 2C: add $7,  $4, $5     # $7 = 1 + 11 = 12
+    assert rds = X"00000001"; assert rdt = X"0000000B";
+    -- FetchS: 30: sub $7,  $7, $2     # $7 = 12 - 5 = 7
+    assert pc = X"00000030"; assert pcnext = X"00000034";
+    assert instr = X"00e23822";
+    wait until rising_edge(clk); wait for 1 ns;
+
+    assert state = NormalS;
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0'; assert stall = '0'; assert branch_taken = '0';
+    -- (28: slt $4,  $7, $2     # $4 = 3 < 5 = 1)
+    -- CalcS: 2C: add $7,  $4, $5     # $7 = 1 + 11 = 12
+    assert aluout = X"0000000C";
+    -- DecodeS: 30: sub $7,  $7, $2     # $7 = 12 - 5 = 7
+    assert rds = X"0000000C"; assert rdt = X"00000005";
+    -- FetchS: 34: sw   $7, 68($3)     # [80] = 7
+    assert pc = X"00000034"; assert pcnext = X"00000038";
+    assert instr = X"ac670044";
+    wait until rising_edge(clk); wait for 1 ns;
+
+    assert state = NormalS;
+    assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '0'; assert stall = '0'; assert branch_taken = '0';
+    -- RegWriteBackS: 28: slt $4,  $7, $2     # $4 = 3 < 5 = 1
+    assert reg_wa = "00100"; assert reg_wd = X"00000001";
+    -- CalcS: 30: sub $7,  $7, $2     # $7 = 12 - 5 = 7
+    assert aluout = X"00000007";
+    -- DecodeS: 34: sw   $7, 68($3)     # [80] = 7
+    assert rds = X"0000000C"; assert immext = X"00000044";
+    -- FetchS : 38 lw   $2, 80($0)     # $2 = [80] = 7
+    assert pc = X"00000038"; assert pcnext = X"0000003C";
+    assert instr = X"8c020050";
+    wait until rising_edge(clk); wait for 1 ns;
 
     stop <= TRUE;
     -- success message
