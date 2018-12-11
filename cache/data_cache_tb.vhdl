@@ -23,6 +23,7 @@ architecture testbench of data_cache_tb is
       -- push cache miss to the memory
       cache_miss_en : out std_logic;
       valid_flag : out std_logic;
+      dirty_flag : out std_logic;
       -- pull load from the memory
       load_en : in std_logic
     );
@@ -37,7 +38,7 @@ architecture testbench of data_cache_tb is
   signal rd_tag : cache_tag_vector;
   signal rd_index : cache_index_vector;
 
-  signal tag_s, cache_miss_en, load_en, valid_flag : std_logic;
+  signal tag_s, cache_miss_en, load_en, valid_flag, dirty_flag : std_logic;
   constant clk_period : time := 10 ns;
   signal stop : boolean;
   constant all_x : std_logic_vector(31 downto 0) := (others => 'X');
@@ -56,7 +57,7 @@ begin
     tag_s => tag_s,
     rd_tag => rd_tag,
     rd_index => rd_index,
-    cache_miss_en => cache_miss_en, valid_flag => valid_flag,
+    cache_miss_en => cache_miss_en, valid_flag => valid_flag, dirty_flag => dirty_flag,
     load_en => load_en
   );
 

@@ -6,6 +6,7 @@ entity mem_cache_controller is
     clk, rst : in std_logic;
     cache_miss_en : in std_logic;
     valid_flag : in std_logic;
+    dirty_flag : in std_logic;
     mem2cache : out std_logic;
     tag_s : out std_logic;
     load_en : out std_logic;
@@ -42,12 +43,12 @@ begin
     end if;
   end process;
 
-  process(state,  cache_miss_en)
+  process(state,  cache_miss_en, valid_flag, dirty_flag)
   begin
     case state is
       when NormalS =>
         if cache_miss_en = '1' then
-          if valid_flag = '1' then
+          if valid_flag = '1' and dirty_flag = '1' then
             nextstate <= Cache2MemS;
           else
             nextstate <= Mem2CacheS;

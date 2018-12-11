@@ -19,6 +19,7 @@ entity data_cache is
     -- push cache miss to the memory
     cache_miss_en : out std_logic;
     valid_flag : out std_logic;
+    dirty_flag : out std_logic;
     -- pull load from the memory
     load_en : in std_logic
   );
@@ -68,7 +69,6 @@ architecture behavior of data_cache is
       addr_index : in cache_index_vector;
       addr_offset : in cache_offset_vector;
       cache_miss_en : out std_logic;
-      cache_valid_flag : out std_logic;
       rd_s : out cache_offset_vector
     );
   end component;
@@ -91,7 +91,7 @@ architecture behavior of data_cache is
   signal ram6_datum : std_logic_vector(31 downto 0);
   signal ram7_datum : std_logic_vector(31 downto 0);
   signal ram8_datum : std_logic_vector(31 downto 0);
-  signal valid_datum : std_logic;
+  signal valid_datum, dirty_datum: std_logic;
   signal tag_datum : cache_tag_vector;
 
   -- is cache miss occurs or not
@@ -110,6 +110,7 @@ begin
     variable idx : natural;
     variable valid_data : valid_array_type(0 to SIZE-1);
     variable tag_data : tag_array_type(0 to SIZE-1);
+    variable dirty_data : dirty_array_type(0 to SIZE-1);
 
     -- TODO: compatible with CONST_CACHE_OFFSET_SIZE
     variable ram1_data : ram_type(0 to SIZE-1);
@@ -132,6 +133,7 @@ begin
         idx := to_integer(unsigned(addr_index));
         -- when the ram_data is initial state
         valid_data(idx) := '1';
+        dirty_data(idx) := '0';
         tag_data(idx) := addr_tag;
         ram1_data(idx) := wd01;
         ram2_data(idx) := wd02;
@@ -145,6 +147,7 @@ begin
         if valid_datum = '1' then
           -- cache hit!
           if tag_datum = addr_tag then
+            dirty_data(idx) := '1';
             idx := to_integer(unsigned(addr_index));
             case addr_offset is
               when "000" =>
@@ -181,6 +184,7 @@ begin
       ram6_datum <= ram6_data(to_integer(unsigned(addr_index)));
       ram7_datum <= ram7_data(to_integer(unsigned(addr_index)));
       ram8_datum <= ram8_data(to_integer(unsigned(addr_index)));
+      dirty_datum <= dirty_data(to_integer(unsigned(addr_index)));
       valid_datum <= valid_data(to_integer(unsigned(addr_index)));
       tag_datum <= tag_data(to_integer(unsigned(addr_index)));
     end if;
@@ -191,9 +195,11 @@ begin
     cache_valid => valid_datum,
     addr_tag => addr_tag, cache_tag => tag_datum,
     addr_index => addr_index, addr_offset => addr_offset,
-    cache_miss_en => cache_miss_en, cache_valid_flag => valid_flag,
+    cache_miss_en => cache_miss_en,
     rd_s => rd_s
   );
+  valid_flag <= valid_datum;
+  dirty_flag <= dirty_datum;
 
   -- if cache_hit
   mux8_0 : mux8 generic map(N=>32)

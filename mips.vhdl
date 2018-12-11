@@ -42,7 +42,7 @@ architecture behavior of mips is
     port (
       clk, rst : in std_logic;
       instr_cache_miss_en, data_cache_miss_en : in std_logic;
-      valid_flag : in std_logic;
+      valid_flag, dirty_flag : in std_logic;
       tag_s : out std_logic;
       instr_load_en, data_load_en : out std_logic;
       mem_we : out std_logic;
@@ -134,7 +134,8 @@ architecture behavior of mips is
       reg_we1, reg_we2 : in std_logic;
       -- from cache & memory
       tag_s : in std_logic;
-      instr_cache_miss_en, data_cache_miss_en, valid_flag : out std_logic;
+      instr_cache_miss_en, data_cache_miss_en : out std_logic;
+      valid_flag, dirty_flag : out std_logic;
       instr_load_en, dcache_load_en : in std_logic;
       idcache_addr_s : in std_logic;
       mem_we : in std_logic;
@@ -189,7 +190,8 @@ architecture behavior of mips is
   -- from cache & memory
   signal mem_we0, idcache_addr_s0 : std_logic;
   signal suspend0 : std_logic;
-  signal instr_cache_miss_en0, data_cache_miss_en0, valid_flag0 : std_logic;
+  signal instr_cache_miss_en0, data_cache_miss_en0 : std_logic;
+  signal valid_flag0, dirty_flag0 : std_logic;
   signal icache_load_en0, dcache_load_en0 : std_logic;
   signal mem_tag0 : cache_tag_vector;
   signal mem_index0 : cache_index_vector;
@@ -228,7 +230,7 @@ begin
   mem_idcache_controller0 : mem_idcache_controller port map (
     clk => clk, rst => rst,
     instr_cache_miss_en => instr_cache_miss_en0, data_cache_miss_en => data_cache_miss_en0,
-    valid_flag => valid_flag0,
+    valid_flag => valid_flag0, dirty_flag => dirty_flag0,
     tag_s => tag_s0,
     instr_load_en => icache_load_en0, data_load_en => dcache_load_en0,
     mem_we => mem_we0,
@@ -302,7 +304,7 @@ begin
     opcode1 => opcode1,
     -- form cache & memory
     tag_s => tag_s0,
-    instr_cache_miss_en => instr_cache_miss_en0, data_cache_miss_en => data_cache_miss_en0, valid_flag => valid_flag0,
+    instr_cache_miss_en => instr_cache_miss_en0, data_cache_miss_en => data_cache_miss_en0, valid_flag => valid_flag0, dirty_flag => dirty_flag0,
     instr_load_en => icache_load_en0, dcache_load_en => dcache_load_en0,
     idcache_addr_s => idcache_addr_s0, mem_we => mem_we0,
     -- for scan

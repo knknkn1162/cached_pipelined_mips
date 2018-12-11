@@ -5,7 +5,7 @@ entity mem_idcache_controller is
   port (
     clk, rst : in std_logic;
     instr_cache_miss_en, data_cache_miss_en : in std_logic;
-    valid_flag : in std_logic;
+    valid_flag, dirty_flag : in std_logic;
     tag_s : out std_logic; -- only in Cache2Mem in data_cache component
     instr_load_en, data_load_en : out std_logic;
     mem_we : out std_logic;
@@ -19,7 +19,7 @@ architecture behavior of mem_idcache_controller is
     port (
       clk, rst : in std_logic;
       cache_miss_en : in std_logic;
-      valid_flag : in std_logic;
+      valid_flag, dirty_flag : in std_logic;
       mem2cache : out std_logic;
       tag_s : out std_logic;
       load_en : out std_logic;
@@ -39,7 +39,8 @@ architecture behavior of mem_idcache_controller is
 
   signal data_cache_miss_en0:  std_logic;
   signal valid_flag0, valid_flag1 : std_logic;
-  signal cache_vector0, cache_vector1 : std_logic_vector(1 downto 0);
+  signal dirty_flag0, dirty_flag1 : std_logic;
+  signal cache_vector0, cache_vector1 : std_logic_vector(2 downto 0);
   signal both_cache_miss_en0, both_cache_miss_en1 : std_logic;
   signal instr_suspend, data_suspend : std_logic;
   signal icache_dcache_s : std_logic;
@@ -47,32 +48,35 @@ architecture behavior of mem_idcache_controller is
 
 begin
   both_cache_miss_en0 <= instr_cache_miss_en and data_cache_miss_en;
-  cache_vector0 <= both_cache_miss_en0 & valid_flag;
-  reg_dcache_miss : flopr_en generic map (N=>2)
+  cache_vector0 <= both_cache_miss_en0 & valid_flag & dirty_flag;
+  reg_dcache_miss : flopr_en generic map (N=>3)
   port map (
     clk => clk, rst => rst, en => '1',
     a => cache_vector0,
     y => cache_vector1
   );
-  valid_flag1 <= cache_vector1(0);
-  both_cache_miss_en1 <= cache_vector1(1);
+  dirty_flag1 <= cache_vector1(0);
+  valid_flag1 <= cache_vector1(1);
+  both_cache_miss_en1 <= cache_vector1(2);
 
-  process(both_cache_miss_en1, both_cache_miss_en0, valid_flag)
+  process(both_cache_miss_en1, both_cache_miss_en0, data_cache_miss_en, valid_flag, valid_flag1, dirty_flag, dirty_flag1)
   begin
     -- if collision between instr cache miss and data cache miss
     if (both_cache_miss_en1 or both_cache_miss_en0) = '1' then
       data_cache_miss_en0 <= both_cache_miss_en1;
       valid_flag0 <= valid_flag1;
+      dirty_flag0 <= dirty_flag1;
     else
       data_cache_miss_en0 <= data_cache_miss_en;
       valid_flag0 <= valid_flag;
+      dirty_flag0 <= dirty_flag;
     end if;
   end process;
 
   mem_dcache_controller : mem_cache_controller port map (
     clk => clk, rst => rst,
     cache_miss_en => data_cache_miss_en0,
-    valid_flag => valid_flag0,
+    valid_flag => valid_flag0, dirty_flag => dirty_flag0,
     mem2cache => mem2dcache0,
     tag_s => tag_s,
     load_en => data_load_en,
@@ -84,7 +88,7 @@ begin
     clk => clk, rst => rst,
     cache_miss_en => instr_cache_miss_en,
     -- instrcution cache doesn't have to write back to the memory
-    valid_flag => '0',
+    valid_flag => '0', dirty_flag => '0',
     mem2cache => mem2icache0,
     -- tag_s => tag_s, -- in fact, always '1'(new)
     load_en => instr_load_en,

@@ -30,7 +30,8 @@ entity datapath is
     reg_we1, reg_we2 : in std_logic;
     -- from cache & memory
     tag_s : in std_logic;
-    instr_cache_miss_en, data_cache_miss_en, valid_flag : out std_logic;
+    instr_cache_miss_en, data_cache_miss_en : out std_logic;
+    valid_flag, dirty_flag : out std_logic;
     instr_load_en, dcache_load_en : in std_logic;
     idcache_addr_s : in std_logic;
     mem_we : in std_logic;
@@ -164,7 +165,7 @@ architecture behavior of datapath is
       rd01, rd02, rd03, rd04, rd05, rd06, rd07, rd08 : out std_logic_vector(31 downto 0);
       -- push cache miss to the memory
       cache_miss_en : out std_logic;
-      valid_flag : out std_logic;
+      valid_flag, dirty_flag : out std_logic;
       -- pull load from the memory
       load_en : in std_logic
     );
@@ -411,7 +412,8 @@ begin
     rd_tag => dcache_tag0, rd_index => dcache_index0,
     rd01 => dcache2mem_d1, rd02 => dcache2mem_d2, rd03 => dcache2mem_d3, rd04 => dcache2mem_d4,
     rd05 => dcache2mem_d5, rd06 => dcache2mem_d6, rd07 => dcache2mem_d7, rd08 => dcache2mem_d8,
-    cache_miss_en => data_cache_miss_en, valid_flag => valid_flag
+    cache_miss_en => data_cache_miss_en,
+    valid_flag => valid_flag, dirty_flag => dirty_flag
   );
 
   -- -- RegWriteBack Stage
