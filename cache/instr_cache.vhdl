@@ -54,7 +54,6 @@ architecture behavior of instr_cache is
       addr_index : in cache_index_vector;
       addr_offset : in cache_offset_vector;
       cache_miss_en : out std_logic;
-      cache_valid_flag : out std_logic;
       rd_s : out cache_offset_vector
     );
   end component;
@@ -159,7 +158,6 @@ begin
     addr_tag => addr_tag, cache_tag => tag_datum,
     addr_index => addr_index, addr_offset => addr_offset,
     cache_miss_en => cache_miss_en,
-    -- cache_valid_flag => dummy_cache_valid_flag,
     rd_s => rd_s
   );
   -- if cache_hit

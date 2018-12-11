@@ -10,7 +10,6 @@ entity cache_controller is
     addr_index : in cache_index_vector;
     addr_offset : in cache_offset_vector;
     cache_miss_en : out std_logic;
-    cache_valid_flag : out std_logic;
     rd_s : out cache_offset_vector
   );
 end entity;
@@ -37,7 +36,6 @@ begin
       end if;
     end if;
   end process;
-  cache_valid_flag <= cache_valid;
 
   -- direct mux8 selector
   process(addr_tag, addr_offset, cache_valid, cache_tag)

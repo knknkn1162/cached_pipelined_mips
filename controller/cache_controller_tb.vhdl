@@ -14,7 +14,6 @@ architecture testbench of cache_controller_tb is
       addr_index : in cache_index_vector;
       addr_offset : in cache_offset_vector;
       cache_miss_en : out std_logic;
-      cache_valid_flag : out std_logic;
       rd_s : out cache_offset_vector
     );
   end component;
@@ -24,7 +23,7 @@ architecture testbench of cache_controller_tb is
   signal addr_tag, cache_tag : cache_tag_vector;
   signal addr_index : cache_index_vector;
   signal addr_offset : cache_offset_vector;
-  signal cache_miss_en, cache_valid_flag : std_logic;
+  signal cache_miss_en : std_logic;
   signal rd_s : cache_offset_vector;
   constant period : time := 10 ns;
 
@@ -35,7 +34,6 @@ begin
     addr_tag => addr_tag, cache_tag => cache_tag,
     addr_index => addr_index, addr_offset => addr_offset,
     cache_miss_en => cache_miss_en,
-    cache_valid_flag => cache_valid_flag,
     rd_s => rd_s
   );
 
@@ -62,13 +60,13 @@ begin
     -- if addr_tag /= cache_tag & cache_valid = '1' -> cache_miss
     addr_tag <= X"00000"; cache_tag <= X"00001"; cache_valid <= '1';
     wait for 1 ns;
-    assert cache_miss_en = '1'; assert cache_valid_flag = '1';
+    assert cache_miss_en = '1';
     wait for period/2; wait for 1 ns;
 
     -- if addr_tag /= cache_tag & cache_valid = '0' -> cache_miss
     addr_tag <= X"00001"; cache_tag <= X"00000"; cache_valid <= '0';
     wait for 1 ns;
-    assert cache_miss_en = '1'; assert cache_valid_flag = '0';
+    assert cache_miss_en = '1';
 
     -- success message
     assert false report "end of test" severity note;
