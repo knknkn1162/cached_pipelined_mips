@@ -5,7 +5,8 @@ use work.type_pkg.ALL;
 entity shift_controller is
   port (
     clk, rst : in std_logic;
-    decode_en, decode_clr, calc_clr, dcache_en : in std_logic;
+    decode_en, decode_clr : in std_logic;
+    calc_en, calc_clr, dcache_en : in std_logic;
     instr_valid0 : in std_logic;
     calc_rdt_immext_s0, dcache_we0, reg_we2_0, reg_we1_0 : in std_logic;
     alu_s0 : in alucont_type;
@@ -31,13 +32,13 @@ architecture behavior of shift_controller is
     );
   end component;
 
-  component flopr_clr
+  component flopr_en_clr
     generic(N : natural);
     port (
-      clk, rst, clr: in std_logic;
+      clk, rst, en, clr : in std_logic;
       a : in std_logic_vector(N-1 downto 0);
       y : out std_logic_vector(N-1 downto 0)
-    );
+        );
   end component;
 
   component bflopr_en_clr
@@ -58,9 +59,10 @@ begin
   cont0 <= dcache_we0 & reg_we2_0 & calc_rdt_immext_s0 & reg_we1_0 & alu_s0;
 
   -- shift
-  flopr_cont0 : flopr_clr generic map (N=>N0)
+  flopr_cont0 : flopr_en_clr generic map (N=>N0)
   port map (
-    clk => clk, rst => rst, clr => calc_clr,
+    clk => clk, rst => rst, en => calc_en, -- for cache_miss
+    clr => calc_clr,
     a => cont0,
     y => cont1
   );
