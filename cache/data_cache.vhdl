@@ -76,10 +76,6 @@ architecture behavior of data_cache is
   -- The size of data cache assumes to be 1K-byte
   constant SIZE : natural := 256; -- 0x0100
   constant DATA_BLOCK_SIZE : natural := 2**CONST_CACHE_OFFSET_SIZE;
-  type validtype is array(natural range<>) of std_logic;
-  type ramtype is array(natural range<>) of std_logic_vector(31 downto 0);
-  type addr30_type is array(natural range<>) of std_logic_vector(29 downto 0);
-  type tagtype is array(natural range<>) of cache_tag_vector;
 
   -- decode addr
   signal addr_tag : cache_tag_vector;
@@ -112,18 +108,18 @@ begin
   -- read & write data or load block from memory
   process(clk, rst, we, addr_tag, valid_datum, addr_index, addr_offset, wd01, wd02, wd03, wd04, wd05, wd06, wd07, wd08, wd)
     variable idx : natural;
-    variable valid_data : validtype(0 to SIZE-1);
-    variable tag_data : tagtype(0 to SIZE-1);
+    variable valid_data : valid_array_type(0 to SIZE-1);
+    variable tag_data : tag_array_type(0 to SIZE-1);
 
     -- TODO: compatible with CONST_CACHE_OFFSET_SIZE
-    variable ram1_data : ramtype(0 to SIZE-1);
-    variable ram2_data : ramtype(0 to SIZE-1);
-    variable ram3_data : ramtype(0 to SIZE-1);
-    variable ram4_data : ramtype(0 to SIZE-1);
-    variable ram5_data : ramtype(0 to SIZE-1);
-    variable ram6_data : ramtype(0 to SIZE-1);
-    variable ram7_data : ramtype(0 to SIZE-1);
-    variable ram8_data : ramtype(0 to SIZE-1);
+    variable ram1_data : ram_type(0 to SIZE-1);
+    variable ram2_data : ram_type(0 to SIZE-1);
+    variable ram3_data : ram_type(0 to SIZE-1);
+    variable ram4_data : ram_type(0 to SIZE-1);
+    variable ram5_data : ram_type(0 to SIZE-1);
+    variable ram6_data : ram_type(0 to SIZE-1);
+    variable ram7_data : ram_type(0 to SIZE-1);
+    variable ram8_data : ram_type(0 to SIZE-1);
   begin
     -- initialization
     if rst = '1' then
