@@ -6,7 +6,7 @@ CONTROLLER_LIST=mem_idcache alu load flopen decode shift stall instr pcnext
 CONTROLLERS=$(addsuffix _controller, ${CONTROLLER_LIST})
 TEST_LIST=stall_lw_add forwarding_addi_add forwarding_add_add beq memfile
 OPTION=--warn-error
-TESTBENCH_OPTION=--vcd=out.vcd --assert-level=error
+TB_OPTION=--vcd=out.vcd --assert-level=error
 
 all: mips ${TEST_LIST}
 
