@@ -81,8 +81,6 @@ begin
 
   stim_proc : process
   begin
-    -- addi $s0, $0, 5
-    -- add $s1, $s0, $s0
     wait for clk_period;
     rst <= '1'; wait for 1 ns; rst <= '0';
     assert state = ResetS;
@@ -116,12 +114,45 @@ begin
     assert state = SuspendS;
     assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0'; assert stall = '0';
     assert icache_load_en = '0'; assert dcache_load_en = '0';
-    -- -- FetchS : addi $t0, $0, 5
+    -- FetchS : addi $t0, $0, 5
     assert pc = X"00000000"; assert pcnext = X"00000004";
     assert instr = X"20020005";
     -- (not yet)
     assert rds = X"00000000"; assert immext = X"00000000";
     wait until rising_edge(clk); wait for 1 ns;
+
+    assert state = NormalS;
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0'; assert stall = '0';
+    -- DecodeS : 00: addi $t0, $0, 5
+    assert rds = X"00000000"; assert immext = X"00000005";
+    -- FetchS : 04: addi $3, $0, 12 # initialize $3 = 12 4
+    assert pc = X"00000004"; assert pcnext = X"00000008";
+    assert instr = X"2003000c";
+    wait until rising_edge(clk); wait for 1 ns;
+
+    assert state = NormalS;
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0'; assert stall = '0';
+    -- CalcS : : 00: addi $t0, $0, 5
+    assert aluout = X"00000005";
+    -- DecodeS : 04: addi $3, $0, 12 # initialize $3 = 12 4
+    assert rds = X"00000000"; assert immext = X"0000000C";
+    -- FetchS : 08: addi $7, $3, -9 # initialize $7 = 3  8
+    assert pc = X"00000008"; assert pcnext = X"0000000C";
+    assert instr = X"2067fff7";
+    wait until rising_edge(clk); wait for 1 ns;
+
+    assert state = NormalS;
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0'; assert stall = '0';
+    -- (00 : addi $t0, $0, 5)
+    -- CalcS : 04: addi $3, $0, 12 # initialize $3 = 12
+    assert aluout = X"0000000C";
+    -- DecodeS : 08: addi $7, $3, -9 # initialize $7 = 3
+    assert rds = X"0000000C"; assert immext = X"FFFFFFF7";
+    -- FetchS : 0C or   $4, $7, $2     # $4 <= 3 or 5 = 7
+    assert pc = X"0000000C"; assert pcnext = X"00000010";
+    assert instr = X"00e22025";
+    wait until rising_edge(clk); wait for 1 ns;
+
 
     stop <= TRUE;
     -- success message
