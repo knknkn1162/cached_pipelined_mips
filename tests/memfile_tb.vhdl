@@ -204,10 +204,50 @@ begin
     assert aluout = X"0000000B";
     -- DecodeS: 18: beq $5,  $7, end    # shouldnt be taken
     assert rds = X"0000000B"; assert rdt = X"00000003";
-    -- FetchS: slt $4,  $3, $4     # $4 = 12 < 7 = 0
+    -- FetchS: 1C: slt $4,  $3, $4     # $4 = 12 < 7 = 0
     assert pc = X"0000001C"; assert pcnext = X"00000020";
     assert instr = X"0064202a";
     wait until rising_edge(clk); wait for 1 ns;
+
+    -- cache miss!
+    assert state = NormalS;
+    assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '1'; assert stall = '0'; assert branch_taken = '0';
+    -- RegWriteBackS: 10: and $5,  $3, $4     # $5 <= 12 and 7 = 4)
+    assert reg_wa = "00101"; assert reg_wd = X"00000004";
+    -- (14: add $5,  $5, $4     # $5 = 4 + 7 = 11)
+    -- CalcS: (nop)
+    -- DecodeS: 1C: slt $4,  $3, $4     # $4 = 12 < 7 = 0
+    assert rds = X"0000000C"; assert rdt = X"00000007";
+    -- FetchS: 20: beq $4,  $0, around # should be taken [cache miss!]
+    assert pc = X"00000020"; assert pcnext = X"00000024";
+    assert instr /= X"10800001";
+    wait until rising_edge(clk); wait for 1 ns;
+
+    -- instr miss(Mem2CacheS)
+    assert state = SuspendS;
+    assert dcache_we = '0'; assert reg_we = '1'; assert suspend = '1'; assert stall = '0';
+    -- RegWriteBackS 14: add $5,  $5, $4     # $5 = 4 + 7 = 11
+    assert reg_wa = "00101"; assert reg_wd = X"0000000B";
+    assert icache_load_en = '0'; assert dcache_load_en = '0';
+    assert pc = X"00000020"; assert pcnext = X"00000024";
+    wait until rising_edge(clk); wait for 1 ns;
+
+    -- instr: CacheWriteBackS
+    assert state = SuspendS;
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '1'; assert stall = '0';
+    assert icache_load_en = '1'; assert dcache_load_en = '0';
+    assert pc = X"00000020"; assert pcnext = X"00000024";
+    wait until rising_edge(clk); wait for 1 ns;
+
+    -- instr: NormalS(cache hit!)
+    assert state = SuspendS;
+    assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0'; assert stall = '0'; assert branch_taken = '0';
+    assert icache_load_en = '0'; assert dcache_load_en = '0';
+    -- FetchS : add $s1, $s0, $s1
+    assert pc = X"00000020"; assert pcnext = X"00000024";
+    assert instr = X"10800001";
+    wait until rising_edge(clk); wait for 1 ns;
+
 
     stop <= TRUE;
     -- success message
