@@ -6,7 +6,8 @@ CONTROLLER_LIST=mem_idcache alu load flopen decode shift stall instr pcnext
 CONTROLLERS=$(addsuffix _controller, ${CONTROLLER_LIST})
 TEST_LIST=stall_lw_add forwarding_addi_add forwarding_add_add beq memfile
 OPTION=--warn-error
-TB_OPTION=--vcd=out.vcd --assert-level=error
+OUTPUT=--vcd=out.vcd
+TB_OPTION=--assert-level=error
 
 all: mips ${TEST_LIST}
 
@@ -121,7 +122,7 @@ open:
 e:
 	ghdl -e ${OPTION} ${DEBUG} ${F}_tb
 r:
-	ghdl -r ${OPTION} ${F}_tb ${TESTBENCH_OPTION}
+	ghdl -r ${OPTION} ${F}_tb ${OUTPUT} ${TB_OPTION}
 a:
 	ghdl -a ${OPTION} ${DEBUG} ${DIR}${F}.${VHDL}
 er:
