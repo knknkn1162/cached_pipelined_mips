@@ -81,7 +81,7 @@ begin
       decode_en <= work_en;
       calc_en <= work_en;
       calc_clr <= '0';
-      decode_clr <= '0';
+      decode_clr <= work_en and branch_taken;
       dcache_en <= work_en;
     end if;
   end process;
