@@ -4,12 +4,14 @@ DIR=./
 DEBUG=
 CONTROLLER_LIST=mem_idcache alu load flopen decode shift stall instr pcnext
 CONTROLLERS=$(addsuffix _controller, ${CONTROLLER_LIST})
-TEST_LIST=stall_lw_add forwarding_addi_add forwarding_add_add beq
+TEST_LIST=stall_lw_add forwarding_addi_add forwarding_add_add beq memfile
 OPTION=--warn-error
 TESTBENCH_OPTION=--vcd=out.vcd --assert-level=error
 
 all: mips ${TEST_LIST}
 
+memfile:
+	make tb F=memfile
 beq:
 	make tb F=beq
 stall_lw_add:
