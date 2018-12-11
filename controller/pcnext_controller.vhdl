@@ -20,6 +20,8 @@ begin
       branch_taken0 <= cmp_eq;
     elsif opcode = OP_BNE then
       branch_taken0 <= (not cmp_eq);
+    elsif opcode = OP_J then
+      branch_taken0 <= '1';
     else
       branch_taken0 <= '0';
     end if;
