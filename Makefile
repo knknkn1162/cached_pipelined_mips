@@ -4,7 +4,7 @@ DIR=./
 DEBUG=
 CONTROLLER_LIST=mem_idcache alu load flopen decode shift stall instr pcnext
 CONTROLLERS=$(addsuffix _controller, ${CONTROLLER_LIST})
-TEST_LIST=stall_lw_add forwarding_addi_add forwarding_add_add beq memfile beq_j
+TEST_LIST=stall_lw_add forwarding_addi_add forwarding_add_add beq beq_j memfile
 OPTION=--warn-error
 OUTPUT=--vcd=out.vcd
 TB_OPTION=--assert-level=error
