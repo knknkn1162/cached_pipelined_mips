@@ -89,6 +89,15 @@ architecture behavior of datapath is
     );
   end component;
 
+  component jtype_decoder
+    port (
+      instr : in std_logic_vector(31 downto 0);
+      pc_msb4 : in std_logic_vector(3 downto 0);
+      instr_jtype_flag : out std_logic;
+      ja : out std_logic_vector(31 downto 0)
+    );
+  end component;
+
   component mux2
     generic(N : integer);
     port (
@@ -260,8 +269,13 @@ begin
     cache_miss_en => instr_cache_miss_en, tag => icache_tag0, index => icache_index0
   );
   instr0 <= instr0_0;
-  ja0 <= pc0(31 downto 28) & instr0_0(25 downto 0) & "00";
-  instr0_jtype_flag <= '1' when instr0_0(31 downto 26) = OP_J else '0';
+
+  jtype_decoder0: jtype_decoder port map (
+    pc_msb4 => pc0(31 downto 28),
+    instr => instr0_0,
+    instr_jtype_flag => instr0_jtype_flag,
+    ja => ja0
+  );
 
   -- Decode & RegWriteBack Stage
   -- -- Decode Stage(regfile part)

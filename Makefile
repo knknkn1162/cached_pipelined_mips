@@ -30,11 +30,13 @@ mips:
 	make _mips
 _mips: type_pkg cache_pkg datapath mem ${CONTROLLERS}
 	make a F=mips
-datapath: flopr_en flopr_clr flopr_en_clr instr_decoder mux2 mux4 alu regfile mem data_cache instr_cache regw_buffer
+datapath: flopr_en flopr_clr flopr_en_clr instr_decoder jtype_decoder mux2 mux4 alu regfile mem data_cache instr_cache regw_buffer
 	make a F=datapath
 
 instr_decoder: type_pkg slt2 sgnext
 	make a F=instr_decoder DIR=component/
+jtype_decoder: type_pkg
+	make a F=jtype_decoder DIR=component/
 load_controller:
 	make aer F=load_controller DIR=controller/
 regwe_controller: type_pkg
