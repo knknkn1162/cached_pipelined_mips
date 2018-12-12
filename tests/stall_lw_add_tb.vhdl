@@ -176,7 +176,7 @@ begin
     wait until rising_edge(clk); wait for 1 ns;
 
     -- (-, -, MemReadS, DecodeS, FetchS) [Stall]
-    assert state = StallS;
+    assert state = NormalS;
     assert dcache_we = '0'; assert reg_we = '0'; assert suspend = '0'; assert stall = '0';
     -- MemReadS : lw $s1, 12($s0)
     assert addr = X"0000000C"; assert dcache_rd = X"00000005";
