@@ -10,8 +10,7 @@ entity instr_decoder is
     immext : out std_logic_vector(31 downto 0);
     brplus: out std_logic_vector(31 downto 0);
     shamt : out shamt_vector;
-    funct : out funct_vector;
-    target2 : out target2_vector
+    funct : out funct_vector
   );
 end entity;
 
@@ -23,8 +22,6 @@ architecture behavior of instr_decoder is
         );
   end component;
 
-  signal target : target_vector;
-  signal target00 : target2_vector;
   signal imm : imm_vector;
   signal immext0 : std_logic_vector(31 downto 0);
 begin
@@ -43,7 +40,5 @@ begin
   shamt <= instr(10 downto 6);
   funct <= instr(5 downto 0);
 
-  target <= instr(25 downto 0);
-  target2 <= target & "00";
   brplus <= immext0(29 downto 0) & "00";
 end architecture;
