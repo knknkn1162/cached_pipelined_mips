@@ -17,8 +17,6 @@ package type_pkg is
   subtype imm_vector is std_logic_vector(CONST_INSTR_IMM_SIZE-1 downto 0);
   subtype shamt_vector is std_logic_vector(CONST_INSTR_SHAMT_SIZE-1 downto 0);
   subtype funct_vector is std_logic_vector(CONST_INSTR_FUNCT_SIZE-1 downto 0);
-  subtype target_vector is std_logic_vector(CONST_INSTR_TARGET_SIZE-1 downto 0);
-  subtype target2_vector is std_logic_vector(CONST_INSTR_TARGET_SIZE+1 downto 0);
 
   constant OP_LW : opcode_vector := "100011"; -- 0x23
   constant OP_SW : opcode_vector := "101011"; -- 0x2B

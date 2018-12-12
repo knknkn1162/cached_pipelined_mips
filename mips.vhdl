@@ -80,6 +80,7 @@ architecture behavior of mips is
     port (
       opcode : in opcode_vector;
       cmp_eq : in std_logic;
+      instr0_jtype_flag : in std_logic;
       branch_taken : out std_logic;
       decode_pc_br_ja_s : out std_logic_vector(1 downto 0)
     );
@@ -121,6 +122,7 @@ architecture behavior of mips is
       -- pcnext_controller
       decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
       cmp_eq : out std_logic;
+      instr0_jtype_flag : out std_logic;
       -- decode_controller
       dcache_we : in std_logic;
       decode_rt_rd_s : in std_logic;
@@ -181,6 +183,7 @@ architecture behavior of mips is
   signal decode_pc_br_ja_s0 : std_logic_vector(1 downto 0);
   signal branch_taken0 : std_logic;
   signal cmp_eq0 : std_logic;
+  signal instr0_jtype_flag0 : std_logic;
 
   -- decode_controller
   signal dcache_we0, dcache_we2, decode_rt_rd_s0 : std_logic;
@@ -254,6 +257,7 @@ begin
   pcnext_controller0 : pcnext_controller port map (
     opcode => opcode0,
     cmp_eq => cmp_eq0,
+    instr0_jtype_flag => instr0_jtype_flag0,
     branch_taken => branch_taken0,
     decode_pc_br_ja_s => decode_pc_br_ja_s0
   );
@@ -296,6 +300,7 @@ begin
     -- pcnext_controller
     decode_pc_br_ja_s => decode_pc_br_ja_s0,
     cmp_eq => cmp_eq0,
+    instr0_jtype_flag => instr0_jtype_flag0,
     -- decode_controller
     dcache_we => dcache_we2, decode_rt_rd_s => decode_rt_rd_s0,
     calc_rdt_immext_s => calc_rdt_immext_s1,

@@ -16,6 +16,7 @@ entity datapath is
     -- pcnext_controller
     decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
     cmp_eq : out std_logic;
+    instr0_jtype_flag : out std_logic;
     -- decode_controller
     dcache_we : in std_logic;
     decode_rt_rd_s : in std_logic;
@@ -84,8 +85,7 @@ architecture behavior of datapath is
       immext : out std_logic_vector(31 downto 0);
       brplus: out std_logic_vector(31 downto 0);
       shamt : out shamt_vector;
-      funct : out funct_vector;
-      target2 : out target2_vector
+      funct : out funct_vector
     );
   end component;
 
@@ -207,15 +207,14 @@ architecture behavior of datapath is
     );
   end component;
 
-  signal pc0, pc1, pcnext0 : std_logic_vector(31 downto 0);
+  signal pc0, pc1, pcnext0, pc_br4_0 : std_logic_vector(31 downto 0);
   signal instr0_0, instr1 : std_logic_vector(31 downto 0);
   signal rs0_0, rt0_0, instr_rd0_0, reg_wa0, instr_rtrd0, instr_rtrd1, instr_rtrd2 : reg_vector;
   signal opcode0_0 : opcode_vector;
   signal rds0, rds1, rdt0, rdt1, rdt2, reg_wd0 : std_logic_vector(31 downto 0);
   signal immext0, immext1, brplus0 : std_logic_vector(31 downto 0);
   signal shamt0 : shamt_vector;
-  signal target2 : target2_vector;
-  signal br4, pc4, ja0 : std_logic_vector(31 downto 0);
+  signal br4, pc4, ja0: std_logic_vector(31 downto 0);
   -- calc
   signal rdt_immext0, aluout0, aluout1 : std_logic_vector(31 downto 0);
   -- DMemRWS
@@ -261,6 +260,8 @@ begin
     cache_miss_en => instr_cache_miss_en, tag => icache_tag0, index => icache_index0
   );
   instr0 <= instr0_0;
+  ja0 <= pc0(31 downto 28) & instr0_0(25 downto 0) & "00";
+  instr0_jtype_flag <= '1' when instr0_0(31 downto 26) = OP_J else '0';
 
   -- Decode & RegWriteBack Stage
   -- -- Decode Stage(regfile part)
@@ -278,8 +279,7 @@ begin
     immext => immext0,
     brplus => brplus0, -- for bne, beq instruction
     shamt => shamt0,
-    funct => funct0,
-    target2 => target2 -- for j instruction
+    funct => funct0
   );
   rs0 <= rs0_0; rt0 <= rt0_0;
   opcode0 <= opcode0_0;
@@ -315,9 +315,8 @@ begin
 
   br4 <= std_logic_vector(unsigned(brplus0) + unsigned(pc1) + 4);
   pc4 <= std_logic_vector(unsigned(pc0) + 4);
-  ja0 <= pc1(31 downto 28) & target2;
 
-  pc_br_ja_mux4 : mux4 generic map (N=>32)
+  pc_br_mux2 : mux4 generic map (N=>32)
   port map (
     d00 => pc4,
     d01 => br4,
