@@ -80,6 +80,7 @@ architecture behavior of mips is
     port (
       opcode : in opcode_vector;
       cmp_eq : in std_logic;
+      instr0_jtype_flag : in std_logic;
       branch_taken : out std_logic;
       decode_pc_br_ja_s : out std_logic_vector(1 downto 0)
     );
@@ -89,7 +90,8 @@ architecture behavior of mips is
     port (
       clk, rst, load : in std_logic;
       suspend, stall, halt, branch_taken : in std_logic;
-      fetch_en, decode_en, decode_clr, calc_clr, dcache_en : out std_logic;
+      fetch_en, decode_en, decode_clr : out std_logic;
+      calc_en, calc_clr, dcache_en : out std_logic;
       state_vector : out flopen_state_vector
     );
   end component;
@@ -97,7 +99,8 @@ architecture behavior of mips is
   component shift_controller
     port (
       clk, rst : in std_logic;
-      decode_en, decode_clr, calc_clr, dcache_en : in std_logic;
+      decode_en, decode_clr : in std_logic;
+      calc_en, calc_clr, dcache_en : in std_logic;
       instr_valid0 : in std_logic;
       calc_rdt_immext_s0, dcache_we0, reg_we2_0, reg_we1_0 : in std_logic;
       alu_s0 : in alucont_type;
@@ -113,12 +116,13 @@ architecture behavior of mips is
     port (
       clk, rst, load : in std_logic;
       -- flopren_controller
-      fetch_en, decode_en, decode_clr, calc_clr, dcache_en : in std_logic;
+      fetch_en, decode_en, decode_clr, calc_en, calc_clr, dcache_en : in std_logic;
       -- -- instr_controller
       instr0 : out std_logic_vector(31 downto 0);
       -- pcnext_controller
       decode_pc_br_ja_s : in std_logic_vector(1 downto 0);
       cmp_eq : out std_logic;
+      instr0_jtype_flag : out std_logic;
       -- decode_controller
       dcache_we : in std_logic;
       decode_rt_rd_s : in std_logic;
@@ -161,7 +165,9 @@ architecture behavior of mips is
   end component;
 
   signal fetch_en0, decode_en0, dcache_en0 : std_logic;
-  signal decode_clr0, calc_clr0 : std_logic; -- for stall
+  -- for cache_miss
+  signal calc_en0 : std_logic;
+  signal calc_clr0, decode_clr0 : std_logic;
   signal tag_s0 : std_logic;
   signal alu_s0, alu_s1 : alucont_type;
   signal reg_we1, reg_we1_0, reg_we2, reg_we2_0 : std_logic;
@@ -177,6 +183,7 @@ architecture behavior of mips is
   signal decode_pc_br_ja_s0 : std_logic_vector(1 downto 0);
   signal branch_taken0 : std_logic;
   signal cmp_eq0 : std_logic;
+  signal instr0_jtype_flag0 : std_logic;
 
   -- decode_controller
   signal dcache_we0, dcache_we2, decode_rt_rd_s0 : std_logic;
@@ -223,7 +230,7 @@ begin
     suspend => suspend0, stall => stall0, halt => halt0,
     branch_taken => branch_taken0,
     fetch_en => fetch_en0, decode_en => decode_en0, decode_clr => decode_clr0,
-    calc_clr => calc_clr0, dcache_en => dcache_en0,
+    calc_en => calc_en0, calc_clr => calc_clr0, dcache_en => dcache_en0,
     state_vector => flopen_state
   );
 
@@ -250,6 +257,7 @@ begin
   pcnext_controller0 : pcnext_controller port map (
     opcode => opcode0,
     cmp_eq => cmp_eq0,
+    instr0_jtype_flag => instr0_jtype_flag0,
     branch_taken => branch_taken0,
     decode_pc_br_ja_s => decode_pc_br_ja_s0
   );
@@ -263,7 +271,7 @@ begin
   shift_controller0 : shift_controller port map (
     clk => clk, rst => rst,
     decode_en => decode_en0, decode_clr => decode_clr0,
-    calc_clr => calc_clr0, dcache_en => dcache_en0,
+    calc_en => calc_en0, calc_clr => calc_clr0, dcache_en => dcache_en0,
     instr_valid0 => instr_valid0,
     calc_rdt_immext_s0 => calc_rdt_immext_s0, dcache_we0 => dcache_we0,
     reg_we2_0 => reg_we2_0, reg_we1_0 => reg_we1_0, alu_s0 => alu_s0,
@@ -284,7 +292,7 @@ begin
     clk => clk, rst => rst, load => load0,
     -- flopren_controller
     fetch_en => fetch_en0, decode_en => decode_en0, decode_clr => decode_clr0,
-    calc_clr => calc_clr0, dcache_en => dcache_en0,
+    calc_en => calc_en0, calc_clr => calc_clr0, dcache_en => dcache_en0,
     -- instr_controller
     instr0 => instr0,
     -- regwe_controller
@@ -292,6 +300,7 @@ begin
     -- pcnext_controller
     decode_pc_br_ja_s => decode_pc_br_ja_s0,
     cmp_eq => cmp_eq0,
+    instr0_jtype_flag => instr0_jtype_flag0,
     -- decode_controller
     dcache_we => dcache_we2, decode_rt_rd_s => decode_rt_rd_s0,
     calc_rdt_immext_s => calc_rdt_immext_s1,

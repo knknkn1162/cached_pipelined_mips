@@ -4,12 +4,15 @@ DIR=./
 DEBUG=
 CONTROLLER_LIST=mem_idcache alu load flopen decode shift stall instr pcnext
 CONTROLLERS=$(addsuffix _controller, ${CONTROLLER_LIST})
-TEST_LIST=stall_lw_add forwarding_addi_add forwarding_add_add beq
+TEST_LIST=stall_lw_add forwarding_addi_add forwarding_add_add beq memfile
 OPTION=--warn-error
-TESTBENCH_OPTION=--vcd=out.vcd --assert-level=error
+OUTPUT=--vcd=out.vcd
+TB_OPTION=--assert-level=error
 
 all: mips ${TEST_LIST}
 
+memfile:
+	make tb F=memfile
 beq:
 	make tb F=beq
 stall_lw_add:
@@ -27,11 +30,13 @@ mips:
 	make _mips
 _mips: type_pkg cache_pkg datapath mem ${CONTROLLERS}
 	make a F=mips
-datapath: flopr_en flopr_clr flopr_en_clr instr_decoder mux2 mux4 alu regfile mem data_cache instr_cache regw_buffer
+datapath: flopr_en flopr_clr flopr_en_clr instr_decoder jtype_decoder mux2 mux4 alu regfile mem data_cache instr_cache regw_buffer
 	make a F=datapath
 
 instr_decoder: type_pkg slt2 sgnext
 	make a F=instr_decoder DIR=component/
+jtype_decoder: type_pkg
+	make a F=jtype_decoder DIR=component/
 load_controller:
 	make aer F=load_controller DIR=controller/
 regwe_controller: type_pkg
@@ -40,7 +45,7 @@ decode_controller: type_pkg
 	make a F=decode_controller DIR=controller/
 flopen_controller: state_pkg debug_pkg
 	make a F=flopen_controller DIR=controller/
-shift_controller: type_pkg flopr_en flopr_clr bflopr_en_clr
+shift_controller: type_pkg flopr_en flopr_en_clr bflopr_en_clr
 	make a F=shift_controller DIR=controller/
 stall_controller: type_pkg
 	make a F=stall_controller DIR=controller/
@@ -119,7 +124,7 @@ open:
 e:
 	ghdl -e ${OPTION} ${DEBUG} ${F}_tb
 r:
-	ghdl -r ${OPTION} ${F}_tb ${TESTBENCH_OPTION}
+	ghdl -r ${OPTION} ${F}_tb ${OUTPUT} ${TB_OPTION}
 a:
 	ghdl -a ${OPTION} ${DEBUG} ${DIR}${F}.${VHDL}
 er:

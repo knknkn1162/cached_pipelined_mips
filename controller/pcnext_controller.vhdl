@@ -6,6 +6,7 @@ entity pcnext_controller is
   port (
     opcode : in opcode_vector;
     cmp_eq : in std_logic;
+    instr0_jtype_flag : in std_logic;
     branch_taken : out std_logic;
     decode_pc_br_ja_s : out std_logic_vector(1 downto 0)
   );
@@ -26,19 +27,14 @@ begin
   end process;
   branch_taken <= branch_taken0;
 
-  process(opcode, branch_taken0)
+  process(opcode, branch_taken0, instr0_jtype_flag)
   begin
-    case opcode is
-      when OP_BEQ | OP_BNE =>
-        if branch_taken0 = '1' then
-          decode_pc_br_ja_s <= "01";
-        else
-          decode_pc_br_ja_s <= "00";
-        end if;
-      when OP_J =>
-        decode_pc_br_ja_s <= "10";
-      when others =>
-        decode_pc_br_ja_s <= "00";
-    end case;
+    if branch_taken0 = '1' then
+      decode_pc_br_ja_s <= "01";
+    elsif instr0_jtype_flag = '1' then
+      decode_pc_br_ja_s <= "10";
+    else
+      decode_pc_br_ja_s <= "00";
+    end if;
   end process;
 end architecture;
