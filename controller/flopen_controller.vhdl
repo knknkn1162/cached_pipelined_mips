@@ -29,7 +29,7 @@ begin
   end process;
 
   -- nextstate
-  process(state, load, suspend, stall)
+  process(state, load, suspend)
   begin
     case state is
       when ResetS =>
@@ -41,8 +41,6 @@ begin
       when NormalS =>
         if suspend = '1' then
           nextstate <= SuspendS;
-        elsif stall = '1' then
-          nextstate <= StallS;
         else
           nextstate <= NormalS;
         end if;
@@ -52,8 +50,6 @@ begin
         else
           nextstate  <= SuspendS;
         end if;
-      when StallS =>
-        nextstate <= NormalS;
       when others =>
         nextstate <= ErrorS;
     end case;
